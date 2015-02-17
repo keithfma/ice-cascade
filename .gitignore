@@ -1,0 +1,5 @@
+ice_cascade
+*.out
+*~
+src/*.o
+src/*.mod
