@@ -1,4 +1,4 @@
-ice_cascade
+ice-cascade
 *.out
 *~
 src/*.o

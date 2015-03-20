@@ -894,7 +894,7 @@ case (3)
 case (4)
 	
 	!! Compute radial distance, once
-	if (allocated(r)==.false.) then
+	if (allocated(r) .eqv. .false.) then
 		allocate( r(nx,ny) )
 		r = sqrt(x**2._dp+y**2._dp)
 	end if
@@ -917,7 +917,7 @@ case (5)
 case (6)	
 
 	!! Compute radial distance, once
-	if (allocated(r)==.false.) then
+	if (allocated(r) .eqv. .false.) then
 		allocate( r(nx,ny) )
 		r = sqrt(x**2._dp+y**2._dp)
 	end if
@@ -1009,7 +1009,7 @@ case (4)
 case (5) 
 	
 	! Compute radial distance, once
-	if (allocated(r)==.false.) then
+	if (allocated(r) .eqv. .false.) then
 		allocate( r(nx,ny) )
 		r = sqrt(x**2._dp+y**2._dp)
 	end if
@@ -1032,7 +1032,7 @@ case (5)
 case(6)
 
 	! Compute radial distance, once
-	if (allocated(r)==.false.) then
+	if (allocated(r) .eqv. .false.) then
 		allocate( r(nx,ny) )
 		r = sqrt(x**2._dp+y**2._dp)
 	end if

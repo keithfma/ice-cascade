@@ -100,7 +100,7 @@ call arrayToVector( gH, vH )
 !! Note: this step need only be run one time. To do this, the output arguments are saved between 
 !!! calls to the runCascade subroutine, and the following lines are skipped if those arrays are 
 !!! already allocated.
-if (allocated(nbrList)==.false.) then
+if (allocated(nbrList) .eqv. .false.) then
 	call findNeighbors( nx, ny, dx, dy, pBcN, pBcS, pBcE, pBcW, nbrList, nbrNum, nbrDist )	
 end if	
 
@@ -132,7 +132,7 @@ if (check_water_cons) then
 	waterin = sum(gQWater) ! retains the input vals until vectorToArray is called
 	waterout = 0. ! accumulate discharge from outlet self-donors
 	do k = 1,npts
-		if ((vDonor(k)==k).and.(vOutlet(k)==1)) waterout = waterout + vQWater(k)
+		if ((vDonor(k)==k).and.(vOutlet(k) .eqv. .true.)) waterout = waterout + vQWater(k)
 	end do
 	print*,'water in, out, frac diff:', real(waterin,sp), real(waterout,sp), &
 		real((waterin-waterout)/waterin,sp)
@@ -148,7 +148,7 @@ call vectorToArray (vQWater, gQWater)
 where (gH<=pBaseLvl) gLake=.true.
 
 ! Compute fluvial erosion rate
-where (gLake==.false. .and. gIceFree==.true.)
+where (gLake .eqv. .false. .and. gIceFree .eqv. .true.)
 	gErosRate = -gSlope*gQWater**0.5_dp*pErosFact
 elsewhere
 	gErosRate = 0._dp
@@ -221,7 +221,7 @@ end do
 ! Add neighbors at cyclic boundaries
 !! North-south cyclic
 if ((nbc==2).and.(sbc==2)) then
-	dOff = [ diag, dy, diag, 0, 0, 0, 0, 0 ] 
+	dOff = [ diag, dy, diag, 0._dp, 0._dp, 0._dp, 0._dp, 0._dp ] 
 	do i = 1,nx
 		ks = i ! south, j-->1
 		kn = (ny-1)*nx+i ! north, j-->ny
@@ -260,7 +260,7 @@ end if
 	
 !! East-west cyclic
 if ((ebc==2).and.(wbc==2)) then
-	dOff = [ diag, dx, diag, 0, 0, 0, 0, 0 ] 	
+	dOff = [ diag, dx, diag, 0._dp, 0._dp, 0._dp, 0._dp, 0._dp ] 	
 	do j = 1,ny
 		kw = (j-1)*nx+1 ! west, i-->1
 		ke = (j-1)*nx+nx ! east, i-->nx
@@ -309,10 +309,10 @@ ny = size(gOutlet,2)
 gOutlet = .false. 
 
 ! Open boundaries
-if (pBcN==0) gOutlet(:,ny) = 1	
-if (pBcS==0) gOutlet(:,1) = 1	
-if (pBcE==0) gOutlet(nx,:) = 1	
-if (pBcW==0) gOutlet(1,:) = 1	
+if (pBcN==0) gOutlet(:,ny) = .true.	
+if (pBcS==0) gOutlet(:,1) = .true.	
+if (pBcE==0) gOutlet(nx,:) = .true.	
+if (pBcW==0) gOutlet(1,:) = .true.	
 
 ! Closed boundaries
 !! No outlets to mark, do nothing
@@ -398,7 +398,7 @@ end do
 
 !! Beginning of pseudo time stepping
 more = .true.
-do while (more==.true.)
+do while (more .eqv. .true.)
 
 	do i = 1,n
 		if (bucket(i).ne.0) bucket(vDonor(i)) = -1
@@ -473,7 +473,7 @@ n = size(vDonor)
 allocate( work(n) )
 
 ! Init values
-vLake = 0
+vLake = .false.
 vCatchment = 0
 hMax = maxval(vH)
 do i = 1,n
@@ -505,7 +505,7 @@ end do
 noise = 0
 172 continue
 done = .false.
-do while (done==.false.)
+do while (done .eqv. .false.)
 
 	!! Reset
 	done = .true. 	
@@ -515,7 +515,7 @@ do while (done==.false.)
 	
 	!! Catchments that are connected to an outlet are finished
 	do i = 1,n
-		if (vOutlet(i)==1) then
+		if (vOutlet(i) .eqv. .true.) then
 			nc = vCatchment(i)
 			work(nc) = 1
 		endif
@@ -600,7 +600,7 @@ do while (done==.false.)
 			enddo
 			!! Find lake nodes in this catchment
 			do k = 1,n
-				if (vCatchment(k).eq.nc .and. vH(k).lt.vH(jjj)) vLake(k) = 1
+				if (vCatchment(k).eq.nc .and. vH(k).lt.vH(jjj)) vLake(k) = .true. 
 			enddo
 			!! Reset catchment names
 			do k = 1,n

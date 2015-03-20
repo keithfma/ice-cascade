@@ -67,7 +67,7 @@ if (wbc==1) zz(0,:) = zz(nx,:)
 ! Compute erosion rate
 do j=2,ny-1
 	do i=2,nx-1
-		if (mask(i,j)==.true.) then
+		if (mask(i,j) .eqv. .true.) then
 			erorate(i,j) = &
 				-coeff*((z(i+1,j)+z(i-1,j)-2.*z(i,j))/dx**2+(z(i,j+1)+z(i,j-1)-2.*z(i,j))/dy**2)/2. &
 				-coeff*((z(i+1,j+1)+z(i-1,j-1)-4.*z(i,j)+z(i+1,j-1)+z(i-1,j+1))/dl2)/2.

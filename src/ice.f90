@@ -317,7 +317,7 @@ elsewhere
 end where
 
 ! Glacial erosion rate
-where (fIceFree==.false.)
+where (fIceFree .eqv. .false.)
 	fErosRate = erosFact*fSliding 
 	fErosRate = min(fErosRate,erosRateCeil) 
 elsewhere
