@@ -11,14 +11,15 @@ module benchmark
 !!! (6) Bueler Test C. See Bueler et al 2005, Journal of Glaciology
 !!! (7) Bueler Test D. See Bueler et al 2005, Journal of Glaciology
 !!! (8) Bueler Test E. See Bueler et al 2005, Journal of Glaciology
-!!! (9)  Egholm Test 1a (0ky).  See Egholm et al 2011, Geomorphology
-!!! (10) Egholm Test 1b (5ky).  See Egholm et al 2011, Geomorphology
-!!! (11) Egholm Test 1c (10ky). See Egholm et al 2011, Geomorphology
-!!! (12) Egholm Test 1d (15ky). See Egholm et al 2011, Geomorphology
-!!! (13) Egholm Test 2a (0ky).  See Egholm et al 2011, Geomorphology
-!!! (14) Egholm Test 2b (5ky).  See Egholm et al 2011, Geomorphology
-!!! (15) Egholm Test 2c (10ky). See Egholm et al 2011, Geomorphology
-!!! (16) Egholm Test 2d (15ky). See Egholm et al 2011, Geomorphology
+!!! (9) Egholm Test 1, steasy state w/out erosion. See Egholm et al 2011, Geomorphology
+!!! (10)  Egholm Test 1a (0ky).  See Egholm et al 2011, Geomorphology
+!!! (11) Egholm Test 1b (5ky).  See Egholm et al 2011, Geomorphology
+!!! (12) Egholm Test 1c (10ky). See Egholm et al 2011, Geomorphology
+!!! (13) Egholm Test 1d (15ky). See Egholm et al 2011, Geomorphology
+!!! (14) Egholm Test 2a (0ky).  See Egholm et al 2011, Geomorphology
+!!! (15) Egholm Test 2b (5ky).  See Egholm et al 2011, Geomorphology
+!!! (16) Egholm Test 2c (10ky). See Egholm et al 2011, Geomorphology
+!!! (17) Egholm Test 2d (15ky). See Egholm et al 2011, Geomorphology
 
 ! Hungarian prefixes are used to signify
 !! c -> benchmark constant with global scope
@@ -68,7 +69,7 @@ real(dp), parameter :: cBuelcR0 = 750.e3_dp
 real(dp), parameter :: cBuelcTime0 = 15208._dp ! used for end time, elsewhere calculated directly for precision
 real(dp), parameter :: cBuelcLambda = 5._dp
 
-! Egholm test 1,2 benchmarks
+! Egholm benchmark constants
 real(dp), parameter :: cEgholmW  = 1500._dp
 real(dp), parameter :: cEgholmL  = 10000._dp
 real(dp), parameter :: cEgholmP  = 1.6_dp
@@ -79,8 +80,6 @@ real(dp), parameter :: cEgholmX2 = 4000._dp
 real(dp), parameter :: cEgholmTheta  = 0.5_dp
 real(dp), parameter :: cEgholmHL = 3000._dp
 real(dp), parameter :: cEgholmHT = 1000._dp
-
-! Egholm test 2 benchmarks
 real(dp), parameter :: cEgholmHs = 500._dp 
 real(dp), parameter :: cEgholmXs = 5000._dp 
 real(dp), parameter :: cEgholmDXs = 500._dp 
@@ -350,8 +349,41 @@ case (6)
 		  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
 		  0, 0, 1 ]  
 	
-! Egholm 1a Benchmark	  
+! Egholm 1 Benchmark, steady state	  
 case (9) 
+	pRunName = 'egholm_1_ss'
+  !! choose fNx, set others grid vars to make cells approx square
+	fNx = 200 	
+  fDx = cEgholmL/(fNx-1) 
+  fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+	pTimeEnd = 1000.0_dp
+	pTimeStepIceMax = 10.0_dp 
+	pTimeStepIceMin = 0.0001_dp
+	pTimeStep = 10.0_dp
+	pWriteFreq = 1
+	pDoGlac = .true.
+	pDoFluv = .false.
+	pDoHill = .false.
+	pDoFlex = .false.
+	pDoEros = .false.
+	pDoUplift = .false.
+	pB = 1.0e-16_dp   
+	pGlacBcN = 4
+	pGlacBcS = 4
+	pGlacBcE = 4
+	pGlacBcW = 4
+	pRhoIce = 910.0_dp
+	pWriteFlag = &
+		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
+		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
+		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
+		  1, 1, 1 ]  
+
+! Egholm 1a Benchmark	  
+case (10) 
 	pRunName = 'Egholm_1a'
 	fNx = 60
 	fNy = 60
@@ -383,7 +415,7 @@ case (9)
 		  1, 1, 1 ]  
 
 ! Egholm 1b Benchmark	  
-case (10) 
+case (11) 
 	pRunName = 'Egholm_1b'
 	fNx = 60
 	fNy = 60
@@ -415,7 +447,7 @@ case (10)
 		  1, 1, 1 ]  
 
 ! Egholm 1c Benchmark	  
-case (11) 
+case (12) 
 	pRunName = 'Egholm_1c'
 	fNx = 60
 	fNy = 60
@@ -447,7 +479,7 @@ case (11)
 		  1, 1, 1 ]  
 
 ! Egholm 1d Benchmark	  
-case (12) 
+case (13) 
 	pRunName = 'Egholm_1d'
 	fNx = 60
 	fNy = 60
@@ -479,7 +511,7 @@ case (12)
 		  1, 1, 1 ]  
 
 ! Egholm 2a Benchmark	  
-case (13) 
+case (14) 
 	pRunName = 'Egholm_2a'
 	fNx = 60
 	fNy = 60
@@ -511,7 +543,7 @@ case (13)
 		  1, 1, 1 ]  
 
 ! Egholm 2b Benchmark	  
-case (14) 
+case (15) 
 	pRunName = 'Egholm_2b'
 	fNx = 60
 	fNy = 60
@@ -543,7 +575,7 @@ case (14)
 		  1, 1, 1 ]  
 
 ! Egholm 2c Benchmark	  
-case (15) 
+case (16) 
 	pRunName = 'Egholm_2c'
 	fNx = 60
 	fNy = 60
@@ -575,7 +607,7 @@ case (15)
 		  1, 1, 1 ]  
 
 ! Egholm 2d Benchmark	  
-case (16) 
+case (17) 
 	pRunName = 'Egholm_2d'
 	fNx = 60
 	fNy = 60
@@ -725,13 +757,12 @@ select case (benchmark)
 		
 
         ! Egholm 1
-        case(9:12)
-                !!Get ice from steady state
-                h = 0._dp
-                t = cEgholmHL * (1 - (x/cEgholmL) ** cEgholmTheta) + cEgholmHT * ((abs(y - (cEgholmW / 2)) / cEgholmW) ** cEgholmP)
+        case(9:13)
+                h = 0.0_dp
+                t = cEgholmHL * (1 - (x/cEgholmL) ** cEgholmTheta) + cEgholmHT * ((abs(y - cEgholmW) / cEgholmW) ** cEgholmP)
 
         ! Egholm 2
-        case(13:16)
+        case(14:17)
                 !!Get ice from steady state
                 h = 0._dp
                 t = cEgholmHL * (1 - (x/cEgholmL) ** cEgholmTheta) + cEgholmHT * ((abs(y - (cEgholmW / 2)) / cEgholmW) ** cEgholmP) - (cEgholmHS/2) * (erf((x - cEgholmXS) / cEgholmDXS) + 1) * ( 1 - (abs(y - (cEgholmW /2)) / cEgholmW))
@@ -810,11 +841,11 @@ select case (benchmark)
 		!! no temperature calculations needed	
 		
         ! Egholm 1
-        case(9:12)
+        case(9:13)
 		!! no temperature calculations needed	
         
         ! Egholm 2
-        case(13:16)
+        case(14:17)
 		!! no temperature calculations needed	
 		
 	end select	
@@ -943,13 +974,13 @@ case (6)
 	deallocate( c, h )
 	
 !Egholm1,2
-case(9:16)	
+case(9:17)	
 	!! Compute balance rate
 	!!! snowRate is temporarily used to hold both positive and negative parts
-        where (x(:,j0:j1) > cEgholmX0)
-                snowRate(:,j0:j1) =  cEgholmA0 * (((x(:,j0:j1) - cEgholmX1) /(cEgholmX0 - cEgholmX1)) - (abs(y(:,j0:j1) - (cEgholmW / 2))/cEgholmW)**cEgholmP ) 
+        where (x(:,j0:j1) <= cEgholmX0)
+                snowRate(:,j0:j1) =  cEgholmA0 * (((x(:,j0:j1) - cEgholmX1) /(cEgholmX0 - cEgholmX1)) - (abs(y(:,j0:j1) - cEgholmW )/cEgholmW)**cEgholmP ) 
         elsewhere
-                snowRate(:,j0:j1) = cEgholmA0 * (((cEgholmX2 - x(:,j0:j1))/(cEgholmX2 - cEgholmX0)) - (abs(y(:,j0:j1) - (cEgholmW / 2))/cEgholmW)**cEgholmP ) 
+                snowRate(:,j0:j1) = cEgholmA0 * (((cEgholmX2 - x(:,j0:j1))/(cEgholmX2 - cEgholmX0)) - (abs(y(:,j0:j1) - cEgholmW)/cEgholmW)**cEgholmP ) 
         end where
 
 	!! Split into positive and negative parts

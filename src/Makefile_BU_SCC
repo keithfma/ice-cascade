@@ -20,7 +20,7 @@ FFTW3_INC = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/include
 FFTW3_LIB = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/lib
 
 FORT = mpif90
-FFLAGS = -c -ffree-line-length-none
+FFLAGS = -c -ffree-line-length-none -g
 LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),-rpath,$(FFTW3_LIB),--enable-new-dtags
 DEFS = 
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) -I$(FFTW3_INC) 
