@@ -17,7 +17,7 @@ program ice_cascade
 
 use types, only: dp, dp_mpi, dp_eps
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
-use ic_grid_module, only: grid
+use ic_topo_module, only: topo_type
 use cascade, only: runCascade
 use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
 use ice, only: runIce
@@ -45,7 +45,9 @@ real(dp), allocatable :: fX(:,:), fY(:,:), fT(:,:), fH(:,:), fHT(:,:), fTInit(:,
 	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
 	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
 	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
-type(grid) :: lGrid, fGrid
+
+! Declare objects (new!, will replace much of the above)  
+type(topo_type) :: lTopo, fTopo
 
 ! Start MPI
 call mpi_init( ierr )
@@ -78,10 +80,9 @@ allocate( lX(lNx,lNy), lY(lNx,lNy), lT(lNx,lNy), lH(lNx,lNy), lHT(lNx,lNy), lTem
 call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, fDy, lX, &
 	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
 
-
 ! Initialize objects (new!, will replace most of the above)
-call lGrid%init(lNx, lNy, lDx, lDy)
-call fGrid%init(fNx, fNy, fDx, fDy)
+call lTopo%init(lNx, lNy, lDx, lDy, lT)
+call fTopo%init(fNx, fNy, fDx, fDy, fT)
 
 ! Create output file
 if (proc==0) &

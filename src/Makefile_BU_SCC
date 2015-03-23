@@ -29,7 +29,7 @@ LIBS = -L$(FFTW3_LIB) -lfftw3 -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdf
 SRC = \
 types.f90 \
 fftw3.f90 \
-ic_grid.f90 \
+topo.f90 \
 benchmark.f90 \
 cascade.f90 \
 ice.f90 \
