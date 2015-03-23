@@ -17,8 +17,8 @@ program ice_cascade
 
 use types, only: dp, dp_mpi, dp_eps
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
-use ic_topo_module, only: topo_type
-use ic_hillslope_module, only: hill_type
+use ic_grid_module, only: grid_type
+use ic_hill_module, only: hill_type
 use cascade, only: runCascade
 use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
 use ice, only: runIce
@@ -41,14 +41,15 @@ real(dp) :: lDx, fDx, lDy, fDy, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTim
 	pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, pGlacErosFact, &
 	pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, pTempDiffuse, pTempBasalGrad, &
 	pC, pCs, dvolIceSrc, dvolIceSnk, dvolIce, time, timeStepIceMean, tempSl, pBaseLvl
-real(dp), allocatable :: fX(:,:), fY(:,:), fT(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHInit(:,:), &
+real(dp), allocatable :: fX(:,:), fY(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHInit(:,:), &
 	fSliding(:,:), fUpliftRate(:,:), fGlacErosRate(:,:), fHillErosRate(:,:), fFluvErosRate(:,:), &
 	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
 	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
 	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
+real(dp), allocatable, target :: fT(:,:)
 
 ! Declare objects (new!, will replace much of the above)  
-type(topo_type), target :: lTopo, fTopo
+type(grid_type), target :: lGrid, fGrid
 type(hill_type) :: fHill
 
 ! Start MPI
@@ -63,8 +64,8 @@ call readParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, 
 	pYm, pNu, pTe, pGlacErosFact, pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, &
 	pTempDiffuse, pTempBasalGrad, pC, pCs, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pDoGlac, &
 	pDoFluv, pDoHill, pDoUplift, pDoTrackIceVol, pDoAddNoise, pDoPrefilter, pFluvBcN, pFluvBcS, &
-	pFluvBcE, pFluvBcW, pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
-
+	pFluvBcE, pFluvBcW, pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag, &
+  fGrid, lGrid, fHill)
 	
 ! Allocate arrays
 !! High-res
@@ -82,12 +83,10 @@ allocate( lX(lNx,lNy), lY(lNx,lNy), lT(lNx,lNy), lH(lNx,lNy), lHT(lNx,lNy), lTem
 call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, fDy, lX, &
 	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
 
-! Initialize objects (new!, will replace most of the above)
-call fTopo%init(fNx, fNy, fDx, fDy, fT) ! these vars are all input
-! interpolate fT->lT
-call lTopo%init(lNx, lNy, lDx, lDy, lT) ! all but lT are input
-call fHill%init(pDoHill, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pHillD, fTopo)
-
+! Initialize objects
+call fGrid%init()
+call lGrid%init()
+call fHill%init(fGrid, fT)
 
 ! Create output file
 if (proc==0) &

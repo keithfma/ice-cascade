@@ -28,6 +28,8 @@ module io
 !! $LastChangedRevision: 99 $ 
 
 use types, only: sp, dp, sp_nc, dp_nc, int_nc
+use ic_grid_module, only: grid_type
+use ic_hill_module, only: hill_type
 use netcdf, only: nf90_open, nf90_nowrite, nf90_inquire, nf90_inquire_dimension, &
 	nf90_inquire_variable, nf90_get_var, nf90_netcdf4, nf90_create, nf90_def_dim, nf90_unlimited, &
 	nf90_global, nf90_put_att, nf90_def_var, nf90_enddef, nf90_put_var, nf90_close, nf90_double, &
@@ -59,7 +61,8 @@ subroutine readParams (pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy,
 	pYm, pNu, pTe, pGlacErosFact, pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, &
 	pTempDiffuse, pTempBasalGrad, pC, pCs, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pDoGlac, &
 	pDoFluv, pDoHill, pDoUplift, pDoTrackIceVol, pDoAddNoise, pDoPrefilter, pFluvBcN, pFluvBcS, &
-	pFluvBcE, pFluvBcW, pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
+	pFluvBcE, pFluvBcW, pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag, &
+  fGrid, lGrid, fHill)
 	
 ! Arguments:
 !! pBenchmark (out) = integer label indicating if the model is a benchmark (\=0) and if so, which
@@ -115,6 +118,8 @@ subroutine readParams (pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy,
 !! pNxPad, pNyPad (out) = grid dimensions for the padded grid used in the flexure fourier transform
 !! pHillBcN, pHillBcS, pHillBcE, pHillBcW (out) = hillslope model boundary conditions
 !! pWriteFlag = integer flags for output variables (1/0)
+!! fGrid = grid object, full resolution
+!! lGrid = grid object, low resolution
 
 character(len=*), intent(out) :: pRunName, pTopoFile, pIceFile
 logical, intent(out) :: pDoGlac, pDoEros, pDoFlex, pDoTemp, pDoFluv, pDoHill, pDoUplift, &
@@ -128,6 +133,8 @@ real(dp), intent(out) :: lDx, fDx, lDy, fDy, pTimeEnd, pTimeStepIceMax, pTimeSte
 	pMeltFact, pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, &
 	pGlacErosFact, pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, pTempDiffuse, &
 	pTempBasalGrad, pC, pCs, pBaseLvl
+type(grid_type), intent(out) :: fGrid, lGrid
+type(hill_type), intent(out) :: fHill
 
 character(len=150) :: infile, line
 integer :: msg, work
@@ -190,12 +197,12 @@ if (pBenchmark==0) then
 	read (55,*) pRunName	
 	read (55,*) pTopoFile
 	read (55,*) pIceFile	
-	read (55,*) fNx	
-	read (55,*) fNy
-	read (55,*) fDx
-	read (55,*) fDy	
-	read (55,*) lNx
-	read (55,*) lNy	
+	read (55,*) fGrid%nx	
+	read (55,*) fGrid%ny
+	read (55,*) fGrid%dx
+	read (55,*) fGrid%dy	
+	read (55,*) lGrid%nx
+	read (55,*) lGrid%ny	
 	read (55,*) work; pDoAddNoise = merge(.true., .false., work==1)
 	read (55,*) work; pDoPrefilter = merge(.true., .false., work==1)
 	read (55,*) pTimeEnd	
@@ -223,12 +230,12 @@ if (pBenchmark==0) then
 	read (55,*) pFluvBcS
 	read (55,*) pFluvBcE
 	read (55,*) pFluvBcW
-	read (55,*) work; pDoHill = merge(.true., .false., work==1)
-	read (55,*) pHillD	
-	read (55,*) pHillBcN
-	read (55,*) pHillBcS
-	read (55,*) pHillBcE
-	read (55,*) pHillBcW
+	read (55,*) work; fHill%on = merge(.true., .false., work==1)
+	read (55,*) fHill%D	
+	read (55,*) fHill%nbc 
+	read (55,*) fHill%sbc 
+	read (55,*) fHill%ebc 
+	read (55,*) fHill%wbc 
 	read (55,*) work; pDoEros = merge(.true., .false., work==1)
 	read (55,*) work; pDoUplift = merge(.true., .false., work==1)
 	read (55,*) pUpliftRate
@@ -284,9 +291,22 @@ if (pBenchmark==0) then
 	pWriteFlag(33) = 0 !fSolnH
 	close(55)
 
-! HERE	
+  ! DEFINE LEGACY VARIABLES (TEMPORARY)
+	fNx = fGrid%nx	
+	fNy = fGrid%ny
+	fDx = fGrid%dx
+	fDy = fGrid%dy	
+	lNx = lGrid%nx
+	lNy = lGrid%ny	
+  pDoHill = fHill%on
+	pHillD = fHill%D 	
+	pHillBcN = fHill%nbc
+	pHillBcS = fHill%sbc
+	pHillBcE = fHill%ebc
+	pHillBcW = fHill%wbc
+  ! END DEFINE LEGACY VARIABLES
 	
-!! Benchmark cases
+!! Benchmark cases (STRUCTURE TO BE CHANGED)
 else
 	call benchSetParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, fDx, fDy, &
 		pDoEros, pDoFlex, pDoTemp, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, &
