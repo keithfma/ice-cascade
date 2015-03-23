@@ -30,6 +30,7 @@ SRC = \
 types.f90 \
 fftw3.f90 \
 topo.f90 \
+hill.f90 \
 benchmark.f90 \
 cascade.f90 \
 ice.f90 \

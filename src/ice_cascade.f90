@@ -18,6 +18,7 @@ program ice_cascade
 use types, only: dp, dp_mpi, dp_eps
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
 use ic_topo_module, only: topo_type
+use ic_hillslope_module, only: hill_type
 use cascade, only: runCascade
 use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
 use ice, only: runIce
@@ -47,7 +48,8 @@ real(dp), allocatable :: fX(:,:), fY(:,:), fT(:,:), fH(:,:), fHT(:,:), fTInit(:,
 	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
 
 ! Declare objects (new!, will replace much of the above)  
-type(topo_type) :: lTopo, fTopo
+type(topo_type), target :: lTopo, fTopo
+type(hill_type) :: fHill
 
 ! Start MPI
 call mpi_init( ierr )
@@ -81,8 +83,11 @@ call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, 
 	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
 
 ! Initialize objects (new!, will replace most of the above)
-call lTopo%init(lNx, lNy, lDx, lDy, lT)
-call fTopo%init(fNx, fNy, fDx, fDy, fT)
+call fTopo%init(fNx, fNy, fDx, fDy, fT) ! these vars are all input
+! interpolate fT->lT
+call lTopo%init(lNx, lNy, lDx, lDy, lT) ! all but lT are input
+call fHill%init(pDoHill, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pHillD, fTopo)
+
 
 ! Create output file
 if (proc==0) &
