@@ -17,6 +17,7 @@ program ice_cascade
 
 use types, only: dp, dp_mpi, dp_eps
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
+use ic_grid_module, only: grid
 use cascade, only: runCascade
 use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
 use ice, only: runIce
@@ -44,6 +45,7 @@ real(dp), allocatable :: fX(:,:), fY(:,:), fT(:,:), fH(:,:), fHT(:,:), fTInit(:,
 	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
 	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
 	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
+type(grid) :: lGrid, fGrid
 
 ! Start MPI
 call mpi_init( ierr )
@@ -58,6 +60,7 @@ call readParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, 
 	pTempDiffuse, pTempBasalGrad, pC, pCs, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pDoGlac, &
 	pDoFluv, pDoHill, pDoUplift, pDoTrackIceVol, pDoAddNoise, pDoPrefilter, pFluvBcN, pFluvBcS, &
 	pFluvBcE, pFluvBcW, pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
+
 	
 ! Allocate arrays
 !! High-res
@@ -74,6 +77,11 @@ allocate( lX(lNx,lNy), lY(lNx,lNy), lT(lNx,lNy), lH(lNx,lNy), lHT(lNx,lNy), lTem
 ! Populate grids with initial values
 call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, fDy, lX, &
 	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
+
+
+! Initialize objects (new!, will replace most of the above)
+call lGrid%init(lNx, lNy, lDx, lDy)
+call fGrid%init(fNx, fNy, fDx, fDy)
 
 ! Create output file
 if (proc==0) &
