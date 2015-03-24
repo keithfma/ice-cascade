@@ -171,10 +171,10 @@ do while (time.lt.pTimeEnd)
 		end if
 	end if
 			
-	!! Hillslope model
-	if (pDoHill) &
-		call hillslopeDiffusion ( fT, fDx, fDy, pHillD, pHillBcN, pHillBcS, pHillBcE, pHillBcW, &
-			fIceFree, fHillErosRate )
+	!!! Hillslope model
+	!if (pDoHill) &
+	!	call hillslopeDiffusion ( fT, fDx, fDy, pHillD, pHillBcN, pHillBcS, pHillBcE, pHillBcW, &
+	!		fIceFree, fHillErosRate )
 	
 	!! Uplift
 	if (pDoUplift) then		

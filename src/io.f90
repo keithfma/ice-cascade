@@ -232,10 +232,10 @@ if (pBenchmark==0) then
 	read (55,*) pFluvBcW
 	read (55,*) work; fHill%on = merge(.true., .false., work==1)
 	read (55,*) fHill%D	
-	read (55,*) fHill%nbc 
-	read (55,*) fHill%sbc 
-	read (55,*) fHill%ebc 
-	read (55,*) fHill%wbc 
+	read (55,*) fHill%nbcName
+	read (55,*) fHill%sbcName 
+	read (55,*) fHill%ebcName
+	read (55,*) fHill%wbcName 
 	read (55,*) work; pDoEros = merge(.true., .false., work==1)
 	read (55,*) work; pDoUplift = merge(.true., .false., work==1)
 	read (55,*) pUpliftRate
@@ -298,12 +298,6 @@ if (pBenchmark==0) then
 	fDy = fGrid%dy	
 	lNx = lGrid%nx
 	lNy = lGrid%ny	
-  pDoHill = fHill%on
-	pHillD = fHill%D 	
-	pHillBcN = fHill%nbc
-	pHillBcS = fHill%sbc
-	pHillBcE = fHill%ebc
-	pHillBcW = fHill%wbc
   ! END DEFINE LEGACY VARIABLES
 	
 !! Benchmark cases (STRUCTURE TO BE CHANGED)

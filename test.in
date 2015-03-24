@@ -79,11 +79,11 @@ $$ run hillslope model? 1 = run hillslope model, 0 = do not run hillslope model
 1
 $$ hillslope diffusivity, m^2/yr
 0.5
-$$ n; s; e; w boundary conditions ( 0=flat, 1=cyclic)
-0
-0
-0
-0
+$$ n; s; e; w boundary conditions (noflux, )
+noflux
+noflux
+noflux
+noflux
 
 $ Uplift/erosion ---------- 
 $$ erode? 1 = yes, 0 = no
