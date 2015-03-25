@@ -1,48 +1,62 @@
 ! =============================================================================
 ! Hillslope erosion model, including variables and procedures
-! ============================================================================
 !
 ! Contains:
-!   type hillslope (public)
+!   type hill_type (public)
 !   subroutine init (private, type-bound procedure)
 !   subroutine run (private, type-bound procedure)
-!!
+! ============================================================================
 
-module ic_hill_module
+module hill_module
 
 use types, only: dp
-use ic_grid_module, only: grid_type
+use grid_module, only: grid_type
 
 implicit none
 private
 public hill_type
 
-  ! Define constants
+  ! ---------------------------------------------------------------------------
+  ! PARAMETERS
+  ! ---------------------------------------------------------------------------
   real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp)
-  !! Steady-State benchmark constants
-  real(dp), parameter :: T1 = 0.0_dp
-  real(dp), parameter :: Tm = 1.0_dp
+  real(dp), parameter :: ssT1 = 0.0_dp ! benchmark: steady state
+  real(dp), parameter :: ssTm = 1.0_dp ! benchmark: steady state
+
+
+  ! ---------------------------------------------------------------------------
+  ! INTERFACE: Template for the BC functions
+  ! ---------------------------------------------------------------------------
+  abstract interface
+    function bc(edge, intr) result(bnd)
+      import :: dp
+      real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
+      real(dp), intent(in) :: intr(:)         ! (not used for this BC)
+      real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
+    end function bc
+  end interface
+
 
   ! --------------------------------------------------------------------------- 
   ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
   type hill_type
-    ! variables
-    logical                  :: on      ! enable/disable model component (used as failsafe)
-    type(grid_type), pointer :: g       ! pointer to shared grid object
-    real(dp), pointer        :: z(:,:)  ! pointer to shared topography array
-    real(dp)                 :: D       ! diffusivity, [m**2/a]
-    real(dp)                 :: dtMax   ! maximum stable timestep from CFL, [a]
-    character(len=10)        :: nbcName ! string defining north BC
-    procedure (bc), pointer  :: nbc     ! function that sets north BC
-    character(len=10)        :: sbcName ! string defining north BC
-    procedure (bc), pointer  :: sbc     ! sets south BC
-    character(len=10)        :: ebcName ! string defining north BC
-    procedure (bc), pointer  :: ebc     ! sets east BC
-    character(len=10)        :: wbcName ! string defining north BC
-    procedure (bc), pointer  :: wbc     ! sets west BC
+    logical                                 :: on      ! enable/disable model
+    type(grid_type), pointer                :: g       ! pointer to shared grid object
+    real(dp), pointer                       :: z(:,:)  ! pointer to shared topography array
+    real(dp)                                :: D       ! diffusivity, [m**2/a]
+    real(dp)                                :: dtMax   ! maximum stable timestep from CFL, [a]
+    character(len=10)                       :: nbcName ! north BC name
+    character(len=10)                       :: sbcName ! south BC name
+    character(len=10)                       :: wbcName ! west BC name
+    character(len=10)                       :: ebcName ! east BC name
+    procedure (bc), pointer, nopass         :: nbc     ! set north BC
+    procedure (bc), pointer, nopass         :: sbc     ! set south BC
+    procedure (bc), pointer, nopass         :: wbc     ! set west BC
+    procedure (bc), pointer, nopass         :: ebc     ! set east BC
   contains
-    procedure init                      ! set all member variables
+    procedure, pass                         :: init    ! set members
+    procedure, pass                         :: run     ! run model                   
   end type hill_type
 
 contains
@@ -52,15 +66,21 @@ contains
   ! --------------------------------------------------------------------------- 
   subroutine init(h, g, z)
 
-    type(hill_type), intent(out)        :: h
-    type(grid_type), intent(in), target :: g
-    real(dp), intent(inout), target        :: z(:,:)
+    class(hill_type), intent(out)       :: h      ! object to initialize
+    type(grid_type), intent(in), target :: g      ! grid, shared 
+    real(dp), intent(inout), target     :: z(:,:) ! topography, shared
 
     real(dp) :: dx2, dy2
 
     ! associate pointers with shared objects
     h%g => g
     h%z => z
+
+    ! associate pointers with selected procedures
+    call choose_bc(h%nbcName, h%nbc)
+    call choose_bc(h%sbcName, h%sbc)
+    call choose_bc(h%wbcName, h%wbc)
+    call choose_bc(h%ebcName, h%ebc)
 
     ! compute CFL timestep
     dx2 = g%dx**2.0_dp
@@ -71,40 +91,60 @@ contains
 
   
   ! ---------------------------------------------------------------------------
-  ! FUNC: Boundary condition, dummy, defines the generic form of a BC function
+  ! SUB: parse BC name and associate the BC procedure pointer
   ! ---------------------------------------------------------------------------
-  function bc(edge, intr) result(bnd)
-    real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
-    real(dp), intent(in) :: intr(:)         ! 1-pt interior from edge, elev [m]
-    real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
+  subroutine choose_bc(str, ptr)
 
-    bnd = 0.0_dp
-    print *, 'function bc in hill module is not meant to be run, but you ran it.'
-    stop
+    character(len=*), intent(in)                :: str ! BC name
+    procedure (bc), pointer, intent(out) :: ptr ! procedure pointer to be set
 
-    return
-  end function bc
+    if ('noflux' .eq. trim(str))         ptr => bc_noflux
+    if ('bench_ss_sin' .eq. trim(str))   ptr => bc_bench_ss_sin
+    if ('bench_ss_const' .eq. trim(str)) ptr => bc_bench_ss_sin
+    
+  end subroutine choose_bc
 
+  ! ---------------------------------------------------------------------------
+  ! SUB: run the hillslope model for a specified duration
+  ! ---------------------------------------------------------------------------
+  subroutine run (H, duration)
 
+    class(hill_type), intent(inout) :: H
+    real(dp), intent(in) :: duration
 
+    real(dp) :: time, dt
+  
+    time = 0.0_dp
+    do while (time .lt. duration)
+     
+      ! select stable time step
+      dt = min(duration-time, H%dtMax)
+
+      ! apply boundary conditions
+      H%z(:,H%G%nx+2) = H%nbc( H%z(:,H%G%nx+2), H%z(:,H%G%nx+1) )
+
+      ! simulate diffusion
+
+      ! increment time
+      time = time+dt
+
+    end do
+
+  end subroutine
 
   ! ---------------------------------------------------------------------------
   ! FUNC: Boundary condition, no-flux (i.e. zero surface gradient) 
   ! ---------------------------------------------------------------------------
   function bc_noflux(edge, intr) result(bnd)
+
     real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
     real(dp), intent(in) :: intr(:)         ! (not used for this BC)
     real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
 
     bnd = edge ! surface gradient -> 0, then flux -> 0
-
+    
+    return
   end function bc_noflux
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: run the hillslope model for a specified duration
-  ! ---------------------------------------------------------------------------
-
   
   ! ===========================================================================
   ! Steady-state benchmark 
@@ -115,12 +155,13 @@ contains
   ! http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
 
   ! ---------------------------------------------------------------------------
-  ! func: Steady-state benchmark, set sin-wave Dirichley BC for 'north' edge
+  ! FUNC: Steady-state benchmark, boundary condition, sin-wave Dirichlet 
   ! ---------------------------------------------------------------------------
-  function bench_ss_bc_sin(intr) result(bnd) 
-  
-    real(dp), intent(in) :: intr(:)         ! vector of adjacent interior points
-    real(dp)             :: bnd(size(intr)) ! vector of boundary points
+  function bc_bench_ss_sin(edge, intr) result(bnd)
+
+    real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
+    real(dp), intent(in) :: intr(:)         ! (not used for this BC)
+    real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
 
     integer :: n, W, i
 
@@ -128,23 +169,24 @@ contains
     n = size(intr)
     W = n-3
     do i = 1, n
-      bnd(i) = Tm*sin(pi*(i-2)/W)+T1
+      bnd(i) = ssTm*sin(pi*(i-2)/W)+ssT1
     enddo
 
     return
-  end function bench_ss_bc_sin
+  end function bc_bench_ss_sin
 
   ! ---------------------------------------------------------------------------
-  ! func: Steady-state benchmark, set sin-wave Dirichley BC for 'north' edge
+  ! FUNC: Steady-state benchmark, boundary condition, constant value
   ! ---------------------------------------------------------------------------
-  function bench_ss_bc_const(intr) result(bnd)
+  function bc_bench_ss_const(edge, intr) result(bnd)
 
-    real(dp), intent(in) :: intr(:)         ! vector of adjacent interior points
-    real(dp)             :: bnd(size(intr)) ! vector of boundary points
+    real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
+    real(dp), intent(in) :: intr(:)         ! (not used for this BC)
+    real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
 
-    bnd = T1
+    bnd = ssT1
 
     return
-  end function bench_ss_bc_const
+  end function bc_bench_ss_const
 
-end module ic_hill_module
+end module hill_module

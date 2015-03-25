@@ -17,8 +17,8 @@ program ice_cascade
 
 use types, only: dp, dp_mpi, dp_eps
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
-use ic_grid_module, only: grid_type
-use ic_hill_module, only: hill_type
+use grid_module, only: grid_type
+use hill_module, only: hill_type
 use cascade, only: runCascade
 use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
 use ice, only: runIce
@@ -170,6 +170,9 @@ do while (time.lt.pTimeEnd)
 			stop
 		end if
 	end if
+
+  !! Hillslope model
+  call fHill%run(100.0_dp)
 			
 	!!! Hillslope model
 	!if (pDoHill) &

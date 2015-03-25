@@ -80,7 +80,7 @@ $$ run hillslope model? 1 = run hillslope model, 0 = do not run hillslope model
 $$ hillslope diffusivity, m^2/yr
 0.5
 $$ n; s; e; w boundary conditions (noflux, )
-noflux
+bench_ss_sin
 noflux
 noflux
 noflux

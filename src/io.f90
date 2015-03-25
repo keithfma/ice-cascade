@@ -28,8 +28,8 @@ module io
 !! $LastChangedRevision: 99 $ 
 
 use types, only: sp, dp, sp_nc, dp_nc, int_nc
-use ic_grid_module, only: grid_type
-use ic_hill_module, only: hill_type
+use grid_module, only: grid_type
+use hill_module, only: hill_type
 use netcdf, only: nf90_open, nf90_nowrite, nf90_inquire, nf90_inquire_dimension, &
 	nf90_inquire_variable, nf90_get_var, nf90_netcdf4, nf90_create, nf90_def_dim, nf90_unlimited, &
 	nf90_global, nf90_put_att, nf90_def_var, nf90_enddef, nf90_put_var, nf90_close, nf90_double, &

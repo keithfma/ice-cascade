@@ -1,3 +1,4 @@
+! =============================================================================
 ! Coordinate grid variables and related methods.
 !
 ! Contains:
@@ -6,9 +7,9 @@
 !   subroutine smoothVar (PLANNED, public)
 !   subroutine interpUp (PLANNED, public)
 !   subroutine interpDown (PLANNED, public)
-!!
+! =============================================================================
 
-module ic_grid_module
+module grid_module
 
   use types, only: dp
 
@@ -16,22 +17,25 @@ module ic_grid_module
   private
   public grid_type
 
+  ! ---------------------------------------------------------------------------
   ! TYPE: Coordinate grid
-  type grid_type
-    integer :: nx, ny               ! num grid points in x- and y-dir, [1]
-    real(dp) :: dx, dy              ! grid spacing in x- and y-dir, [m]
+  ! ---------------------------------------------------------------------------
+  type :: grid_type
+    integer           :: nx, ny     ! num grid points in x- and y-dir, [1]
+    real(dp)          :: dx, dy     ! grid spacing in x- and y-dir, [m]
     real, allocatable :: x(:), y(:) ! x- and y- coordinate vectors, [m]
   contains
-    procedure init
+    procedure         :: init       ! initialization function
   end type grid_type
 
 contains
 
-  ! SUBROUTINE: Initialize grid from dimensions and spacing, adding a 1-point
-  ! border for numerical boundary conditions
+  ! ---------------------------------------------------------------------------
+  ! SUBROUTINE: Initialize grid from dimensions and spacing
+  ! ---------------------------------------------------------------------------
   subroutine init(g)
     
-    type(grid_type), intent(inout) :: g ! object to initialize
+    class(grid_type), intent(inout) :: g ! object to initialize
     integer :: i 
 
     ! allocate
@@ -58,4 +62,4 @@ contains
 !  subroutine interpDown()
 !  end subroutine interpDown
 
-end module ic_grid_module
+end module grid_module
