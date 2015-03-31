@@ -16,7 +16,7 @@ program ice_cascade
 !! $LastChangedRevision: 100 $ 
 
 use types, only: dp, dp_mpi, dp_eps
-use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
+!use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
 use grid_module, only: grid_type
 use hill_module, only: hill_type
 !use cascade, only: runCascade
@@ -53,8 +53,8 @@ type(grid_type), target :: lGrid, fGrid
 type(hill_type) :: fHill
 
 ! Start MPI
-call mpi_init( ierr )
-call mpi_comm_rank( mpi_comm_world, proc, ierr )
+!call mpi_init( ierr )
+!call mpi_comm_rank( mpi_comm_world, proc, ierr )
 
 ! Read model parameters
 call readParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, lDx, fDx, lDy, &
@@ -218,6 +218,6 @@ end do
 
 ! End program
 if (proc.eq.0) call closeOutput()
-call mpi_finalize(ierr)
+!call mpi_finalize(ierr)
 
 end program ice_cascade

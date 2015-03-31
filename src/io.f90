@@ -292,12 +292,12 @@ if (pBenchmark==0) then
 	close(55)
 
   ! DEFINE LEGACY VARIABLES (TEMPORARY)
-	fNx = fGrid%nx	
-	fNy = fGrid%ny
-	fDx = fGrid%dx
-	fDy = fGrid%dy	
-	lNx = lGrid%nx
-	lNy = lGrid%ny	
+	fNx = fGrid%nx+2	
+	fNy = fGrid%ny+2
+	fDx = fGrid%dx+2
+	fDy = fGrid%dy+2	
+	lNx = lGrid%nx+2
+	lNy = lGrid%ny+2	
   ! END DEFINE LEGACY VARIABLES
 	
 !! Benchmark cases (STRUCTURE TO BE CHANGED)

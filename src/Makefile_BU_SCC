@@ -19,7 +19,7 @@ NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
 MPI_LIB = /usr/local/IT/mpi/openmpi-1.6.4/pgi-13/lib
 
 FORT = mpif90
-FFLAGS = -c -tp=px-64 -O0 -g
+FFLAGS = -c -tp=px-64 -g
 LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),-rpath,$(MPI_LIB),--enable-new-dtags
 DEFS = 
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
@@ -27,6 +27,7 @@ LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
 SRC = \
 types.f90 \
+boundary.f90 \
 grid.f90 \
 hill.f90 \
 io.f90 \

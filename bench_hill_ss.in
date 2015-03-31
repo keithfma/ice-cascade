@@ -10,14 +10,14 @@ zero
 $$ initial high-res ice thickness netcdf file, if "zero", the initial thickness is everywhere 0. m
 zero
 $$ high-res grid dimensions, number of points in the x; y directions (NOTE: add "." to read this from file?)
-100
-100
+10
+10
 $$ high-res grid spacing in x; y directions, meters
 1. 
 1.
 $$ low-res grid dimensions, number of points in the x; y directions
-100 
-100
+10 
+10
 $$ add noise? 1 = adds 1m random noise to the initial topography, 0 = don't " "
 0
 $$ initial smoothing? 1 = apply a smoothing filter to the initial topography, 0 = don't
@@ -79,11 +79,11 @@ $$ run hillslope model? 1 = run hillslope model, 0 = do not run hillslope model
 1
 $$ hillslope diffusivity, m^2/yr
 0.5
-$$ n; s; e; w boundary conditions (noflux, )
-noflux
-noflux
-noflux
-noflux
+$$ n; s; e; w boundary conditions (zero_grad, )
+bench_hill_ss_sin
+bench_hill_ss_const
+bench_hill_ss_const
+bench_hill_ss_const
 
 $ Uplift/erosion ---------- 
 $$ erode? 1 = yes, 0 = no
