@@ -34,8 +34,8 @@ use netcdf, only: nf90_open, nf90_nowrite, nf90_inquire, nf90_inquire_dimension,
 	nf90_inquire_variable, nf90_get_var, nf90_netcdf4, nf90_create, nf90_def_dim, nf90_unlimited, &
 	nf90_global, nf90_put_att, nf90_def_var, nf90_enddef, nf90_put_var, nf90_close, nf90_double, &
 	nf90_def_var
-use ice, only: highToLowRes
-use benchmark, only: benchSetParams, benchInitGrids
+!use ice, only: highToLowRes
+!use benchmark, only: benchSetParams, benchInitGrids
 
 implicit none
 private
@@ -302,14 +302,14 @@ if (pBenchmark==0) then
 	
 !! Benchmark cases (STRUCTURE TO BE CHANGED)
 else
-	call benchSetParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, fDx, fDy, &
-		pDoEros, pDoFlex, pDoTemp, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, &
-		pWriteFreq, pB, pBs, pGamma, pQheatb, pHeatConduct, pTempSlMin, pTempSlMax, pTempPeriod, &
-		pTempLapse, pTempYrRng, pMeltFact, pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, &
-		pYm, pNu, pTe, pGlacErosFact, pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, &
-		pTFloor, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pDoGlac, pDoFluv, pDoHill, pDoUplift, &
-		pDoTrackIceVol, pDoAddNoise, pDoPrefilter, pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, &
-		pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
+!	call benchSetParams( pBenchmark, pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, fDx, fDy, &
+!		pDoEros, pDoFlex, pDoTemp, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, &
+!		pWriteFreq, pB, pBs, pGamma, pQheatb, pHeatConduct, pTempSlMin, pTempSlMax, pTempPeriod, &
+!		pTempLapse, pTempYrRng, pMeltFact, pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, &
+!		pYm, pNu, pTe, pGlacErosFact, pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, &
+!		pTFloor, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pDoGlac, pDoFluv, pDoHill, pDoUplift, &
+!		pDoTrackIceVol, pDoAddNoise, pDoPrefilter, pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, &
+!		pBaseLvl, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
 end if	
 
 ! Check for sane inputs
@@ -503,14 +503,14 @@ if (pBenchmark==0) then
 	end if
 
 ! Benchmark cases
-else
-	call benchInitGrids( pBenchmark, fX, fY, fT, fH, pB, pRhoIce )
+!else
+!	call benchInitGrids( pBenchmark, fX, fY, fT, fH, pB, pRhoIce )
 	
 end if
 
-! Populate low-res grids 
-call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lT, fT )
-call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lH, fH )
+!! Populate low-res grids 
+!call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lT, fT )
+!call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lH, fH )
 
 end subroutine initGrids
 
