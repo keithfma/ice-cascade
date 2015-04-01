@@ -38,10 +38,9 @@ public hill_type
     logical                         :: zSolnOn   ! enable/disable topo soln
     character(len=100)              :: zSolnName ! topo soln name
     procedure (soln), pointer, pass :: zSoln     ! topo soln
-    
   contains
-    procedure, pass                 :: init    ! set members
-    procedure, pass                 :: run     ! run model                   
+    procedure, pass                 :: init      ! set members
+    procedure, pass                 :: run       ! run model                   
   end type hill_type
 
 
@@ -82,23 +81,26 @@ contains
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize a hillslope model object
   ! --------------------------------------------------------------------------- 
-  subroutine init(h, g, z)
+  subroutine init(h, g, z, zref)
 
-    class(hill_type), intent(out)       :: h      ! object to initialize
-    type(grid_type), intent(in), target :: g      ! grid, shared 
-    real(dp), intent(inout), target     :: z(:,:) ! topography, shared
+    class(hill_type), intent(out)       :: h         ! object to initialize
+    type(grid_type), intent(in), target :: g         ! grid, shared 
+    real(dp), intent(inout), target     :: z(:,:)    ! topography, shared
+    real(dp), intent(inout), target     :: zref(:,:) ! topography, shared
 
     real(dp) :: dx2, dy2
 
     ! associate pointers with shared objects
     h%g => g
     h%z => z
+    h%zref => zref
 
     ! associate pointers with selected procedures
     call set_bc_proc(h%nbcName, h%nbc)
     call set_bc_proc(h%sbcName, h%sbc)
     call set_bc_proc(h%wbcName, h%wbc)
     call set_bc_proc(h%ebcName, h%ebc)
+    call set_soln_proc(h%zSolnName, h%zSolnOn, h%zSoln)
 
     ! compute CFL timestep
     dx2 = g%dx**2.0_dp
@@ -155,6 +157,33 @@ contains
 
   end subroutine
 
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: parse topo solution name and associate the soln procedure pointer
+  ! ---------------------------------------------------------------------------
+  subroutine set_soln_proc(str, on, ptr)
+
+    character(len=*), intent(in)           :: str ! solution name
+    logical                                :: on  ! enable/disable soln
+    procedure (soln), pointer, intent(out) :: ptr ! procedure pointer to be set
+
+    select case (str)
+
+      case ("bench_hill_ss")
+        print *, "Hill: exact solution for steady-state benchmark selected."
+        on = .true.
+        ptr => soln_bench_hill_ss
+
+      case default 
+        print *, "Hill: no exact solution for topography selected."
+        on = .false.
+        ptr => NULL()
+   
+      end select
+    
+  end subroutine set_soln_proc
+
+
   ! ---------------------------------------------------------------------------
   ! SUB: parse BC name and associate the BC procedure pointer
   ! ---------------------------------------------------------------------------
@@ -163,9 +192,22 @@ contains
     character(len=*), intent(in)         :: str ! BC name
     procedure (bc), pointer, intent(out) :: ptr ! procedure pointer to be set
 
-    if ('zero_grad'           .eq. trim(str)) ptr => bc_zero_grad
-    if ('bench_hill_ss_sin'   .eq. trim(str)) ptr => bc_bench_hill_ss_sin
-    if ('bench_hill_ss_const' .eq. trim(str)) ptr => bc_bench_hill_ss_const
+    select case (str)
+      
+      case ("zero_grad")
+        ptr => bc_zero_grad
+
+      case ("bench_hill_ss_sin")
+        ptr => bc_bench_hill_ss_sin
+     
+      case ("bench_hill_ss_const")
+        ptr => bc_bench_hill_ss_const
+      
+      case default 
+        print *, "Invalid name for hillslope BC: ", trim(str)
+        stop -1
+   
+      end select
     
   end subroutine set_bc_proc
   
@@ -186,7 +228,7 @@ contains
  
 
   ! ---------------------------------------------------------------------------
-  ! FUNC: Benchmark, Hill, Steady-state, sin-wave Dirichlet 
+  ! FUNC: Boundary condition, Benchmark, Hill, Steady-state, sin-wave Dirichlet 
   ! ---------------------------------------------------------------------------
   function bc_bench_hill_ss_sin(edge, intr) result(bnd)
 
@@ -208,7 +250,7 @@ contains
 
   
   ! ---------------------------------------------------------------------------
-  ! FUNC: Benchmark, Hill, Steady-state, constant value Dirichlet
+  ! FUNC: Boundary condition, Benchmark, Hill, Steady-state, constant Dirichlet
   ! ---------------------------------------------------------------------------
   function bc_bench_hill_ss_const(edge, intr) result(bnd)
 
@@ -220,5 +262,19 @@ contains
 
     return
   end function bc_bench_hill_ss_const
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Exact solution, Benchmark, Hill, Steady-state
+  ! ---------------------------------------------------------------------------
+  subroutine soln_bench_hill_ss(h, t) 
+
+    class(hill_type), intent(in) :: h ! model object
+    real(dp), intent(in)         :: t ! model time
+
+    ! DUMMY, REPLACE WITH ACTUAL SOLUTION
+    h%zref = t
+
+  end subroutine soln_bench_hill_ss
 
 end module hill_module

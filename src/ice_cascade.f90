@@ -46,13 +46,14 @@ real(dp), allocatable :: fX(:,:), fY(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHIni
 	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
 	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
 	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
-real(dp), allocatable, target :: fT(:,:)
+real(dp), allocatable, target :: fT(:,:), fTsoln(:,:)
 
 ! Declare objects (new!, will replace much of the above)  
 type(grid_type), target :: lGrid, fGrid
 type(hill_type) :: fHill
 
 ! Start MPI
+proc = 0 ! TEMPORARY
 !call mpi_init( ierr )
 !call mpi_comm_rank( mpi_comm_world, proc, ierr )
 
@@ -73,7 +74,7 @@ allocate( fX(fNx,fNy), fY(fNx,fNy), fT(fNx,fNy), fH(fNx,fNy), fHT(fNx,fNy), fTIn
 	fHInit(fNx,fNy), fSliding(fNx,fNy), fUpliftRate(fNx,fNy), fGlacErosRate(fNx,fNy), &
 	fIceFree(fNx,fNy), fHillErosRate(fNx,fNy), fSlope(fNx,fNy), fFluvErosRate(fNx,fNy), &
 	fSolnH(fNx,fNy), fQWater(fNx,fNy), fWater(fNx,fNy), fLake(fNx,fNy), fCatchment(fNx,fNy), &
-	fFlex(fNx,fNy) )
+	fFlex(fNx,fNy), fTsoln(fNx,fNy) )
 !! Low-res
 allocate( lX(lNx,lNy), lY(lNx,lNy), lT(lNx,lNy), lH(lNx,lNy), lHT(lNx,lNy), lTempS(lNx,lNy), &
 	lTempB(lNx,lNy), lTempM(lNx,lNy), lBalRate(lNx,lNy), lUDefm(lNx,lNy), lVDefm(lNx,lNy), &
@@ -86,7 +87,7 @@ call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, 
 ! Initialize objects
 call fGrid%init()
 call lGrid%init()
-call fHill%init(fGrid, fT)
+call fHill%init(fGrid, fT, fTsoln)
 
 ! Create output file
 if (proc==0) &
@@ -172,7 +173,8 @@ do while (time.lt.pTimeEnd)
 !	end if
 
   !! Hillslope model
-  call fHill%run(100.0_dp)
+  call fHill%run(pTimeStep)
+
 			
 	!!! Hillslope model
 	!if (pDoHill) &
@@ -206,12 +208,18 @@ do while (time.lt.pTimeEnd)
 	
 	!! Write output
 	if ( ((step/pWriteFreq*pWriteFreq==step).or.(time==pTimeEnd)) .and. (proc==0) ) then
+
 		outputStep = outputStep + 1			
+    
+    ! compute exact solution for topography, if available
+    if (fHill%zSolnOn .eqv. .true.) call fHill%zSoln(time+pTimeStep) ! defined in hill object
+    
 		call writeStep ( outputStep, time, pWriteFlag, lH, fH, lT, fT, lHT, fHT, lTempS, lTempB, &
 			lTempM, lUDefm, lVDefm, lUSlid, lVSlid, lSliding, fSliding, lConstrict, fGlacErosRate, &
 			fHillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, &
 			dvolIce, lBalRate, fLake, fCatchment, timeStepIceMean, tempSl, fFlex, fSolnH)
-	end if
+	
+    end if
 		
 end do
 ! Exit main loop		

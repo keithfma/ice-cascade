@@ -30,14 +30,14 @@ $$ initial smoothing? 1 = apply a smoothing filter to the initial topography, 0 
 
 $ Timestep definitions ----------
 $$ model end time, yr
-25.
+10000.
 $$ ice model maximum; minimum timestep, yr
 1.
 0.001
 $$ main timestep, for fluvial, hillslope, isostatic  models and topography update, yr
 1
 $$ frequency of saving output, e.g. 10 = ouput every 10th main timestep
-1
+500
 
 $ Glacier ice model ----------
 $$ run glacier model? 1 = run glacier model, 0 = do not run glacier model
@@ -140,6 +140,10 @@ $$ crustal density, kg/m^3
 2700
 $$ mantle density, kg/m^3
 3100.
+
+$ Exact solutions (for benchmarks) ----------
+$$ topography
+bench_hill_ss
 
 $ Output variables ----------
 $$ ice thickness, low-res
