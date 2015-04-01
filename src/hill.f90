@@ -17,12 +17,32 @@ implicit none
 private
 public hill_type
 
+  ! --------------------------------------------------------------------------- 
+  ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
-  ! PARAMETERS
-  ! ---------------------------------------------------------------------------
-  real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp)
-  real(dp), parameter :: hill_ss_t1 = 1.0_dp ! benchmark, hill, steady state
-  real(dp), parameter :: hill_ss_tm = 9.0_dp ! benchmark, hill, steady state
+  type hill_type
+    logical                         :: on        ! enable/disable model
+    type(grid_type), pointer        :: g         ! pointer to shared grid object
+    real(dp), pointer               :: z(:,:)    ! pointer to shared topo
+    real(dp), pointer               :: zref(:,:) ! pointer to shared topo solution
+    real(dp)                        :: D         ! diffusivity, [m**2/a]
+    real(dp)                        :: dtMax     ! max stable step CFL, [a]
+    character(len=100)              :: nbcName   ! north BC name
+    character(len=100)              :: sbcName   ! south BC name
+    character(len=100)              :: wbcName   ! west BC name
+    character(len=100)              :: ebcName   ! east BC name
+    procedure (bc), pointer, nopass :: nbc       ! set north BC
+    procedure (bc), pointer, nopass :: sbc       ! set south BC
+    procedure (bc), pointer, nopass :: wbc       ! set west BC
+    procedure (bc), pointer, nopass :: ebc       ! set east BC
+    logical                         :: zSolnOn   ! enable/disable topo soln
+    character(len=100)              :: zSolnName ! topo soln name
+    procedure (soln), pointer, pass :: zSoln     ! topo soln
+    
+  contains
+    procedure, pass                 :: init    ! set members
+    procedure, pass                 :: run     ! run model                   
+  end type hill_type
 
 
   ! ---------------------------------------------------------------------------
@@ -30,7 +50,7 @@ public hill_type
   ! ---------------------------------------------------------------------------
   abstract interface
     function bc(edge, intr) result(bnd)
-      import :: dp
+      import               :: dp              ! use special types
       real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
       real(dp), intent(in) :: intr(:)         ! (not used for this bc)
       real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
@@ -38,27 +58,24 @@ public hill_type
   end interface
 
 
-  ! --------------------------------------------------------------------------- 
-  ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
-  type hill_type
-    logical                         :: on      ! enable/disable model
-    type(grid_type), pointer        :: g       ! pointer to shared grid object
-    real(dp), pointer               :: z(:,:)  ! pointer to shared topography array
-    real(dp)                        :: D       ! diffusivity, [m**2/a]
-    real(dp)                        :: dtMax   ! maximum stable timestep from CFL, [a]
-    character(len=100)              :: nbcName ! north BC name
-    character(len=100)              :: sbcName ! south BC name
-    character(len=100)              :: wbcName ! west BC name
-    character(len=100)              :: ebcName ! east BC name
-    procedure (bc), pointer, nopass :: nbc     ! set north BC
-    procedure (bc), pointer, nopass :: sbc     ! set south BC
-    procedure (bc), pointer, nopass :: wbc     ! set west BC
-    procedure (bc), pointer, nopass :: ebc     ! set east BC
-  contains
-    procedure, pass                 :: init    ! set members
-    procedure, pass                 :: run     ! run model                   
-  end type hill_type
+  ! SUB TEMPLATE: common form for exact topography solutions
+  ! ---------------------------------------------------------------------------
+  abstract interface
+    subroutine soln(h, t) 
+      import                              :: dp, hill_type ! use special types
+      class(hill_type), intent(in)        :: h             ! model object
+      real(dp), intent(in)                :: t             ! model time
+    end subroutine soln
+  end interface
+
+
+  ! ---------------------------------------------------------------------------
+  ! PARAMETERS
+  ! ---------------------------------------------------------------------------
+  real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp)
+  real(dp), parameter :: hill_ss_t1 = 1.0_dp ! benchmark, hill, steady state
+  real(dp), parameter :: hill_ss_tm = 9.0_dp ! benchmark, hill, steady state
 
 contains
 

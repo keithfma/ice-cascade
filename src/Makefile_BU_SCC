@@ -29,9 +29,8 @@ SRC = \
 types.f90 \
 grid.f90 \
 hill.f90 \
-exact_soln.f90 \
 io.f90 \
-ice_cascade.f90 \
+ice_cascade.f90
 
 OBJ = $(patsubst %.f90, %.o, $(SRC))
 
