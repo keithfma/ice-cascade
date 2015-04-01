@@ -5,6 +5,7 @@
 !   type hill_type (public)
 !   subroutine init (private, type-bound procedure)
 !   subroutine run (private, type-bound procedure)
+!   NOTE: list is not yet complete
 ! ============================================================================
 
 module hill_module
