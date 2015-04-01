@@ -1,8 +1,13 @@
-$Input parameters for ice-cascade, read by io.mod subroutine "read_input"
-$ dollar sign = comment
+$ ===========================================================================
+$ Benchmark, Hill, Steady-state 
+$  
+$ Diffusion with sinusoidal BC at the north boundary, and constant BCs at
+$ other boundaries. Solution is derived at: 
+$ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
+$ ===========================================================================
 
 $ Run name ----------
-test
+bench_hill_ss
 
 $ Input ---------- 
 $$ initial high-res topography netcdf, if "zero", the initial topography is flat at 0. m

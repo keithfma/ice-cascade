@@ -27,7 +27,6 @@ LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
 SRC = \
 types.f90 \
-boundary.f90 \
 grid.f90 \
 hill.f90 \
 io.f90 \
