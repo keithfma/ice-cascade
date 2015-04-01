@@ -10,8 +10,8 @@ zero
 $$ initial high-res ice thickness netcdf file, if "zero", the initial thickness is everywhere 0. m
 zero
 $$ high-res grid dimensions, number of points in the x; y directions (NOTE: add "." to read this from file?)
-10
-10
+100
+100
 $$ high-res grid spacing in x; y directions, meters
 1. 
 1.
@@ -25,14 +25,14 @@ $$ initial smoothing? 1 = apply a smoothing filter to the initial topography, 0 
 
 $ Timestep definitions ----------
 $$ model end time, yr
-1000.
+25.
 $$ ice model maximum; minimum timestep, yr
 1.
 0.001
 $$ main timestep, for fluvial, hillslope, isostatic  models and topography update, yr
-1.
+1
 $$ frequency of saving output, e.g. 10 = ouput every 10th main timestep
-100
+1
 
 $ Glacier ice model ----------
 $$ run glacier model? 1 = run glacier model, 0 = do not run glacier model

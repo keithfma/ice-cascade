@@ -85,8 +85,8 @@ contains
     class(hill_type), intent(inout) :: H
     real(dp), intent(in) :: duration
     
-    integer :: north, south, east, west
-    real(dp) :: time, dt
+    integer :: north, south, east, west, i, j
+    real(dp) :: time, dt, dx2inv, dy2inv, cpt, laplace
   
     ! define indices of edge points, for convenience
     north = H%G%ny+1
@@ -106,7 +106,17 @@ contains
       H%z(east+1,:) = H%ebc( H%z(east,:), H%z(east-1,:) )
       H%z(west-1,:) = H%wbc( H%z(west,:), H%z(west+1,:) )
 
-      ! simulate diffusion
+      ! compute diffusion, 5-point stencil
+      dx2inv = H%G%dx**-2.0_dp 
+      dy2inv = H%G%dy**-2.0_dp
+      do j = south, north  
+        do i = west, east
+          cpt = -2.0_dp*H%z(i,j) 
+          laplace = dx2inv*(H%z(i+1,j)+cpt+H%z(i-1,j)) + &
+                    dy2inv*(H%z(i,j+1)+cpt+H%z(i,j-1))
+          H%z(i,j) = H%z(i,j) + dt*H%D*laplace 
+        end do
+      end do
 
       ! increment time
       time = time+dt
