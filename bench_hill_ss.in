@@ -6,205 +6,66 @@ $ other boundaries. Solution is derived at:
 $ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
 $ ===========================================================================
 
-$ Run name ----------
+
+$ -------------------
+$  Run 
+$ -------------------
+
+$ Name (string)
 bench_hill_ss
 
-$ Input ---------- 
-$$ initial high-res topography netcdf, if "zero", the initial topography is flat at 0. m
-zero
-$$ initial high-res ice thickness netcdf file, if "zero", the initial thickness is everywhere 0. m
-zero
-$$ high-res grid dimensions, number of points in the x; y directions (NOTE: add "." to read this from file?)
-100
-100
-$$ high-res grid spacing in x; y directions, meters
-1. 
-1.
-$$ low-res grid dimensions, number of points in the x; y directions
-10 
-10
-$$ add noise? 1 = adds 1m random noise to the initial topography, 0 = don't " "
-0
-$$ initial smoothing? 1 = apply a smoothing filter to the initial topography, 0 = don't
-0
-
-$ Timestep definitions ----------
-$$ model end time, yr
+$ End time (real, yr)
 10000.
-$$ ice model maximum; minimum timestep, yr
+
+$ Timestep for topography update (real, yr)
 1.
-0.001
-$$ main timestep, for fluvial, hillslope, isostatic  models and topography update, yr
-1
-$$ frequency of saving output, e.g. 10 = ouput every 10th main timestep
+
+$ Output period, (integer) 
+$ e.g. 10 = ouput every 10th main timestep
 500
 
-$ Glacier ice model ----------
-$$ run glacier model? 1 = run glacier model, 0 = do not run glacier model
-0
-$$ compute basal temperatures? 1 = polythermal ice, 0 = isothermal ice
-0
-$$ ice-deformation constant (B), Pa**-3 a**-1
-1.e-16
-$$ sliding law constant (Bs), Pa**-3 a**-1  m**-2
-1e-13
-$$ constriction factor constant, m
-2000.
-$$ basal heat flux, W m**-2
-50.e-3
-$$ ice conductivity, W m**-1 K**-1, (see Cuffey & Paterson pg 400)
-2.10 
-$$ glacial erosion rate constant
-1.e-4
-$$ maximum allowed glacial erosion rate, m/a
-5.e-2 
-$$ n; s; e; w boundary conditions 
-$$$ 0=ice-free, 1=no-flux, 2=scaled ice thickness, 3=cyclic, 4=reflected
-0
-0
-0
-0
+$ -------------------
+$ Grids 
+$ -------------------
 
- 
-$ Fluvial model ----------
-$$ run fluvial model? 1 = run fluvial model, 0 = do not run fluvial model
-0
-$$ stream-power erosion rate constant 
-1.e-6
-$$ base-level elevation, m (outlets cannot be incised below this level, so lakes from instead)
-0.
-$$ n; s; e; w boundary conditions ( 0=open, 1=closed, 2=cyclic)
-0
-0
-0
-0
+$ high-res grid dimensions, number of points in the x; y directions
+100
+100
 
-$ Hillslope model ----------
-$$ run hillslope model? 1 = run hillslope model, 0 = do not run hillslope model
+$ high-res grid spacing in x; y directions, meters
+1. 
+1.
+
+$ -------------------
+$ Topography 
+$ -------------------
+
+$ initial high-res topography (string)
+$$ options: netcdf filename, or "zero" for flat at 0.0 m
+zero
+
+
+$ -------------------
+$ Hillslope model
+$ -------------------
+
+$ On/off (1/0)
 1
-$$ hillslope diffusivity, m^2/yr
+
+$ Diffusivity (real, m^2/yr)
 0.5
-$$ n; s; e; w boundary conditions ( string ) 
-$$$ options: zero_grad, bench_hill_ss_sin, bench_hill_ss_const
+
+$ n; s; e; w boundary conditions (string) 
+$ options: zero_grad, bench_hill_ss_sin, bench_hill_ss_const
 bench_hill_ss_sin
 bench_hill_ss_const
 bench_hill_ss_const
 bench_hill_ss_const
-$$ exact solution for topography ( string )
-$$$ options: bench_hill_ss
+
+$ exact solution for topography ( string )
+$ options: none, bench_hill_ss
 bench_hill_ss
-$$ write hillslope dz/dt? (1,0)
+
+$ write hillslope dz/dt? (1,0)
 1
 
-
-$ Uplift/erosion ---------- 
-$$ erode? 1 = yes, 0 = no
-0
-$$ uplift? 1 = yes, 0 = no
-0
-$$ tectonic uplift rate, m/yr (meaning depends on source code, see tectonic_uplift.f90)
-5.e-4
-$$ lower limit (floor) for erosion, m
--500.
-
-$ Isostasy ----------
-$$ flexural isostasy flag, 1 = compute isostatic uplift, 0 = does not compute isostasy 
-0
-$$ Young's modulus
-0.5e11
-$$ Poisson's ratio
-0.25
-$$ Lithosphere elastic thickness, m
-10.e3
-$$ Dimensions of the padded grid used for the fourier transform (x; y)
-$$$ FFTW is best at handling sizes of the form 2^a 3^b 5^c 7^d 11^e 13^f, where e+f is either 0 or 1
-$$$ and the other exponents are arbitrary. Padding type (e.g. zero, ramp) is determined internally.
-384 
-256
-
-$ Climate forcing ----------
-$$ minimum sea level temperature, deg. C
-2.
-$$ maximum sea level temperature, deg. C
-2.
-$$ period for sinusoidal oscillation, yrs
-100.e3
-$$ temperature lapse rate, C/m
-0.0045
-$$ amplitude of annual sinusoidal temperature cycle, deg. C
-10.
-$$ melting rate constant, m(ice)/day/deg. C 
-0.008
-$$ precipitation rate, m(water)/yr 
-1.
-
-$ Physical constants ----------
-$$ ice density, kg/m^3
-910.
-$$ water density, kg/m^3
-1000.
-$$ crustal density, kg/m^3
-2700
-$$ mantle density, kg/m^3
-3100.
-
-
-$ Output variables ----------
-$$ ice thickness, low-res
-0
-$$ ice thickness, high-res
-0
-$$ bedrock topography, low-res
-0
-$$ bedrock topography, high-res
-1
-$$ ice surface topography, low-res
-0
-$$ ice surface topography, high-res
-0
-$$ sea-level temperature, scalars
-0
-$$ surface temperature, low-res
-0
-$$ basal temperature, low-res
-0
-$$ ice melting temperature, low-res
-0
-$$ x-dir velocity from ice deformation, low-res
-0
-$$ y-dir velocity from ice deformation, low-res
-0
-$$ x-dir velocity from ice sliding, low-res
-0
-$$ y-dir velocity from ice sliding, low-res
-0
-$$ ice sliding velocity magnitude, low-res
-0
-$$ ice sliding velocity magnitude, high-res
-0
-$$ constriction factor, low-res
-0
-$$ average time step for ice model, scalar
-0 
-$$ tectonic uplift rate, high-res
-0
-$$ glacial erosion rate, high-res
-0
-$$ hillslope erosion rate, high-res
-1
-$$ bedrock slope, for fluvial erosion, high-res
-0
-$$ water discharge, for fluvial erosion, high-res
-0
-$$ fluvial erosion rate, high-res
-0
-$$ water input rate, high-res
-0
-$$ ice mass conservation variables, scalars
-0
-$$ balance rate, low res
-0
-$$ lakes, high-res
-0
-$$ fluvial catchments, highres
-0
