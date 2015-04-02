@@ -21,11 +21,14 @@ module grid_module
   ! TYPE: Coordinate grid
   ! ---------------------------------------------------------------------------
   type :: grid_type
-    integer           :: nx, ny     ! num grid points in x- and y-dir, [1]
-    real(dp)          :: dx, dy     ! grid spacing in x- and y-dir, [m]
-    real, allocatable :: x(:), y(:) ! x- and y- coordinate vectors, [m]
+    integer               :: nx   ! num grid points in x-dir, [1]
+    integer               :: ny   ! num grid points in y-dir, [1]
+    real(dp)              :: dx   ! grid spacing in x-dir, [m]
+    real(dp)              :: dy   ! grid spacing in y-dir, [m]
+    real(dp), allocatable :: x(:) ! x coordinate vector, [m]
+    real(dp), allocatable :: y(:) ! y coordinate vector, [m]
   contains
-    procedure         :: init       ! initialization function
+    procedure             :: init ! initialization function
   end type grid_type
 
 contains

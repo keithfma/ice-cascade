@@ -49,7 +49,7 @@ real(dp), allocatable :: fX(:,:), fY(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHIni
 real(dp), allocatable, target :: fT(:,:), fTsoln(:,:)
 
 ! Declare objects (new!, will replace much of the above)  
-type(grid_type), target :: lGrid, fGrid
+type(grid_type) :: lGrid, fGrid
 type(hill_type) :: fHill
 
 ! Start MPI
@@ -87,7 +87,7 @@ call initGrids( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, 
 ! Initialize objects
 call fGrid%init()
 call lGrid%init()
-call fHill%init(fGrid, fT, fTsoln)
+call fHill%init(fGrid)
 
 ! Create output file
 if (proc==0) &
@@ -173,7 +173,7 @@ do while (time.lt.pTimeEnd)
 !	end if
 
   !! Hillslope model
-  call fHill%run(pTimeStep)
+  if (fHill%on) call fHill%run(fT, pTimeStep)
 
 			
 	!!! Hillslope model
@@ -210,10 +210,7 @@ do while (time.lt.pTimeEnd)
 	if ( ((step/pWriteFreq*pWriteFreq==step).or.(time==pTimeEnd)) .and. (proc==0) ) then
 
 		outputStep = outputStep + 1			
-    
-    ! compute exact solution for topography, if available
-    if (fHill%zSolnOn .eqv. .true.) call fHill%zSoln(time+pTimeStep) ! defined in hill object
-    
+
 		call writeStep ( outputStep, time, pWriteFlag, lH, fH, lT, fT, lHT, fHT, lTempS, lTempB, &
 			lTempM, lUDefm, lVDefm, lUSlid, lVSlid, lSliding, fSliding, lConstrict, fGlacErosRate, &
 			fHillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, &

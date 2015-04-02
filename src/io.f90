@@ -238,6 +238,8 @@ if (pBenchmark==0) then
 	read (55,*) fHill%sbcName 
 	read (55,*) fHill%ebcName
 	read (55,*) fHill%wbcName 
+	read (55,*) fHill%solnName 	
+	read (55,*) work; fHill%writeDzdt = merge(.true., .false., work==1)
 	read (55,*) work; pDoEros = merge(.true., .false., work==1)
 	read (55,*) work; pDoUplift = merge(.true., .false., work==1)
 	read (55,*) pUpliftRate
@@ -259,7 +261,6 @@ if (pBenchmark==0) then
 	read (55,*) pRhoWater
 	read (55,*) pRhoCrust
 	read (55,*) pRhoMantle	
-	read (55,*) zSolnName 	
 	read (55,*) pWriteFlag(1) !lH
 	read (55,*) pWriteFlag(2) !fH
 	read (55,*) pWriteFlag(3) !lT
@@ -293,10 +294,6 @@ if (pBenchmark==0) then
 	read (55,*) pWriteFlag(32) !fFlex
 	pWriteFlag(33) = 0 !fSolnH
 	close(55)
-
-  ! distribute solution names to all objects that may compute the solution
-  fHill%zSolnName = zSolnName 
-
 
   ! DEFINE LEGACY VARIABLES (TEMPORARY)
 	fNx = fGrid%nx+2	

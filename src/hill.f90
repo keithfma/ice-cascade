@@ -21,26 +21,31 @@ public hill_type
   ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
   type hill_type
-    logical                         :: on        ! enable/disable model
-    type(grid_type), pointer        :: g         ! pointer to shared grid object
-    real(dp), pointer               :: z(:,:)    ! pointer to shared topo
-    real(dp), pointer               :: zref(:,:) ! pointer to shared topo solution
-    real(dp)                        :: D         ! diffusivity, [m**2/a]
-    real(dp)                        :: dtMax     ! max stable step CFL, [a]
-    character(len=100)              :: nbcName   ! north BC name
-    character(len=100)              :: sbcName   ! south BC name
-    character(len=100)              :: wbcName   ! west BC name
-    character(len=100)              :: ebcName   ! east BC name
-    procedure (bc), pointer, nopass :: nbc       ! set north BC
-    procedure (bc), pointer, nopass :: sbc       ! set south BC
-    procedure (bc), pointer, nopass :: wbc       ! set west BC
-    procedure (bc), pointer, nopass :: ebc       ! set east BC
-    logical                         :: zSolnOn   ! enable/disable topo soln
-    character(len=100)              :: zSolnName ! topo soln name
-    procedure (soln), pointer, pass :: zSoln     ! topo soln
+    logical                         :: on         ! enable/disable model
+    logical                         :: writeSoln  ! output flag
+    logical                         :: writeDzdt  ! output flag
+    integer                         :: nx         ! num grid points in x-dir, [1]
+    integer                         :: ny         ! num grid points in y-dir, [1]
+    real(dp)                        :: dx         ! grid spacing in x-dir, [m]
+    real(dp)                        :: dy         ! grid spacing in y-dir, [m]
+    real(dp)                        :: D          ! diffusivity, [m**2/a]
+    real(dp)                        :: dtMax      ! max stable step CFL, [a]
+    real(dp), allocatable           :: x(:)       ! x coordinate vector, [m]
+    real(dp), allocatable           :: y(:)       ! y coordinate vector, [m]
+    real(dp), allocatable           :: dzdt(:,:)  ! topo rate of change, [m/a]
+    character(len=100)              :: nbcName    ! north BC name
+    character(len=100)              :: sbcName    ! south BC name
+    character(len=100)              :: wbcName    ! west BC name
+    character(len=100)              :: ebcName    ! east BC name
+    character(len=100)              :: solnName   ! topo soln name
+    procedure (bc), pointer, nopass :: nbc        ! set north BC
+    procedure (bc), pointer, nopass :: sbc        ! set south BC
+    procedure (bc), pointer, nopass :: wbc        ! set west BC
+    procedure (bc), pointer, nopass :: ebc        ! set east BC
+    procedure (soln), pointer, pass :: solve      ! compute topo soln
   contains
-    procedure, pass                 :: init      ! set members
-    procedure, pass                 :: run       ! run model                   
+    procedure, pass                 :: init       ! initialize all components
+    procedure, pass                 :: run        ! run model                   
   end type hill_type
 
 
@@ -58,14 +63,15 @@ public hill_type
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB TEMPLATE: common form for exact topography solutions
+  ! FUNC TEMPLATE: common form for exact topography solutions
   ! ---------------------------------------------------------------------------
   abstract interface
-    subroutine soln(h, t) 
-      import                              :: dp, hill_type ! use special types
-      class(hill_type), intent(in)        :: h             ! model object
-      real(dp), intent(in)                :: t             ! model time
-    end subroutine soln
+    function soln(h, t) result(z)
+      import                          :: dp, hill_type ! use special types
+      class(hill_type), intent(inout) :: h             ! model object
+      real(dp), intent(in)            :: t             ! model time
+      real(dp), dimension(h%nx,h%ny)  :: z             ! soln for topo
+    end function soln
   end interface
 
 
@@ -80,73 +86,101 @@ contains
 
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize a hillslope model object
+  !   Note: components D, dtMax, *Name, and writeDzdt must be set before init()
   ! --------------------------------------------------------------------------- 
-  subroutine init(h, g, z, zref)
+  subroutine init(h, g)
 
-    class(hill_type), intent(out)       :: h         ! object to initialize
-    type(grid_type), intent(in), target :: g         ! grid, shared 
-    real(dp), intent(inout), target     :: z(:,:)    ! topography, shared
-    real(dp), intent(inout), target     :: zref(:,:) ! topography, shared
-
-    real(dp) :: dx2, dy2
-
-    ! associate pointers with shared objects
-    h%g => g
-    h%z => z
-    h%zref => zref
-
-    ! associate pointers with selected procedures
-    call set_bc_proc(h%nbcName, h%nbc)
-    call set_bc_proc(h%sbcName, h%sbc)
-    call set_bc_proc(h%wbcName, h%wbc)
-    call set_bc_proc(h%ebcName, h%ebc)
-    call set_soln_proc(h%zSolnName, h%zSolnOn, h%zSoln)
-
-    ! compute CFL timestep
-    dx2 = g%dx**2.0_dp
-    dy2 = g%dy**2.0_dp
-    h%dtMax = 1.0_dp/(1.0_dp/dx2+1.0_dp/dy2)/(2.0_dp*h%D)
+    class(hill_type), intent(inout) :: h ! object to initialize
+    type(grid_type), intent(in)     :: g ! grid 
+    
+    if (h%on .eqv. .false.) then
+      ! model disabled, clear all object components
+      h%writeSoln = .false.
+      h%writeDzdt = .false.
+      h%nx = -1
+      h%ny = -1
+      h%dx = -1.0_dp
+      h%dy = -1.0_dp
+      h%D = -1.0_dp
+      h%dtMax = -1.0_dp
+      if (allocated(h%x) .eqv. .true.) deallocate(h%x)
+      if (allocated(h%y) .eqv. .true.) deallocate(h%y)
+      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
+      allocate(h%x(1), h%y(1), h%dzdt(1,1))
+      h%x = -1.0_dp
+      h%y = -1.0_dp
+      h%dzdt = -1.0_dp
+      h%nbcName = "none"
+      h%sbcName = "none"
+      h%ebcName = "none"
+      h%wbcName = "none"
+      h%solnName = "none"
+      h%nbc => NULL()
+      h%sbc => NULL()
+      h%wbc => NULL()
+      h%ebc => NULL()
+      h%solve => NULL()
+    else
+      ! model enabled, set all object components
+      h%nx = g%nx
+      h%ny = g%ny
+      h%dx = g%dx
+      h%dy = g%dy
+      if (allocated(h%x) .eqv. .true.) deallocate(h%x)
+      if (allocated(h%y) .eqv. .true.) deallocate(h%y)
+      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
+      allocate(h%x(h%nx+2), h%y(h%ny+2), h%dzdt(h%nx+2, h%ny+2))
+      h%x = g%x
+      h%y = g%y
+      call set_bc_proc(h%nbcName, h%nbc)
+      call set_bc_proc(h%sbcName, h%sbc)
+      call set_bc_proc(h%wbcName, h%wbc)
+      call set_bc_proc(h%ebcName, h%ebc)
+      call set_soln_proc(h%solnName, h%writeSoln, h%solve)
+      h%dtMax = 1.0_dp/(h%dx**-2.0_dp+h%dy**-2.0_dp)/(2.0_dp*h%D)
+    end if
 
   end subroutine init
 
   ! ---------------------------------------------------------------------------
   ! SUB: run the hillslope model for a specified duration
   ! ---------------------------------------------------------------------------
-  subroutine run (H, duration)
+  subroutine run (h, z, duration)
 
-    class(hill_type), intent(inout) :: H
-    real(dp), intent(in) :: duration
+    class(hill_type), intent(inout) :: h        ! hill model def
+    real(dp), intent(inout)         :: z(:,:)   ! topography
+    real(dp), intent(in)            :: duration ! runtime
     
     integer :: north, south, east, west, i, j
     real(dp) :: time, dt, dx2inv, dy2inv, cpt, laplace
   
     ! define indices of edge points, for convenience
-    north = H%G%ny+1
+    north = h%ny+1
     south = 2
-    east = H%G%nx+1
+    east = h%nx+1
     west = 2
 
     time = 0.0_dp
     do while (time .lt. duration)
      
       ! select stable time step
-      dt = min(duration-time, H%dtMax)
+      dt = min(duration-time, h%dtMax)
 
       ! apply boundary conditions
-      H%z(:,north+1) = H%nbc( H%z(:,north), H%z(:,north-1) )
-      H%z(:,south-1) = H%sbc( H%z(:,south), H%z(:,south+1) )
-      H%z(east+1,:) = H%ebc( H%z(east,:), H%z(east-1,:) )
-      H%z(west-1,:) = H%wbc( H%z(west,:), H%z(west+1,:) )
+      z(:,north+1) = h%nbc( z(:,north), z(:,north-1) )
+      z(:,south-1) = h%sbc( z(:,south), z(:,south+1) )
+      z(east+1,:) = h%ebc( z(east,:), z(east-1,:) )
+      z(west-1,:) = h%wbc( z(west,:), z(west+1,:) )
 
       ! compute diffusion, 5-point stencil
-      dx2inv = H%G%dx**-2.0_dp 
-      dy2inv = H%G%dy**-2.0_dp
+      dx2inv = h%dx**-2.0_dp 
+      dy2inv = h%dy**-2.0_dp
       do j = south, north  
         do i = west, east
-          cpt = -2.0_dp*H%z(i,j) 
-          laplace = dx2inv*(H%z(i+1,j)+cpt+H%z(i-1,j)) + &
-                    dy2inv*(H%z(i,j+1)+cpt+H%z(i,j-1))
-          H%z(i,j) = H%z(i,j) + dt*H%D*laplace 
+          cpt = -2.0_dp*z(i,j) 
+          laplace = dx2inv*(z(i+1,j)+cpt+z(i-1,j)) + &
+                    dy2inv*(z(i,j+1)+cpt+z(i,j-1))
+          z(i,j) = z(i,j) + dt*h%D*laplace 
         end do
       end do
 
@@ -170,14 +204,16 @@ contains
     select case (str)
 
       case ("bench_hill_ss")
-        print *, "Hill: exact solution for steady-state benchmark selected."
         on = .true.
-        ptr => soln_bench_hill_ss
+        ptr => solve_bench_hill_ss
 
-      case default 
-        print *, "Hill: no exact solution for topography selected."
+      case ("none")
         on = .false.
         ptr => NULL()
+
+      case default 
+        print *, "Invalid name for hillslope solution: ", trim(str)
+        stop -1
    
       end select
     
@@ -265,16 +301,17 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Exact solution, Benchmark, Hill, Steady-state
+  ! FUNC: Exact solution, Benchmark, Hill, Steady-state
   ! ---------------------------------------------------------------------------
-  subroutine soln_bench_hill_ss(h, t) 
+  function solve_bench_hill_ss(h, t) result(z)
 
-    class(hill_type), intent(in) :: h ! model object
-    real(dp), intent(in)         :: t ! model time
+    class(hill_type), intent(inout) :: h ! model object
+    real(dp), intent(in)            :: t ! model time
+    real(dp), dimension(h%nx,h%ny)  :: z ! soln for topo
 
     ! DUMMY, REPLACE WITH ACTUAL SOLUTION
-    h%zref = t
+    z = t
 
-  end subroutine soln_bench_hill_ss
+  end function solve_bench_hill_ss
 
 end module hill_module

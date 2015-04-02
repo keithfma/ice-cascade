@@ -84,11 +84,18 @@ $$ run hillslope model? 1 = run hillslope model, 0 = do not run hillslope model
 1
 $$ hillslope diffusivity, m^2/yr
 0.5
-$$ n; s; e; w boundary conditions (zero_grad, )
+$$ n; s; e; w boundary conditions ( string ) 
+$$$ options: zero_grad, bench_hill_ss_sin, bench_hill_ss_const
 bench_hill_ss_sin
 bench_hill_ss_const
 bench_hill_ss_const
 bench_hill_ss_const
+$$ exact solution for topography ( string )
+$$$ options: bench_hill_ss
+bench_hill_ss
+$$ write hillslope dz/dt? (1,0)
+1
+
 
 $ Uplift/erosion ---------- 
 $$ erode? 1 = yes, 0 = no
@@ -141,9 +148,6 @@ $$ crustal density, kg/m^3
 $$ mantle density, kg/m^3
 3100.
 
-$ Exact solutions (for benchmarks) ----------
-$$ topography
-bench_hill_ss
 
 $ Output variables ----------
 $$ ice thickness, low-res
