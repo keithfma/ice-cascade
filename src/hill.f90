@@ -21,31 +21,31 @@ public hill_type
   ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
   type hill_type
-    logical                         :: on         ! enable/disable model
-    logical                         :: writeSoln  ! output flag
-    logical                         :: writeDzdt  ! output flag
-    integer                         :: nx         ! num grid points in x-dir, [1]
-    integer                         :: ny         ! num grid points in y-dir, [1]
-    real(dp)                        :: dx         ! grid spacing in x-dir, [m]
-    real(dp)                        :: dy         ! grid spacing in y-dir, [m]
-    real(dp)                        :: D          ! diffusivity, [m**2/a]
-    real(dp)                        :: dtMax      ! max stable step CFL, [a]
-    real(dp), allocatable           :: x(:)       ! x coordinate vector, [m]
-    real(dp), allocatable           :: y(:)       ! y coordinate vector, [m]
-    real(dp), allocatable           :: dzdt(:,:)  ! topo rate of change, [m/a]
-    character(len=100)              :: nbcName    ! north BC name
-    character(len=100)              :: sbcName    ! south BC name
-    character(len=100)              :: wbcName    ! west BC name
-    character(len=100)              :: ebcName    ! east BC name
-    character(len=100)              :: solnName   ! topo soln name
-    procedure (bc), pointer, nopass :: nbc        ! set north BC
-    procedure (bc), pointer, nopass :: sbc        ! set south BC
-    procedure (bc), pointer, nopass :: wbc        ! set west BC
-    procedure (bc), pointer, nopass :: ebc        ! set east BC
-    procedure (soln), pointer, pass :: solve      ! compute topo soln
+    logical                         :: on          ! enable/disable model
+    logical                         :: write_soln  ! output flag
+    logical                         :: write_dzdt  ! output flag
+    integer                         :: nx          ! num grid points in x-dir, [1]
+    integer                         :: ny          ! num grid points in y-dir, [1]
+    real(dp)                        :: dx          ! grid spacing in x-dir, [m]
+    real(dp)                        :: dy          ! grid spacing in y-dir, [m]
+    real(dp)                        :: D           ! diffusivity, [m**2/a]
+    real(dp)                        :: dtMax       ! max stable step CFL, [a]
+    real(dp), allocatable           :: x(:)        ! x coordinate vector, [m]
+    real(dp), allocatable           :: y(:)        ! y coordinate vector, [m]
+    real(dp), allocatable           :: dzdt(:,:)   ! topo rate of change, [m/a]
+    character(len=100)              :: nbcName     ! north BC name
+    character(len=100)              :: sbcName     ! south BC name
+    character(len=100)              :: wbcName     ! west BC name
+    character(len=100)              :: ebcName     ! east BC name
+    character(len=100)              :: solnName    ! topo soln name
+    procedure (bc), pointer, nopass :: nbc         ! set north BC
+    procedure (bc), pointer, nopass :: sbc         ! set south BC
+    procedure (bc), pointer, nopass :: wbc         ! set west BC
+    procedure (bc), pointer, nopass :: ebc         ! set east BC
+    procedure (soln), pointer, pass :: solve       ! compute topo soln
   contains
-    procedure, pass                 :: init       ! initialize all components
-    procedure, pass                 :: run        ! run model                   
+    procedure, pass                 :: init        ! initialize all components
+    procedure, pass                 :: run         ! run model                   
   end type hill_type
 
 
@@ -86,7 +86,7 @@ contains
 
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize a hillslope model object
-  !   Note: components D, dtMax, *Name, and writeDzdt must be set before init()
+  !   Note: components D, dtMax, *Name, and write_dzdt must be set before init()
   ! --------------------------------------------------------------------------- 
   subroutine init(h, g)
 
@@ -95,8 +95,8 @@ contains
     
     if (h%on .eqv. .false.) then
       ! model disabled, clear all object components
-      h%writeSoln = .false.
-      h%writeDzdt = .false.
+      h%write_soln = .false.
+      h%write_dzdt = .false.
       h%nx = -1
       h%ny = -1
       h%dx = -1.0_dp
@@ -136,7 +136,7 @@ contains
       call set_bc_proc(h%sbcName, h%sbc)
       call set_bc_proc(h%wbcName, h%wbc)
       call set_bc_proc(h%ebcName, h%ebc)
-      call set_soln_proc(h%solnName, h%writeSoln, h%solve)
+      call set_soln_proc(h%solnName, h%write_soln, h%solve)
       h%dtMax = 1.0_dp/(h%dx**-2.0_dp+h%dy**-2.0_dp)/(2.0_dp*h%D)
     end if
 

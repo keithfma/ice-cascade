@@ -17,43 +17,46 @@ program ice_cascade
 
 use types, only: dp 
 use grid_module, only: grid_type
+use time_module, only: time_type
+use topo_module, only: topo_type
 use hill_module, only: hill_type
-use io, only: readParams, initGrids, createOutput, writeConst, writeStep, closeOutput, debugOut2d
+use io_module, only: readParam
 implicit none
 
-character(len=150) :: pRunName, pTopoFile, pIceFile
-logical :: pDoGlac, pDoFluv, pDoHill, pDoUplift, pDoEros, pDoFlex, pDoTemp, pDoTrackIceVol, &
-	pDoAddNoise, pDoPrefilter
-logical, allocatable :: fIceFree(:,:), fLake(:,:)
-integer :: ierr, proc, pBenchmark, lNx, fNx, lNy, fNy, pWriteFreq, step, outputStep, count0, &
-	countRate, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, &
-	pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW
-integer, allocatable :: pWriteFlag(:), fCatchment(:,:)
-real(dp) :: lDx, fDx, lDy, fDy, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, pB, pBs, pGamma, pQheatb, &
-	pHeatConduct, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, pTempYrRng, pMeltFact, &
-	pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, pGlacErosFact, &
-	pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, pTempDiffuse, pTempBasalGrad, &
-	pC, pCs, dvolIceSrc, dvolIceSnk, dvolIce, time, timeStepIceMean, tempSl, pBaseLvl
-real(dp), allocatable :: fX(:,:), fY(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHInit(:,:), &
-	fSliding(:,:), fUpliftRate(:,:), fGlacErosRate(:,:), fHillErosRate(:,:), fFluvErosRate(:,:), &
-	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
-	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
-	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
+!character(len=150) :: pRunName, pTopoFile, pIceFile
+!logical :: pDoGlac, pDoFluv, pDoHill, pDoUplift, pDoEros, pDoFlex, pDoTemp, pDoTrackIceVol, &
+!	pDoAddNoise, pDoPrefilter
+!logical, allocatable :: fIceFree(:,:), fLake(:,:)
+!integer :: ierr, proc, pBenchmark, lNx, fNx, lNy, fNy, pWriteFreq, step, outputStep, count0, &
+!	countRate, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, &
+!	pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW
+!integer, allocatable :: pWriteFlag(:), fCatchment(:,:)
+!real(dp) :: lDx, fDx, lDy, fDy, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, pB, pBs, pGamma, pQheatb, &
+!	pHeatConduct, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, pTempYrRng, pMeltFact, &
+!	pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, pGlacErosFact, &
+!	pFluvErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, pTempDiffuse, pTempBasalGrad, &
+!	pC, pCs, dvolIceSrc, dvolIceSnk, dvolIce, time, timeStepIceMean, tempSl, pBaseLvl
+!real(dp), allocatable :: fX(:,:), fY(:,:), fH(:,:), fHT(:,:), fTInit(:,:), fHInit(:,:), &
+!	fSliding(:,:), fUpliftRate(:,:), fGlacErosRate(:,:), fhillErosRate(:,:), fFluvErosRate(:,:), &
+!	fSlope(:,:), fSolnH(:,:), lX(:,:), lY(:,:), lT(:,:), lH(:,:), lHT(:,:), lTempS(:,:), &
+!	lTempB(:,:), lTempM(:,:), lBalRate(:,:), lUDefm(:,:), lVDefm(:,:), lUSlid(:,:), lVSlid(:,:), &
+!	lSliding(:,:), lConstrict(:,:), fQWater(:,:), fWater(:,:), fFlex(:,:)
 
 ! NEW
-real(dp), allocatable :: fT(:,:)
-type(grid_type) :: fGrid
-type(hill_type) :: fHill
+type(grid_type) :: fgrid
+type(time_type) :: time
+type(topo_type) :: ftopo
+type(hill_type) :: fhill
 
 
 ! Read model parameters
-call readParams(fGrid, fHill)
+call readParam(fgrid, time, ftopo, fhill)
 	
 !! Allocate arrays
 !!! High-res
 !allocate( fX(fNx,fNy), fY(fNx,fNy), fT(fNx,fNy), fH(fNx,fNy), fHT(fNx,fNy), fTInit(fNx,fNy), &
 !	fHInit(fNx,fNy), fSliding(fNx,fNy), fUpliftRate(fNx,fNy), fGlacErosRate(fNx,fNy), &
-!	fIceFree(fNx,fNy), fHillErosRate(fNx,fNy), fSlope(fNx,fNy), fFluvErosRate(fNx,fNy), &
+!	fIceFree(fNx,fNy), fhillErosRate(fNx,fNy), fSlope(fNx,fNy), fFluvErosRate(fNx,fNy), &
 !	fSolnH(fNx,fNy), fQWater(fNx,fNy), fWater(fNx,fNy), fLake(fNx,fNy), fCatchment(fNx,fNy), &
 !	fFlex(fNx,fNy))
 !!! Low-res
@@ -66,8 +69,10 @@ call readParams(fGrid, fHill)
 !	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
 
 ! Initialize objects
-call fGrid%init()
-call fHill%init(fGrid)
+call fgrid%init()
+call time%init()
+call ftopo%init(fgrid)
+call fhill%init(fgrid)
 
 !! Create output file
 !	call createOutput ( pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, lDx, fDx, lDy, fDy, &
@@ -83,7 +88,7 @@ call fHill%init(fGrid)
 !	call writeConst (fUpliftRate, fH, pWriteFlag)
 !	call writeStep ( 1, 0._dp, pWriteFlag, lH, fH, lT, fT, lHT, fHT, lTempS, lTempB, lTempM, &
 !		lUDefm, lVDefm, lUSlid, lVSlid, lSliding, fSliding, lConstrict, fGlacErosRate, &
-!		fHillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, dvolIce, &
+!		fhillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, dvolIce, &
 !		lBalRate, fLake, fCatchment, 0._dp, 0._dp, fFlex, fH)
 !
 !! Setup main loop
@@ -93,36 +98,38 @@ call fHill%init(fGrid)
 !!! Setup clock
 !call system_clock (count0, countRate) 
 !
-!! Enter main loop
-!do while (time.lt.pTimeEnd)
-!
-!	!! Adjust time step if needed
-!	if ( (time+pTimeStep)>pTimeEnd) pTimeStep = pTimeEnd-time	
-!	
+
+do while (time%now .lt. time%finish) ! main loop
+
+	! Trim last time step if needed
+	if ((time%now+time%step) .gt. time%finish) time%step = time%finish-time%now	
+	
 !
 !  !! Hillslope model
-!  if (fHill%on) call fHill%run(fT, pTimeStep)
+!  if (fhill%on) call fhill%run(fT, pTimeStep)
 !			
-!	!! Step completed
-!	time = time + pTimeStep
-!	step = step + 1
-!	
-!	!! Write output
+	! Step forward
+	time%now = time%now+time%step
+  time%now_step = time%now_step+1
+	
+	! Write output
+  if (time%write_now()) then
+    print *, "WRITE"
+  end if
 !	if (( step/pWriteFreq*pWriteFreq==step) .or. (time==pTimeEnd) )  then
 !
 !		outputStep = outputStep + 1			
 !
 !		call writeStep ( outputStep, time, pWriteFlag, lH, fH, lT, fT, lHT, fHT, lTempS, lTempB, &
 !			lTempM, lUDefm, lVDefm, lUSlid, lVSlid, lSliding, fSliding, lConstrict, fGlacErosRate, &
-!			fHillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, &
+!			fhillErosRate, fSlope, fQWater, fFluvErosRate, fWater, dvolIceSrc, dvolIceSnk, &
 !			dvolIce, lBalRate, fLake, fCatchment, timeStepIceMean, tempSl, fFlex, fSolnH)
 !	
 !    end if
 !		
-!end do
-!! Exit main loop		
+end do ! exit main loop		
 
-! End program
-if (proc.eq.0) call closeOutput()
+!! End program
+!if (proc.eq.0) call closeOutput()
 
 end program ice_cascade

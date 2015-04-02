@@ -1,9 +1,6 @@
 $ ===========================================================================
-$ Benchmark, Hill, Steady-state 
-$  
-$ Diffusion with sinusoidal BC at the north boundary, and constant BCs at
-$ other boundaries. Solution is derived at: 
-$ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
+$ Default input file: runs a simple example case and provides reasonable guesses
+$   for many parameters
 $ ===========================================================================
 
 
@@ -12,28 +9,25 @@ $  Run
 $ -------------------
 
 $ Name (string)
-bench_hill_ss
+default
 
-$ Model start time (real, yr)
-0.
+$ End time (real, yr)
+1000.
 
-$ Model end time (real, yr)
-10000.
-
-$ Model timestep (real, yr)
+$ Timestep for topography update (real, yr)
 1.
 
 $ Output period, (integer) 
-$ e.g. 10 = ouput every 10th timestep
-500
+$ e.g. 10 = ouput every 10th main timestep
+100
 
 $ -------------------
 $ Grids 
 $ -------------------
 
 $ high-res grid dimensions, number of points in the x; y directions
-100
-100
+308
+222
 
 $ high-res grid spacing in x; y directions, meters
 1. 
@@ -45,7 +39,7 @@ $ -------------------
 
 $ initial high-res topography (string)
 $$ options: netcdf filename, or "zero" for flat at 0.0 m
-zero
+test.grd
 
 $ write topography (1/0)
 1
