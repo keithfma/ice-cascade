@@ -3,7 +3,11 @@ $ Benchmark, Hill, Steady-state
 $  
 $ Diffusion with sinusoidal BC at the north boundary, and constant BCs at
 $ other boundaries. Solution is derived at: 
+$
 $ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
+$
+$ Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
+$ Transfer (9th ed.).
 $ ===========================================================================
 
 
@@ -69,7 +73,7 @@ bench_hill_ss_const
 
 $ exact solution for topography ( string )
 $ options: none, bench_hill_ss
-none
+bench_hill_ss
 
 $ write hillslope dz/dt? (1,0)
 1

@@ -202,7 +202,8 @@ contains
     type(time_type), intent(inout)  :: time
     type(topo_type), intent(in)     :: ftopo
     type(hill_type), intent(in)     :: fhill
-
+  
+    real(dp) :: fsoln(ftopo%nx, ftopo%ny)
     integer :: i0f, i1f, j0f, j1f, msg, id_file, id_var
 
     ! increment step counter
@@ -234,176 +235,15 @@ contains
       msg = nf90_put_var(id_file, id_var, real(fhill%dzdt(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
+    if (fhill%write_soln) then
+      fsoln = fhill%solve(time%now)
+      msg = nf90_inq_varid(id_file, 'fhill_soln', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fsoln, p), [1, 1, time%out_step] )
+    end if
+
     ! close file
     msg = nf90_close(id_file)
 
   end subroutine writeStep
-
-!! Write output to netcdf 
-!msg = nf90_put_var(oFile, oTime, time, (/ step /) )
-!
-!if (pWriteFlag(1)==1) then
-!	msg = nf90_put_var(oFile, olH, real(lH(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(2)==1) then
-!	msg = nf90_put_var(oFile, ofH, real(fH,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(3)==1) then
-!	msg = nf90_put_var(oFile, olT, real(lT(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(4)==1) then
-!	msg = nf90_put_var(oFile, ofT, real(fT,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(5)==1) then
-!	msg = nf90_put_var(oFile, olHT, real(lHT(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(6)==1) then
-!	msg = nf90_put_var(oFile, ofHT, real(fHT,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(7)==1) then	
-!	msg = nf90_put_var(oFile, olTempS, real(lTempS(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )	
-!end if
-!
-!if (pWriteFlag(8)==1) then
-!	msg = nf90_put_var(oFile, olTempB, real(lTempB(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(9)==1) then
-!	msg = nf90_put_var(oFile, olTempM, real(lTempM(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(10)==1) then
-!	msg = nf90_put_var(oFile, olUDefm, real(lUDefm(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(11)==1) then
-!	msg = nf90_put_var(oFile, olVDefm, real(lVDefm(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(12)==1) then
-!	msg = nf90_put_var(oFile, olUSlid, real(lUSlid(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(13)==1) then
-!	msg = nf90_put_var(oFile, olVSlid, real(lVSlid(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(14)==1) then
-!	msg = nf90_put_var(oFile, olSliding, real(lSliding(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(15)==1) then
-!	msg = nf90_put_var(oFile, ofSliding, real(fSliding,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(16)==1) then
-!	msg = nf90_put_var(oFile, olConstrict, real(lConstrict(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(18)==1) then
-!	msg = nf90_put_var(oFile, ofGlacErosRate, real(fGlacErosRate,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(19)==1) then
-!	msg = nf90_put_var(oFile, ofhillErosRate, real(fhillErosRate,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(20)==1) then
-!	msg = nf90_put_var(oFile, ofSlope, real(fSlope,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(21)==1) then
-!	msg = nf90_put_var(oFile, ofQWater, real(fQWater,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(22)==1) then
-!	msg = nf90_put_var(oFile, ofFluvErosRate, real(fFluvErosRate,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(23)==1) then
-!	msg = nf90_put_var(oFile, ofWater, real(fWater,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(24)==1) then
-!	msg = nf90_put_var(oFile, oDvolIceSrc, real(dvolIceSrc,sp), (/ step /) )
-!	msg = nf90_put_var(oFile, oDvolIceSnk, real(dvolIceSnk,sp), (/ step /) )
-!	msg = nf90_put_var(oFile, oDvolIce, real(dvolIce,sp), (/ step /) )	
-!end if
-!
-!if (pWriteFlag(27)==1) then
-!	msg = nf90_put_var(oFile, olBalRate, real(lBalRate(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(28)==1) then
-!	msg = nf90_put_var(oFile, ofLake, merge(1, 0, fLake), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(29)==1) then
-!	msg = nf90_put_var(oFile, ofCatchment, fCatchment, (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(30)==1) then
-!	msg = nf90_put_var(oFile, oTimeStepIceMean, timeStepIceMean, (/ step /) )
-!end if
-!
-!if (pWriteFlag(31)==1) then
-!	msg = nf90_put_var(oFile, oTempSl, tempSl, (/ step /) )
-!end if
-!
-!if (pWriteFlag(32)==1) then
-!	msg = nf90_put_var(oFile, ofFlex, real(fFlex,sp), (/ 1, 1, step /) )
-!end if
-!
-!if (pWriteFlag(33)==1) then
-!	msg = nf90_put_var(oFile, ofSolnH, real(fSolnH,sp), (/ 1, 1, step /) )
-!end if
-!
-!return
-!end subroutine writeStep
-!
-!! ==================================================================================================
-!! closeOutput: close the output file.
-!! ==================================================================================================
-!subroutine closeOutput ()
-!
-!integer msg
-!
-!msg = nf90_close(oFile)
-!return
-!
-!end subroutine closeOutput
-!
-!! ==================================================================================================
-!! debugOut2d: Writes a single 2D array to file, used for debugging purposes
-!! ==================================================================================================
-!subroutine debugOut2d(arr,filename)
-!
-!character(len=*), intent(in) :: filename
-!real(dp), intent(in) :: arr(:,:)
-!
-!! Arguments:
-!!! arr (in): array to be written, must be 2D double precision
-!!! filename (in): string containing the output filename
-!
-!integer :: nx, ny, msg, outId, xDimId, yDimId, arrVarId
-!
-!nx = size(arr,1)
-!ny = size(arr,2)
-!
-!msg = nf90_create( trim(filename), nf90_netcdf4, outId )
-!msg =  nf90_def_dim( outId, 'x', nx, xDimId ) 
-!msg =  nf90_def_dim( outId, 'y', ny, yDimId ) 
-!msg = nf90_def_var( outId, 'arr', nf90_double, (/ xDimId, yDimId /), arrVarId )
-!msg = nf90_put_var( outId, arrVarId, arr, (/ 1, 1 /) )
-!msg = nf90_close(outId)
-!
-!return
-!end subroutine debugOut2d
 
 end module io_module

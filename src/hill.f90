@@ -67,7 +67,7 @@ public hill_type
       import                          :: dp, hill_type ! use special types
       class(hill_type), intent(inout) :: h             ! model object
       real(dp), intent(in)            :: t             ! model time
-      real(dp), dimension(h%nx,h%ny)  :: z             ! soln for topo
+      real(dp), dimension(h%nx, h%ny)  :: z             ! soln for topo
     end function soln
   end interface
 
@@ -254,6 +254,8 @@ contains
 
   ! ---------------------------------------------------------------------------
   ! FUNC: Boundary condition, Benchmark, Hill, Steady-state, sin-wave Dirichlet 
+  !   Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
+  !   Transfer (9th ed.).
   ! ---------------------------------------------------------------------------
   function bc_bench_hill_ss_sin(edge, intr) result(bnd)
 
@@ -262,13 +264,18 @@ contains
     real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
 
     integer  :: n, i
-    real(dp) :: c
+    real(dp) :: wid, c, x
 
-    n = size(bnd)
-    c = pi/(n-3)
-    do i = 1,n
-      bnd(i) = hill_ss_tm*sin(c*(i-2))+hill_ss_t1
+    n = size(bnd) ! num points
+    wid = real(n-1, dp) ! width 
+    c = pi/wid
+
+    bnd(1) = hill_ss_t1
+    do i = 2, n-1
+      x = real(i-1, dp)
+      bnd(i) = hill_ss_tm*sin(c*x)+hill_ss_t1
     end do
+    bnd(n) = hill_ss_t1
 
     return
   end function bc_bench_hill_ss_sin
@@ -276,6 +283,8 @@ contains
   
   ! ---------------------------------------------------------------------------
   ! FUNC: Boundary condition, Benchmark, Hill, Steady-state, constant Dirichlet
+  !   Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
+  !   Transfer (9th ed.).
   ! ---------------------------------------------------------------------------
   function bc_bench_hill_ss_const(edge, intr) result(bnd)
 
@@ -291,6 +300,8 @@ contains
 
   ! ---------------------------------------------------------------------------
   ! FUNC: Exact solution, Benchmark, Hill, Steady-state
+  !         Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
+  !   Transfer (9th ed.).
   ! ---------------------------------------------------------------------------
   function solve_bench_hill_ss(h, t) result(z)
 
@@ -298,8 +309,23 @@ contains
     real(dp), intent(in)            :: t ! model time
     real(dp), dimension(h%nx,h%ny)  :: z ! soln for topo
 
-    ! DUMMY, REPLACE WITH ACTUAL SOLUTION
-    z = t
+    integer :: i, j
+    real(dp) :: x, y, wid, hgt, c1, c2
+
+    ! constants
+    wid = real(h%nx+1, dp)
+    hgt = real(h%ny+1, dp)
+    c1 = pi/wid
+    c2 = hill_ss_tm/sinh(c1*hgt)
+    
+    ! compute
+    do j = 1, h%ny
+      do i = 1, h%nx
+        x = real(i, dp)
+        y = real(j, dp)
+        z(i,j) = c2*sinh(c1*y)*sin(c1*x)+hill_ss_t1
+      end do
+    end do
 
   end function solve_bench_hill_ss
 
