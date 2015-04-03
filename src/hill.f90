@@ -76,8 +76,8 @@ public hill_type
   ! PARAMETERS
   ! ---------------------------------------------------------------------------
   real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp)
-  real(dp), parameter :: hill_ss_t1 = 1.0_dp ! benchmark, hill, steady state
-  real(dp), parameter :: hill_ss_tm = 9.0_dp ! benchmark, hill, steady state
+  real(dp), parameter :: hill_ss_t1 = 0.0_dp ! benchmark, hill, steady state
+  real(dp), parameter :: hill_ss_tm = 10.0_dp ! benchmark, hill, steady state
 
 contains
 
@@ -116,7 +116,7 @@ contains
     else
       ! model enabled, init components
       if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%dzdt(1,1))
+      allocate(h%dzdt(h%nx+2, h%ny+2))
       call set_bc_proc(h%nbcName, h%nbc)
       call set_bc_proc(h%sbcName, h%sbc)
       call set_bc_proc(h%wbcName, h%wbc)
@@ -137,7 +137,7 @@ contains
     real(dp), intent(in)            :: duration ! runtime
     
     integer :: north, south, east, west, i, j
-    real(dp) :: time, dt, dx2inv, dy2inv, cpt, laplace
+    real(dp) :: time, dt, dx2inv, dy2inv, cpt, laplace 
   
     ! define indices of edge points, for convenience
     north = h%ny+1
@@ -145,6 +145,7 @@ contains
     east = h%nx+1
     west = 2
 
+    h%dzdt = z ! temporarily use dzdt to store initial topo
     time = 0.0_dp
     do while (time .lt. duration)
      
@@ -173,6 +174,9 @@ contains
       time = time+dt
 
     end do
+
+    ! compute rate of change
+    h%dzdt = (z-h%dzdt)/duration
 
   end subroutine
 

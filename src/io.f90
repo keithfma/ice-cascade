@@ -203,7 +203,7 @@ contains
     type(topo_type), intent(in)     :: ftopo
     type(hill_type), intent(in)     :: fhill
 
-    integer :: fx0, fx1, fy0, fy1, msg, id_file, id_var
+    integer :: i0f, i1f, j0f, j1f, msg, id_file, id_var
 
     ! increment step counter
     time%out_step = time%out_step+1
@@ -212,10 +212,10 @@ contains
     print *, 'TIME = ', time%now
 
     ! define limits of interior points, for convenience
-    fx0 = 2
-    fx1 = ftopo%nx+1
-    fy0 = 2
-    fy1 = ftopo%ny+1
+    i0f = 2
+    i1f = ftopo%nx+1
+    j0f = 2
+    j1f = ftopo%ny+1
 
     ! open file
     msg = nf90_open(trim(runname)//'.out', nf90_write, id_file)
@@ -226,7 +226,12 @@ contains
 
     if (ftopo%write_z) then
       msg = nf90_inq_varid(id_file, 'ftopo_z', id_var)
-      msg = nf90_put_var(id_file, id_var, real(ftopo%z(fx0:fx1, fy0:fy1), p), [1, 1, time%out_step] )
+      msg = nf90_put_var(id_file, id_var, real(ftopo%z(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    if (fhill%write_dzdt) then
+      msg = nf90_inq_varid(id_file, 'fhill_dzdt', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fhill%dzdt(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
     ! close file

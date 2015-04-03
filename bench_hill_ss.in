@@ -72,5 +72,5 @@ $ options: none, bench_hill_ss
 none
 
 $ write hillslope dz/dt? (1,0)
-0
+1
 
