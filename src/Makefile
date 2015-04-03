@@ -4,7 +4,9 @@
 ## $LastChangedRevision: 97 $ 
 
 FORT = mpif90
-FFLAGS = -m64 -c -fast -xHost -nogen-interfaces -warn
+#FFLAGS = -m64 -c -fast -xHost -nogen-interfaces # run fast
+FFLAGS = -m64 -c -g  # simple 
+#FFLAGS = -m64 -c -g -check all -fpe0 -warn -traceback -debug extended # debug
 DEFS = 
 INCL = -I$(NETCDF_INCLUDE) -I$(INCLUDEDIR) 
 LIBS = -L$(NETCDF_LIBRARY) -lnetcdff -lnetcdf -lfftw3 
@@ -12,6 +14,8 @@ LIBS = -L$(NETCDF_LIBRARY) -lnetcdff -lnetcdf -lfftw3
 SRC = \
 types.f90 \
 fftw3.f90 \
+grid.f90 \
+hill.f90 \
 benchmark.f90 \
 cascade.f90 \
 ice.f90 \

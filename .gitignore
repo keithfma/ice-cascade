@@ -3,3 +3,4 @@ ice-cascade
 *~
 src/*.o
 src/*.mod
+*.swp

@@ -3,41 +3,36 @@
 # Requires:
 # 	NetCDF-C 4.?
 # 	NetCDF-Fortran 4.?
-# 	FFTW 3.3.4
+# 	FFTW 3.3.3
 # 	OpenMPI 1.?
 #
-# Uses system default compiler and MPI distribution, which are:
-# 	GCC v.4.4.7
+# Uses PGI compiler and MPI distribution, which are:
+# 	PGI 13.5 
 # 	OpenMPI v1.6.4
 #
 # Other library paths are defined explicitly (not using modules) 
 
 NETCDF_INC = /project/earth/packages/netcdf-4.3.0/include
 NETCDF_LIB = /project/earth/packages/netcdf-4.3.0/lib
-NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/install/include
-NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/install/lib
-FFTW3_INC = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/include
-FFTW3_LIB = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/lib
+NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
+NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
+MPI_LIB = /usr/local/IT/mpi/openmpi-1.6.4/pgi-13/lib
 
 FORT = mpif90
-FFLAGS = -c -ffree-line-length-none -g
-LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),-rpath,$(FFTW3_LIB),--enable-new-dtags
+FFLAGS = -c -tp=px-64 -g
+LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),-rpath,$(MPI_LIB),--enable-new-dtags
 DEFS = 
-INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) -I$(FFTW3_INC) 
-LIBS = -L$(FFTW3_LIB) -lfftw3 -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
+INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
+LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
 SRC = \
 types.f90 \
-fftw3.f90 \
-ic_grid.f90 \
-benchmark.f90 \
-cascade.f90 \
-ice.f90 \
+time.f90 \
+grid.f90 \
+topo.f90 \
+hill.f90 \
 io.f90 \
-hillslope.f90 \
-flexure.f90 \
-uplift.f90 \
-ice_cascade.f90 \
+ice_cascade.f90
 
 OBJ = $(patsubst %.f90, %.o, $(SRC))
 
