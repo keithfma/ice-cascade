@@ -17,33 +17,31 @@ use netcdf
 
 implicit none
 private
-public :: readParam
+public :: readParam, createOutfile
 
-! netcdf handles
-!! save handles between function calls
-integer, save :: oFile, olXDim, olYDim, ofXDim, ofYDim, oTimeDim, olX, olY, ofX, ofY, oTime, olH, ofH, &
-	olT, ofT, olHT, ofHT, olTempS, olTempB, olTempM, olUDefm, olVDefm, olUSlid, olVSlid, &
-	olSliding, ofSliding, olConstrict, ofUpliftRate, ofGlacErosRate, ofhillErosRate, ofSlope, &
-	ofQWater, ofFluvErosRate, ofWater, oDvolIceSrc, oDvolIceSnk, oDvolIce, ofSolnHss, &
-	olBalRate, ofLake, ofCatchment, oTimeStepIceMean, oTempSl, ofFlex, ofSolnH
+
+  ! ---------------------------------------------------------------------------
+  ! PARAMETERS
+  ! ---------------------------------------------------------------------------
+  integer, parameter :: p = dp       ! real kind for output
+  integer, parameter :: p_nc = dp_nc ! netcdf real kind for output
+
 
 contains
 
   ! ---------------------------------------------------------------------------
   ! SUB: read from the input file specified on the command line
   ! ---------------------------------------------------------------------------
-  subroutine readParam (fgrid, time, ftopo, fhill)
+  subroutine readParam (runname, fgrid, time, ftopo, fhill)
     
-    type(grid_type), intent(out) :: fgrid ! high-res grid
-    type(time_type), intent(out) :: time  ! model time vars
-    type(topo_type), intent(out) :: ftopo ! high-res topography
-    type(hill_type), intent(out) :: fhill ! hilllslope model
+    character(len=*), intent(out) :: runname ! name for run
+    type(grid_type), intent(out) :: fgrid    ! high-res grid
+    type(time_type), intent(out) :: time     ! model time vars
+    type(topo_type), intent(out) :: ftopo    ! high-res topography
+    type(hill_type), intent(out) :: fhill    ! hilllslope model
 
     character(len=100) :: infile, line
     integer :: tmp, msg
-
-    ! TEMPORARY
-    character(len=150) :: pRunName
   	
     ! Get input file name
     select case (command_argument_count())
@@ -69,15 +67,21 @@ contains
     rewind (55)
     
     ! Read in input parameters
-    read (55,*) pRunName	
+    read (55,*) runname	
     read (55,*) time%start
     read (55,*) time%finish
     read (55,*) time%step
     read (55,*) time%write_period
     read (55,*) fgrid%nx	
+    ftopo%nx = fgrid%nx
+    fhill%nx = fgrid%nx
     read (55,*) fgrid%ny
+    ftopo%ny = fgrid%ny
+    fhill%ny = fgrid%ny
     read (55,*) fgrid%dx
+    fhill%dx = fgrid%dx
     read (55,*) fgrid%dy	
+    fhill%dy = fgrid%dy
     read (55,*) ftopo%filename
     read (55,*) ftopo%write_z
     read (55,*) tmp; fhill%on = merge(.true., .false., tmp==1)
@@ -91,343 +95,108 @@ contains
     close(55)
     
   end subroutine readParam
-  
 
-!! ==================================================================================================
-!! initGrids: Reads or creates the initial model state (topography & ice thickness)
-!! ==================================================================================================
-!subroutine initGrids ( pTopoFile, pIceFile, pBenchmark, lT, fT, lH, fH, lDx, lDy, fDx, fDy, lX, &
-!	fX, lY, fY, pDoAddNoise, pDoPrefilter, pUpliftRate, pB, pRhoIce )
-!
-!! Arguments:
-!!! pTopoFile (in) = name of the netcdf file containing the initial topography
-!!! pIceFile (in) = name of the netcdf file containing the intial ice thickness
-!!! pBenchmark (in) = integer flag indicating whether a benchmark is to do run, and which
-!!! lT, fT (out) = low-, high-res initial topography grid
-!!! lH, fH (out) = low-, high-res initial ice thickness grid
-!!! lDx, lDy (in)  = low-res grid spacing, m
-!!! fDx, fDy (in)  = high-res grid spacing, m
-!!! lX, lY (out) = low-res coordinate grids, m
-!!! fX, fY (out) = high-res coordinate grids, m
-!!! pDoAddNoise (in) = logical flag, add noise to initial topography?
-!!! pDoPrefilter (in) = logical flag, apply smoothing filter to initial topography?
-!!! pB (in) = ice deformation rate constant
-!!! pRhoIce(in) = ice density
-!
-!character(len=*), intent(in) :: pTopoFile, pIceFile
-!logical, intent(in) :: pDoAddNoise, pDoPrefilter
-!integer, intent(in) :: pBenchmark
-!real(dp), intent(in) :: lDx, lDy, fDx, fDy, pUpliftRate, pB, pRhoIce
-!real(dp), intent(out) :: lT(:,:), fT(:,:), lH(:,:), fH(:,:), lX(:,:), lY(:,:), fX(:,:), fY(:,:)
-!
-!integer :: i, j, k, msg, iTopoFile, numDim, numVar, n1, n2, ifT, iIceFile, ifH,  lNx, fNx, lNy, fNy
-!real(dp) :: noise
-!
-!! Get grid sizes
-!lNx = size(lX,1)
-!lNy = size(lX,2)
-!fNx = size(fX,1)
-!fNy = size(fX,2)
-!
-!! Make coordinate grids
-!!! High-res
-!do j = 1,fNy
-!	do i = 1,fNx
-!		fX(i,j) = float(i-1)*fDx
-!		fY(i,j) = float(j-1)*fDy
-!	enddo
-!enddo
-!!! Low-res
-!do j = 1,lNy
-!	do i = 1,lNx
-!		!! offset by 1 point to account for bc points
-!		lX(i,j) = -lDx+float(i-1)*lDx
-!		lY(i,j) = -lDy+float(j-1)*lDy
-!	enddo
-!enddo
-!
-!! Normal model, read from file
-!if (pBenchmark==0) then
-!
-!	!! Read initial topography
-!	if (pTopoFile=='zero') then
-!		fT = 0._dp
-!	else
-!		!!! Open file
-!		msg = nf90_open( trim(pTopoFile), nf90_nowrite, iTopoFile )
-!		msg = nf90_inquire( iTopoFile, numDim, numVar )	
-!		!!! Confirm the dimensions
-!		if (numDim/=2) then
-!			print*,'Bad input file, should have only two dimensions'
-!		else
-!			msg = nf90_inquire_dimension(iTopoFile, 1, len = n1)	
-!			if (n1/=fNx) print*,'Input data does not match the given dimensions'
-!			msg = nf90_inquire_dimension(iTopoFile, 2, len = n2)
-!			if (n2/=fNy) print*,'Input data does not match the given dimensions'
-!		end if	
-!		!!! Find the variable containing topography, must be the only 2d variable
-!		ifT = -1
-!		do i = 1,numVar
-!			msg = nf90_inquire_variable(iTopoFile, i, ndims=numDim)
-!			if (numDim==2) then
-!				if (ifT/=-1) then
-!					print*,'Bad input file, only one var should be 2-dimensional'
-!					return
-!				else
-!					ifT = i
-!				end if
-!			end if 
-!		end do	
-!		!!! Read in the topography
-!		msg = nf90_get_var(iTopoFile, ifT, fT)
-!	endif
-!		
-!	!! Additional treatment of initial topography
-!	!!! Add random noise (optional) 
-!	call random_seed()
-!	if (pDoAddNoise) then
-!		do j = 1,fNy
-!			do i = 1,fNx
-!				call random_number(noise)
-!				!!!! Note: 10e3 * maximum uplift rate is needed so that uplift does not overwhelm 
-!				!!!!! the nascent drainage network, yielding unnatural smooth planar surfaces.
-!				fT(i,j) = fT(i,j) + noise*max(1._dp, pUpliftRate*10.e3_dp)
-!			enddo
-!		enddo
-!	end if
-!	!! Prefilter the high-res grid (optional) 
-!	if (pDoPrefilter) then      
-!		do k = 1,2
-!			do i = 2,fNx-1
-!				do j = 2,fNy-1
-!					fT(i,j) = (8._dp*fT(i,j)+2._dp*fT(i-1,j)+2._dp*fT(i+1,j)+2._dp*fT(i,j-1)+ &
-!						2._dp*fT(i,j+1)+fT(i-1,j-1)+fT(i-1,j+1)+fT(i+1,j-1)+fT(i+1,j+1))/20._dp
-!				enddo
-!			enddo
-!		enddo
-!	endif
-!	
-!	!! Read initial ice thickness
-!	if (pIceFile=='zero') then
-!		fH = 0._dp
-!	else	
-!		!!! Open file
-!		msg = nf90_open( trim(pIceFile), nf90_nowrite, iIceFile )
-!		msg = nf90_inquire( iIceFile, numDim, numVar )	
-!		!!! Confirm the dimensions
-!		if (numDim/=2) then
-!			print*,'Bad input file, should have only two dimensions'
-!		else
-!			msg = nf90_inquire_dimension(iIceFile, 1, len = n1)	
-!			if (n1/=fNx) print*,'Input data does not match the given dimensions'
-!			msg = nf90_inquire_dimension(iIceFile, 2, len = n2)
-!			if (n2/=fNy) print*,'Input data does not match the given dimensions'
-!		end if	
-!		!!! Find the variable containing topography, must be the only 2d variable
-!		ifH = -1
-!		do i = 1,numVar
-!			msg = nf90_inquire_variable(iIceFile, i, ndims=numDim)
-!			if (numDim==2) then
-!				if (ifH/=-1) then
-!					print*,'Bad input file, only one var should be 2-dimensional'
-!					return
-!				else
-!					ifH = i
-!				end if
-!			end if 
-!		end do	
-!		!!! Read in the ice thickness
-!		msg = nf90_get_var(iIceFile, ifH, fH)
-!		
-!	end if
-!
-!! Benchmark cases
-!!else
-!!	call benchInitGrids( pBenchmark, fX, fY, fT, fH, pB, pRhoIce )
-!	
-!end if
-!
-!!! Populate low-res grids 
-!!call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lT, fT )
-!!call highToLowRes ( lX, fX, lY, fY, fDx, fDy, lH, fH )
-!
-!end subroutine initGrids
-!
-!! ==================================================================================================
-!! createOutput: creates the output netcdf file
-!! ==================================================================================================
-!subroutine createOutput ( pRunName, pTopoFile, pIceFile, lNx, fNx, lNy, fNy, lDx, fDx, lDy, fDy, &
-!	pDoEros, pDoFlex, pDoTemp, pTimeEnd, pTimeStepIceMax, pTimeStepIceMin, pTimeStep, pB, pBs, &
-!	pGamma, pQheatb, pHeatConduct, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, pTempYrRng, &
-!	pMeltFact, pPrecipRate, pRhoIce, pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, &
-!	pGlacErosFact, pHillD, pUpliftRate, pGlacErosRateCeil, pTFloor, pGlacBcN, pGlacBcS, pGlacBcE, &
-!	pGlacBcW, pDoGlac, pDoFluv, pDoHill, pDoUplift, pDoTrackIceVol, pDoAddNoise, pDoPrefilter, &
-!	pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, pFluvErosFact, pBaseLvl, pNxPad, pNyPad, pHillBcN, &
-!	pHillBcS, pHillBcE, pHillBcW, pWriteFlag )
-!	
-!! Arguments:
-!!! pRunName (out) = string containing the run name
-!!! pTopoFile (out) = filename of the netcdf containing the initial topography, or "zero"
-!!! pIceFile (out) = filename of the netcdf containing the initial ice thickness, or "zero"
-!!! lNx, lNy (out) = low-res grid dimensions
-!!! fNx, fNy (out) = high-res grid dimensions
-!!! lDx, lDy (out) = low-res grid spacing, m
-!!! fDx, fDy (out) = high-res grid spacing, m
-!!! pDoEros (out) = logical flag, erode?
-!!! pDoFlex (out) = logical flag, compute flexure?
-!!! pDoTemp (out) = logical flag, polythermal ice?
-!!! pTimeEnd (out) = model end time, yr
-!!! pTimeStepIceMax (out) = maximum time step for the ice model, yr
-!!! pTimeStepIceMin (out) = minimum time step for the ice model, yr
-!!! pTimeStep (out) = model main time step, yr
-!!! pB (out) = ice-deformation constant (B), Pa^-3 a^-1
-!!! pBs (out) = sliding law constant (Bs), Pa^-3 a^-1  m^-2
-!!! pGamma (out) = constriction factor constant, m
-!!! pQheatb (out) = basal heat flux, W m^-2
-!!! pHeatConduct (out) = ice conductivity, W m^-1 K^-1
-!!! pTempSlMin, pTempSlMax (out) = minimum, maximum sea-level temperature over a climate cycle, C
-!!! pTempPeriod (out) = period of the climate cycle, yr
-!!! pTempLapse (out) = atmospheric temperature lapse rate, C/m
-!!! pTempYrRng (out) = yearly temperature range, C
-!!! pMeltFact (out) = positive-degree-day melting factor, m_ice/degC/day
-!!! pPrecipRate (out) = precip rate, m/yr
-!!! pRhoIce, pRhoWater, pRhoCrust, pRhoMantle  (out) = densities, kg/m^3
-!!! pYm (out) = Young's modulus, Pa
-!!! pNu (out) = Poisson's ratio, nondim
-!!! pTe (out) = elastic thickness, m
-!!! pGlacErosFact (out) = glacial erosion rate constant, nondim
-!!! pHillD (out) = hillslope diffusivity, m^2/yr
-!!! pUpliftRate (out) = tectonic uplift rate, m/yr
-!!! pGlacErosRateCeil (out) = maximum allowed glacial erosion rate, m/yr
-!!! pTFloor (out) = minimum allowed elevation, m
-!!! pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW (out) = ice model boundary conditions 
-!!! pDoGlac (out) = logical flag, run ice model?
-!!! pDoFluv (out) = logical flag, run fluvial model?
-!!! pDoHill (out) = logical flag, run hillslope model?
-!!! pDoUplift (out) = logical flag, run uplift?
-!!! pDoTrackIceVol (out) = logical flag, track ice volume?
-!!! pDoAddNoise (out) = logical flag, add noise to initial topography?
-!!! pDoPrefilter (out) = logical flag, apply smoothing filter to initial topography?
-!!! pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW (out) = fluvial model boundary conditions
-!!! pFluvErosFact (out) = fluvial erosion rate constant
-!!! pBenchmark (out) = integer label indicating if the model is a benchmark (\=0) and if so, which
-!!! pWriteFreq (out) = frequency of output, num main time steps
-!!! pBaseLvl (out) = base level for the fluvial model, m
-!!! pNxPad, pNyPad (out) = grid dimensions for the padded grid used in the flexure fourier transform
-!!! pWriteFlag = integer flags for output variables (1/0)
-!	
-!character(len=150), intent(in) :: pRunName, pTopoFile, pIceFile
-!logical, intent(in) :: pDoTemp, pDoEros, pDoFlex, pDoGlac, pDoFluv, pDoHill, pDoUplift, &
-!	pDoTrackIceVol, pDoAddNoise, pDoPrefilter
-!integer, intent(in) :: lNx, lNy, fNx, fNy, pGlacBcN, pGlacBcS, pGlacBcE, pGlacBcW, pWriteFlag(:), &
-!	pFluvBcN, pFluvBcS, pFluvBcE, pFluvBcW, pNxPad, pNyPad, pHillBcN, pHillBcS, pHillBcE, pHillBcW
-!real (dp), intent(in) :: pTimeStepIceMax, pTimeStepIceMin, pTimeStep, pTimeEnd, pB, pBs, pGamma, pTempYrRng, &
-!	pMeltFact, pTempLapse, pQheatb, pHeatConduct, pUpliftRate, pGlacErosFact, pHillD, pTempPeriod, &
-!	pTempSlMax, pTempSlMin, lDx, lDy, fDx, fDy, pGlacErosRateCeil, pTFloor, pPrecipRate, pRhoIce, &
-!	pRhoWater, pRhoCrust, pRhoMantle, pYm, pNu, pTe, pFluvErosFact, pBaseLvl
-!
-!logical :: shuf
-!integer :: msg, i, j, deflateLevel
-!integer, dimension(3) :: lChunk, fChunk
-! 
-!! Define compression and chunking parameters 
-!deflateLevel = 1 ! compression, 0 = none, 9 = max, best value is 1
-!lChunk = (/ lNx-2, lNy-2, 1 /)
-!fChunk = (/ fNx-2, fNy-2, 1 /)
-!shuf = .true.
-!
-!! Create output netcdf file
-!
-!!! Open
-!msg = nf90_create( trim(pRunName)//'.out', nf90_netcdf4, oFile ) ! NETCDF-4 format, allows compression
-!
-!!! Define dimensions
-!msg = nf90_def_dim( oFile, 'lX', lNx-2, olXDim ) 
-!msg = nf90_def_dim( oFile, 'lY', lNy-2, olYDim ) 
-!msg = nf90_def_dim( oFile, 'fX', fNx, ofXDim ) 
-!msg = nf90_def_dim( oFile, 'fY', fNy, ofYDim ) 
-!msg = nf90_def_dim( oFile, 'time', nf90_unlimited, oTimeDim )
-!
-!!! Write parameters as global attributes
-!msg = nf90_put_att( oFile, nf90_global, 'glacial model flag', merge(1,0,pDoGlac))
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial model flag', merge(1,0,pDoFluv))
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope model flag', merge(1,0,pDoHill))
-!msg = nf90_put_att( oFile, nf90_global, 'isostasy model flag', merge(1,0,pDoFlex))
-!msg = nf90_put_att( oFile, nf90_global, 'erosion flag', merge(1,0,pDoEros))
-!msg = nf90_put_att( oFile, nf90_global, 'uplift flag', merge(1,0,pDoUplift))
-!msg = nf90_put_att( oFile, nf90_global, 'add 1m noise to initial topo', merge(1,0,pDoAddNoise))
-!msg = nf90_put_att( oFile, nf90_global, 'apply smoothing filter to initial topo', merge(1,0,pDoPrefilter))
-!msg = nf90_put_att( oFile, nf90_global, 'input topography file', pTopoFile)
-!msg = nf90_put_att( oFile, nf90_global, 'input ice thickness file', pIceFile)	
-!msg = nf90_put_att( oFile, nf90_global, 'maximum timestep for the ice model, yrs', pTimeStepIceMax)
-!msg = nf90_put_att( oFile, nf90_global, 'minimum timestep for the ice model, yrs', pTimeStepIceMin)
-!msg = nf90_put_att( oFile, nf90_global, 'main timestep (not for ice model), yrs', pTimeStep)
-!msg = nf90_put_att( oFile, nf90_global, 'model end time, yrs', pTimeEnd)
-!msg = nf90_put_att( oFile, nf90_global, 'basal temperature calculation flag', merge(1,0,pDoTemp))
-!msg = nf90_put_att( oFile, nf90_global, 'ice volume tracking flag', merge(1,0,pDoTrackIceVol))
-!msg = nf90_put_att( oFile, nf90_global, 'ice deformation coefficient, Pa^-3 s^-1', pB)
-!msg = nf90_put_att( oFile, nf90_global, 'ice deformation exponent, nondim', 3.)
-!msg = nf90_put_att( oFile, nf90_global, 'basal heat flux, W m^-2', pQheatb)
-!msg = nf90_put_att( oFile, nf90_global, 'ice thermal conductivity, W m^-1 K-1', pHeatConduct) 
-!msg = nf90_put_att( oFile, nf90_global, 'ice boundary condition, north', pGlacBcN )
-!msg = nf90_put_att( oFile, nf90_global, 'ice boundary condition, south', pGlacBcS )
-!msg = nf90_put_att( oFile, nf90_global, 'ice boundary condition, east', pGlacBcE )
-!msg = nf90_put_att( oFile, nf90_global, 'ice boundary condition, west', pGlacBcW )
-!msg = nf90_put_att( oFile, nf90_global, 'ice density, kg m^-3', pRhoIce)
-!msg = nf90_put_att( oFile, nf90_global, 'ice sliding coefficient, m^2 Pa^-3 a^-1', pBs)
-!msg = nf90_put_att( oFile, nf90_global, 'ice sliding exponent, nondim', 3._dp)
-!msg = nf90_put_att( oFile, nf90_global, 'ice constriction coefficient, m', pGamma)
-!msg = nf90_put_att( oFile, nf90_global, 'glacial erosion coefficient, nondim', pGlacErosFact)
-!msg = nf90_put_att( oFile, nf90_global, 'maximum allowed glacial erosion rate, m yr^-1', pGlacErosRateCeil )
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial erosion rate constant, (m^3 yr^-1)^0.5', pFluvErosFact)
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial base-level, (m)', pBaseLvl)
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial boundary condition, north', pFluvBcN )
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial boundary condition, south', pFluvBcS )
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial boundary condition, east', pFluvBcE )
-!msg = nf90_put_att( oFile, nf90_global, 'fluvial boundary condition, west', pFluvBcW )
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope diffusivity, m^2 a^-1', pHillD)
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope boundary condition, north', pHillBcN )
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope boundary condition, south', pHillBcS )
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope boundary condition, east', pHillBcE )
-!msg = nf90_put_att( oFile, nf90_global, 'hillslope boundary condition, west', pHillBcW )
-!msg = nf90_put_att( oFile, nf90_global, 'youngs modulus', pYm)
-!msg = nf90_put_att( oFile, nf90_global, 'poissons ratio', pNu)
-!msg = nf90_put_att( oFile, nf90_global, 'elastic thickness of the lithospere', pTe)
-!msg = nf90_put_att( oFile, nf90_global, 'dimensions of padded grid for flexure, x', pNxPad)
-!msg = nf90_put_att( oFile, nf90_global, 'dimensions of padded grid for flexure, y', pNyPad)
-!msg = nf90_put_att( oFile, nf90_global, 'tectonic rock uplift rate, m a^-1', pUpliftRate)
-!msg = nf90_put_att( oFile, nf90_global, 'minimum allowed bedrock elevation, m', pTFloor)	
-!msg = nf90_put_att( oFile, nf90_global, 'minimum sea-level surface temperature, C', pTempSlMin)
-!msg = nf90_put_att( oFile, nf90_global, 'maximum sea-level surface temperature, C', pTempSlMax)
-!msg = nf90_put_att( oFile, nf90_global, 'period of surface temperature oscillation, yrs', pTempPeriod)
-!msg = nf90_put_att( oFile, nf90_global, 'surface temperature lapse rate, K m^-1', pTempLapse)
-!msg = nf90_put_att( oFile, nf90_global, 'amplitude of annual temperature cycle, deg. C', pTempYrRng)
-!msg = nf90_put_att( oFile, nf90_global, 'melting rate constant, m(ice)/day/deg. C ', pMeltFact) 
-!msg = nf90_put_att( oFile, nf90_global, 'precipitation rate, m a^-1', pPrecipRate)
-!msg = nf90_put_att( oFile, nf90_global, 'water density, kg m^-3', pRhoWater)
-!msg = nf90_put_att( oFile, nf90_global, 'crust density, kg m^-3', pRhoCrust)
-!msg = nf90_put_att( oFile, nf90_global, 'mantle density, kg m^-3', pRhoMantle)
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: create netcdf file and vars for output
+  ! ---------------------------------------------------------------------------
+  subroutine createOutfile(runname, fgrid, time, ftopo, fhill)
+
+    character(len=*), intent(in) :: runname
+    type(grid_type), intent(in)  :: fgrid
+    type(time_type), intent(in)  :: time
+    type(topo_type), intent(in)  :: ftopo
+    type(hill_type), intent(in)  :: fhill
+
+    logical :: shuf
+    integer, dimension(3) :: fchunk
+    integer :: i, j, defLvl, msg, id_file, id_dim_fx, id_dim_fy, &
+      id_dim_time, id_var_time, id_var_fx, id_var_fy, id_var_ftopo_z, &
+      id_var_fhill_dzdt, id_var_fhill_soln 
+ 
+    ! define compression and chunking parameters 
+    defLvl = 1 ! compression, 0 = none, 9 = max, best value is 1
+    fchunk = [fgrid%nx, fgrid%ny, 1]
+    shuf = .true.
+
+    ! create new file
+    msg = nf90_create(trim(runname)//'.out', nf90_netcdf4, id_file)
+
+    ! write parameters as global attributes
+    msg = nf90_put_att(id_file, nf90_global, 'model_start_time__a', time%start)
+    msg = nf90_put_att(id_file, nf90_global, 'model_end_time__a', time%finish)
+    msg = nf90_put_att(id_file, nf90_global, 'model_time_step__a', time%step)
+    msg = nf90_put_att(id_file, nf90_global, 'output_interval__steps', time%write_period)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_nx__1', fgrid%nx)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_ny__1', fgrid%ny)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dy__m', fgrid%dy)
+    if (fhill%on) then
+      msg = nf90_put_att(id_file, nf90_global, 'hill_diffusivity__m2a-1', fhill%D)
+      msg = nf90_put_att(id_file, nf90_global, 'hill_north_bc', trim(fhill%nbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_south_bc', trim(fhill%sbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_west_bc', trim(fhill%wbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_east_bc', trim(fhill%ebcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_topo_soln', trim(fhill%solnName))
+    end if
+
+    ! define dimensions
+    msg = nf90_def_dim(id_file, 'fx', fgrid%nx, id_dim_fx) 
+    msg = nf90_def_dim(id_file, 'fy', fgrid%ny, id_dim_fy) 
+    msg = nf90_def_dim(id_file, 'time', nf90_unlimited, id_dim_time)
+
+    ! create variables
+    msg = nf90_def_var( id_file, 'time', p_nc, id_dim_time, id_var_time)
+    msg = nf90_put_att( id_file, id_var_time, 'long_name', 'model_time')
+    msg = nf90_put_att( id_file, id_var_time, 'units', 'a')
+
+    msg = nf90_def_var( id_file, 'fx', p_nc, id_dim_fx, id_var_fx )
+    msg = nf90_put_att( id_file, id_var_fx, 'long_name', 'x_coord_high_res')
+    msg = nf90_put_att( id_file, id_var_fx, 'units', 'm')
+    
+    msg = nf90_def_var( id_file, 'fy', p_nc, id_dim_fy, id_var_fy )
+    msg = nf90_put_att( id_file, id_var_fy, 'long_name', 'y_coord_high_res')
+    msg = nf90_put_att( id_file, id_var_fy, 'units', 'm')
+
+    if (ftopo%write_z) then
+     	msg = nf90_def_var(id_file, 'ftopo_z', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var_ftopo_z, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var_ftopo_z, 'long_name', 'topography_high_res')
+     	msg = nf90_put_att(id_file, id_var_ftopo_z, 'units', 'm')
+    end if
+
+    if (fhill%write_dzdt) then
+     	msg = nf90_def_var(id_file, 'fhill_dzdt', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var_fhill_dzdt, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var_fhill_dzdt, 'long_name', 'hillslope_dzdt_high_res')
+     	msg = nf90_put_att(id_file, id_var_fhill_dzdt, 'units', 'm')
+    end if
+
+    if (fhill%write_soln) then
+     	msg = nf90_def_var(id_file, 'fhill_soln', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var_fhill_soln, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var_fhill_soln, 'long_name', 'hillslope_topo_solution_high_res')
+     	msg = nf90_put_att(id_file, id_var_fhill_soln, 'units', 'm')
+    end if
+
+    ! exit definition mode
+    msg = nf90_enddef(id_file) 
+
+    ! populate dimension variables
+    msg = nf90_put_var(id_file, id_var_fx, fgrid%x(2:fgrid%nx+1))
+    msg = nf90_put_var(id_file, id_var_fy, fgrid%y(2:fgrid%ny+1))
+
+    
+    !do i = 1,lNx
+!	msg = nf90_put_var( oFile, olX, (i-1)*lDx, (/ i /) )
+!end do
+
+  end subroutine createOutfile
+
 !
 !!! Create variables
-!msg = nf90_def_var( oFile, 'time', sp_nc, oTimeDim, oTime )
-!msg = nf90_put_att( oFile, oTime, 'long_name', 'model time')
-!msg = nf90_put_att( oFile, oTime, 'units', 'years')
 !
-!msg = nf90_def_var( oFile, 'lX', sp_nc, olXDim, olX )
-!msg = nf90_put_att( oFile, olX, 'long_name', 'x-position, low resolution grid')
-!msg = nf90_put_att( oFile, olX, 'units', 'm')
 !
-!msg = nf90_def_var( oFile, 'lY', sp_nc, olYDim, olY )
-!msg = nf90_put_att( oFile, olY, 'long_name', 'y-position, low resolution grid')
-!msg = nf90_put_att( oFile, olY, 'units', 'm')
-!
-!msg = nf90_def_var( oFile, 'fX', sp_nc, ofXDim, ofX )
-!msg = nf90_put_att( oFile, ofX, 'long_name', 'x-position, high resolution grid')
-!msg = nf90_put_att( oFile, ofX, 'units', 'm')
-!
-!msg = nf90_def_var( oFile, 'fY', sp_nc, ofYDim, ofY )
-!msg = nf90_put_att( oFile, ofY, 'long_name', 'y-position, high resolution grid')
-!msg = nf90_put_att( oFile, ofY, 'units', 'm')
 !
 !if (pWriteFlag(1)==1) then
 !	msg = nf90_def_var( oFile, 'lH', sp_nc, (/ olXDim, olYDim, oTimeDim /), olH, &

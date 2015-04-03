@@ -11,7 +11,6 @@
 module hill_module
 
 use types, only: dp
-use grid_module, only: grid_type
 
 implicit none
 private
@@ -30,8 +29,6 @@ public hill_type
     real(dp)                        :: dy          ! grid spacing in y-dir, [m]
     real(dp)                        :: D           ! diffusivity, [m**2/a]
     real(dp)                        :: dtMax       ! max stable step CFL, [a]
-    real(dp), allocatable           :: x(:)        ! x coordinate vector, [m]
-    real(dp), allocatable           :: y(:)        ! y coordinate vector, [m]
     real(dp), allocatable           :: dzdt(:,:)   ! topo rate of change, [m/a]
     character(len=100)              :: nbcName     ! north BC name
     character(len=100)              :: sbcName     ! south BC name
@@ -86,12 +83,12 @@ contains
 
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize a hillslope model object
-  !   Note: components D, dtMax, *Name, and write_dzdt must be set before init()
+  !   Note: components nx, ny, dx, dy, D, dtMax, *Name, and write_dzdt must be
+  !   set before init
   ! --------------------------------------------------------------------------- 
-  subroutine init(h, g)
+  subroutine init(h)
 
     class(hill_type), intent(inout) :: h ! object to initialize
-    type(grid_type), intent(in)     :: g ! grid 
     
     if (h%on .eqv. .false.) then
       ! model disabled, clear all object components
@@ -103,12 +100,8 @@ contains
       h%dy = -1.0_dp
       h%D = -1.0_dp
       h%dtMax = -1.0_dp
-      if (allocated(h%x) .eqv. .true.) deallocate(h%x)
-      if (allocated(h%y) .eqv. .true.) deallocate(h%y)
       if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%x(1), h%y(1), h%dzdt(1,1))
-      h%x = -1.0_dp
-      h%y = -1.0_dp
+      allocate(h%dzdt(1,1))
       h%dzdt = -1.0_dp
       h%nbcName = "none"
       h%sbcName = "none"
@@ -121,17 +114,9 @@ contains
       h%ebc => NULL()
       h%solve => NULL()
     else
-      ! model enabled, set all object components
-      h%nx = g%nx
-      h%ny = g%ny
-      h%dx = g%dx
-      h%dy = g%dy
-      if (allocated(h%x) .eqv. .true.) deallocate(h%x)
-      if (allocated(h%y) .eqv. .true.) deallocate(h%y)
+      ! model enabled, init components
       if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%x(h%nx+2), h%y(h%ny+2), h%dzdt(h%nx+2, h%ny+2))
-      h%x = g%x
-      h%y = g%y
+      allocate(h%dzdt(1,1))
       call set_bc_proc(h%nbcName, h%nbc)
       call set_bc_proc(h%sbcName, h%sbc)
       call set_bc_proc(h%wbcName, h%wbc)

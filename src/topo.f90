@@ -12,7 +12,6 @@
 module topo_module
 
 use types, only: dp
-use grid_module, only: grid_type
 use netcdf
 
 implicit none
@@ -37,21 +36,15 @@ contains
 
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize topo object
-  !   Note: components filename and write_z must be set before init()
+  !   Note: components nx, ny, filename, and write_z must be set before init
   ! --------------------------------------------------------------------------- 
-  subroutine init(t, g)
+  subroutine init(t)
 
     class(topo_type), intent(inout) :: t ! object to initialize
-    type(grid_type), intent(in)     :: g ! grid 
 
-
-    t%nx = g%nx
-    t%ny = g%ny
     if (allocated(t%z) .eqv. .true.) deallocate(t%z)
     allocate(t%z(t%nx+2, t%ny+2))
     t%z = 0.0_dp
-
-    ! read data from file, if needed
     if (t%filename .ne. "zero") call readNetcdf(t)
 
   end subroutine init
