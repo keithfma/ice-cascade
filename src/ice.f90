@@ -179,7 +179,8 @@ do while (time<pTimeEnd)
 	end where	
 	!! Share first row upwards with prev proc
 	call mpi_isend(lHT(1,jSta), lNx, dp_mpi, prev, 11, mpi_comm_world, request2(1), ierr)	
-	call mpi_irecv(lHT(1,jEnd+1), lNx, dp_mpi, next, 11, mpi_comm_world, request2(2), ierr)	
+        if (next .ne. mpi_proc_null) &
+	        call mpi_irecv(lHT(1,jEnd+1), lNx, dp_mpi, next, 11, mpi_comm_world, request2(2), ierr)	
 	call mpi_waitall(2, request2, status2, ierr)
 			
 	! Climate forcing
@@ -223,7 +224,8 @@ do while (time<pTimeEnd)
 	lH = lH-lMelt	
 	!! Share first row upwards with prev proc
 	call mpi_isend(lH(1,jSta), lNx, dp_mpi, prev, 12, mpi_comm_world, request2(1), ierr)
-	call mpi_irecv(lH(1,jEnd+1), lNx, dp_mpi, next, 12, mpi_comm_world, request2(2), ierr)
+        if (next .ne. mpi_proc_null) &
+	        call mpi_irecv(lH(1,jEnd+1), lNx, dp_mpi, next, 12, mpi_comm_world, request2(2), ierr)
 	call mpi_waitall(2, request2, status2, ierr)
 	
 	! Accumulate rain and melt water	
@@ -953,7 +955,8 @@ do j=j0,j1
 end do 
 !! Share last row downwards with next proc
 call mpi_isend(d(1,j1), lNx-1, dp_mpi, next, 1, mpi_comm_world, request2(1), ierr)
-call mpi_irecv(d(1,j0-1), lNx-1, dp_mpi, prev, 1, mpi_comm_world, request2(2), ierr)
+if (next .ne. mpi_proc_null) &
+        call mpi_irecv(d(1,j0-1), lNx-1, dp_mpi, prev, 1, mpi_comm_world, request2(2), ierr)
 call mpi_waitall(2, request2, status2, ierr)
 
 ! Compute the maximum stable timestep 
@@ -985,7 +988,8 @@ do j = j0,j1
 end do
 !! share last row downwards with next proc
 call mpi_isend(qy(1,j1), lNx-2, dp_mpi, next, 1, mpi_comm_world, request2(1), ierr)
-call mpi_irecv(qy(1,j0-1), lNx-2, dp_mpi, prev, 1, mpi_comm_world, request2(2), ierr)
+if (next .ne. mpi_proc_null) &
+        call mpi_irecv(qy(1,j0-1), lNx-2, dp_mpi, prev, 1, mpi_comm_world, request2(2), ierr)
 call mpi_waitall(2, request2, status2, ierr)
 		
 ! -----------------

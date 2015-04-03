@@ -433,6 +433,8 @@ case (11)
 	pDoHill = .false.
 	pDoFlex = .false.
 	pDoEros = .true. 
+	pQheatb = 42.e-3_dp
+	pHeatConduct = 2.1_dp
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
 	pGlacBcN = 4
