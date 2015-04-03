@@ -18,22 +18,22 @@ $ Model start time (real, yr)
 0.
 
 $ Model end time (real, yr)
-10000.
+1000.
 
 $ Model timestep (real, yr)
 1.
 
 $ Output period, (integer) 
 $ e.g. 10 = ouput every 10th timestep
-500
+10
 
 $ -------------------
 $ Grids 
 $ -------------------
 
 $ high-res grid dimensions, number of points in the x; y directions
-100
-100
+50
+50
 
 $ high-res grid spacing in x; y directions, meters
 1. 
@@ -69,8 +69,8 @@ bench_hill_ss_const
 
 $ exact solution for topography ( string )
 $ options: none, bench_hill_ss
-bench_hill_ss
+none
 
 $ write hillslope dz/dt? (1,0)
-1
+0
 
