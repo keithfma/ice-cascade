@@ -167,13 +167,17 @@ case (1)
 	pGlacBcS = 0
 	pGlacBcE = 0
 	pGlacBcW = 0
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pDoFluv = .false.
 	pDoHill = .false.
 	pDoFlex = .false.
 	pDoEros = .false.
 	pDoUplift = .false.
 	pRhoIce = 910._dp
-	pRhoWater = 1000._dp
+	pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, &
 		  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -205,12 +209,17 @@ case (2)
 	pGlacBcS = 0
 	pGlacBcE = 0
 	pGlacBcW = 0
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pDoFluv = .false.
 	pDoHill = .false.
 	pDoFlex = .false.
 	pDoEros = .false.
 	pDoUplift = .false.
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, &
 		  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -247,7 +256,12 @@ case (3)
 	pGlacBcS = 3
 	pGlacBcE = 1 ! no-flux
 	pGlacBcW = 1
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, &
 		  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -279,7 +293,12 @@ case (4)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp			
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, &
 		  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -311,7 +330,12 @@ case (5)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp			
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, &
 		  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -343,7 +367,12 @@ case (6)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp			
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, &
 		  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -372,11 +401,17 @@ case (9)
 	pDoEros = .false.
 	pDoUplift = .false.
 	pB = 1.0e-16_dp   
+        pTe = 15000_dp
 	pGlacBcN = 4
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910.0_dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -393,6 +428,8 @@ case (10)
 	fDy = 2.0_dp*cEgholmW/(fNy-1)
 	lNx = fNx
 	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmATimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -401,7 +438,7 @@ case (10)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true.
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -409,7 +446,12 @@ case (10)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -426,6 +468,8 @@ case (11)
 	fDy = 2.0_dp*cEgholmW/(fNy-1)
 	lNx = fNx
 	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmBTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -434,7 +478,7 @@ case (11)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .false.
 	pQheatb = 42.e-3_dp
 	pHeatConduct = 2.1_dp
@@ -444,8 +488,12 @@ case (11)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
-        pRhoWater = 1000.
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -455,12 +503,15 @@ case (11)
 ! Egholm 1c Benchmark	  
 case (12) 
 	pRunName = 'Egholm_1c'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmCTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -469,7 +520,7 @@ case (12)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -477,7 +528,12 @@ case (12)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -487,12 +543,15 @@ case (12)
 ! Egholm 1d Benchmark	  
 case (13) 
 	pRunName = 'Egholm_1d'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmDTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -501,7 +560,7 @@ case (13)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true.
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -509,7 +568,12 @@ case (13)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -519,12 +583,15 @@ case (13)
 ! Egholm 2a Benchmark	  
 case (14) 
 	pRunName = 'Egholm_2a'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmATimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -533,7 +600,7 @@ case (14)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -541,7 +608,12 @@ case (14)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -551,12 +623,15 @@ case (14)
 ! Egholm 2b Benchmark	  
 case (15) 
 	pRunName = 'Egholm_2b'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmBTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -565,7 +640,7 @@ case (15)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -573,7 +648,12 @@ case (15)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -583,12 +663,15 @@ case (15)
 ! Egholm 2c Benchmark	  
 case (16) 
 	pRunName = 'Egholm_2c'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmCTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -597,7 +680,7 @@ case (16)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -605,7 +688,12 @@ case (16)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
@@ -615,12 +703,15 @@ case (16)
 ! Egholm 2d Benchmark	  
 case (17) 
 	pRunName = 'Egholm_2d'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
+        pNxPad = fNx
+        pNyPad = fNx
 	pTimeEnd = cEgholmDTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -629,7 +720,7 @@ case (17)
 	pDoGlac = .true.
 	pDoFluv = .false.
 	pDoHill = .false.
-	pDoFlex = .false.
+	pDoFlex = .true. 
 	pDoEros = .true. 
 	pDoUplift = .false.
 	pB = 1.e-16_dp   
@@ -637,7 +728,12 @@ case (17)
 	pGlacBcS = 4
 	pGlacBcE = 4
 	pGlacBcW = 4
+        pRhoCrust = 2800
+        pRhoMantle  = 2800
+        pYm = 0.5e11
+        pNu = 0.25
 	pRhoIce = 910._dp
+        pRhoWater = 0._dp
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &

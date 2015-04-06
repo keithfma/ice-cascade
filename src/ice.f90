@@ -965,7 +965,7 @@ call mpi_waitall(2, request2, status2, ierr)
 !! Experience shows this value is conservative.
 if ( maxval(d(:,j0:j1)) > 0) then
         timeStep = (lDx*lDy)/(8._dp*maxval(d(:,j0:j1)))
-        print*,"Step:",maxval(d(:,j0:j1)), timeStep
+!        print*,"Step:",maxval(d(:,j0:j1)), timeStep
 else 
         timeStep = ieee_value(timeStep,  ieee_positive_inf)
 end if
