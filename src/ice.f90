@@ -34,6 +34,7 @@ module ice
 
 use types, only: dp, dp_mpi, dp_eps 
 use mpi, only: mpi_status_size, mpi_comm_world, mpi_proc_null, mpi_min, mpi_sum
+use ieee_arithmetic
 use benchmark, only: benchSurfaceTemp, benchBalanceRate
 implicit none
 private
@@ -962,8 +963,13 @@ call mpi_waitall(2, request2, status2, ierr)
 ! Compute the maximum stable timestep 
 !! After Hindmarsh 2001, in Continuum Mechanics and Applications in Geophysics and the Environment. 
 !! Experience shows this value is conservative.
-timeStep = (lDx*lDy)/(8._dp*maxval(d(:,j0:j1)))
-
+if ( maxval(d(:,j0:j1)) > 0) then
+        timeStep = (lDx*lDy)/(8._dp*maxval(d(:,j0:j1)))
+        print*,"Step:",maxval(d(:,j0:j1)), timeStep
+else 
+        timeStep = ieee_value(timeStep,  ieee_positive_inf)
+end if
+        
 ! --------------
 ! Ice flux 
 

@@ -656,28 +656,28 @@ msg = nf90_put_att( oFile, nf90_global, 'crust density, kg m^-3', pRhoCrust)
 msg = nf90_put_att( oFile, nf90_global, 'mantle density, kg m^-3', pRhoMantle)
 
 !! Create variables
-msg = nf90_def_var( oFile, 'time', sp_nc, oTimeDim, oTime )
+msg = nf90_def_var( oFile, 'time', dp_nc, oTimeDim, oTime )
 msg = nf90_put_att( oFile, oTime, 'long_name', 'model time')
 msg = nf90_put_att( oFile, oTime, 'units', 'years')
 
-msg = nf90_def_var( oFile, 'lX', sp_nc, olXDim, olX )
+msg = nf90_def_var( oFile, 'lX', dp_nc, olXDim, olX )
 msg = nf90_put_att( oFile, olX, 'long_name', 'x-position, low resolution grid')
 msg = nf90_put_att( oFile, olX, 'units', 'm')
 
-msg = nf90_def_var( oFile, 'lY', sp_nc, olYDim, olY )
+msg = nf90_def_var( oFile, 'lY', dp_nc, olYDim, olY )
 msg = nf90_put_att( oFile, olY, 'long_name', 'y-position, low resolution grid')
 msg = nf90_put_att( oFile, olY, 'units', 'm')
 
-msg = nf90_def_var( oFile, 'fX', sp_nc, ofXDim, ofX )
+msg = nf90_def_var( oFile, 'fX', dp_nc, ofXDim, ofX )
 msg = nf90_put_att( oFile, ofX, 'long_name', 'x-position, high resolution grid')
 msg = nf90_put_att( oFile, ofX, 'units', 'm')
 
-msg = nf90_def_var( oFile, 'fY', sp_nc, ofYDim, ofY )
+msg = nf90_def_var( oFile, 'fY', dp_nc, ofYDim, ofY )
 msg = nf90_put_att( oFile, ofY, 'long_name', 'y-position, high resolution grid')
 msg = nf90_put_att( oFile, ofY, 'units', 'm')
 
 if (pWriteFlag(1)==1) then
-	msg = nf90_def_var( oFile, 'lH', sp_nc, (/ olXDim, olYDim, oTimeDim /), olH, &
+	msg = nf90_def_var( oFile, 'lH', dp_nc, (/ olXDim, olYDim, oTimeDim /), olH, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olH, 'long_name', 'ice thickness, low resolution grid')
 	msg = nf90_put_att( oFile, olH, 'units', 'm')
@@ -685,7 +685,7 @@ if (pWriteFlag(1)==1) then
 end if	
 
 if (pWriteFlag(2)==1) then
-	msg = nf90_def_var( oFile, 'fH', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofH, &
+	msg = nf90_def_var( oFile, 'fH', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofH, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofH, 'long_name', 'ice thickness, high resolution grid')
 	msg = nf90_put_att( oFile, ofH, 'units', 'm')
@@ -693,49 +693,49 @@ if (pWriteFlag(2)==1) then
 end if	
 	
 if (pWriteFlag(3)==1) then	
-	msg = nf90_def_var( oFile, 'lT', sp_nc, (/ olXDim, olYDim, oTimeDim /), olT, &
+	msg = nf90_def_var( oFile, 'lT', dp_nc, (/ olXDim, olYDim, oTimeDim /), olT, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olT, 'long_name', 'bedrock elevation, low resolution grid')
 	msg = nf90_put_att( oFile, olT, 'units', 'm')
 end if
 
 if (pWriteFlag(4)==1) then	
-	msg = nf90_def_var( oFile, 'fT', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofT, &
+	msg = nf90_def_var( oFile, 'fT', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofT, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofT, 'long_name', 'bedrock elevation, high resolution grid')
 	msg = nf90_put_att( oFile, ofT, 'units', 'm')
 end if
 
 if (pWriteFlag(5)==1) then
-	msg = nf90_def_var( oFile, 'lHT', sp_nc, (/ olXDim, olYDim, oTimeDim /), olHT, &
+	msg = nf90_def_var( oFile, 'lHT', dp_nc, (/ olXDim, olYDim, oTimeDim /), olHT, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olHT, 'long_name', 'ice surface topography, low resolution grid')
 	msg = nf90_put_att( oFile, olHT, 'units', 'm')
 end if	
 
 if (pWriteFlag(6)==1) then
-	msg = nf90_def_var( oFile, 'fHT', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofHT, &
+	msg = nf90_def_var( oFile, 'fHT', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofHT, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofHT, 'long_name', 'ice surface topography, high resolution grid')
 	msg = nf90_put_att( oFile, ofHT, 'units', 'm')
 end if	
 
 if (pWriteFlag(7)==1) then
-	msg = nf90_def_var( oFile, 'lTempS', sp_nc, (/ olXDim, olYDim, oTimeDim /), olTempS, &
+	msg = nf90_def_var( oFile, 'lTempS', dp_nc, (/ olXDim, olYDim, oTimeDim /), olTempS, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olTempS, 'long_name', 'surface temperature, low resolution grid')
 	msg = nf90_put_att( oFile, olTempS, 'units', 'degrees C')
 end if
 
 if (pWriteFlag(8)==1) then
-	msg = nf90_def_var( oFile, 'lTempB', sp_nc, (/ olXDim, olYDim, oTimeDim /), olTempB, &
+	msg = nf90_def_var( oFile, 'lTempB', dp_nc, (/ olXDim, olYDim, oTimeDim /), olTempB, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olTempB, 'long_name', 'basal temperature, low resolution grid')
 	msg = nf90_put_att( oFile, olTempB, 'units', 'degrees C')
 end if
 
 if (pWriteFlag(9)==1) then
-	msg = nf90_def_var( oFile, 'lTempM', sp_nc, (/ olXDim, olYDim, oTimeDim /), olTempM, &
+	msg = nf90_def_var( oFile, 'lTempM', dp_nc, (/ olXDim, olYDim, oTimeDim /), olTempM, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olTempM, 'long_name', &
 		'ice melting temperature, low resolution grid')
@@ -743,98 +743,98 @@ if (pWriteFlag(9)==1) then
 end if
 
 if (pWriteFlag(10)==1) then
-	msg = nf90_def_var( oFile, 'lUDefm', sp_nc, (/ olXDim, olYDim, oTimeDim /), olUDefm, &
+	msg = nf90_def_var( oFile, 'lUDefm', dp_nc, (/ olXDim, olYDim, oTimeDim /), olUDefm, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olUDefm, 'long_name', 'ice deformation velocity, x-component, low resolution grid')
 	msg = nf90_put_att( oFile, olUDefm, 'units', 'm/yr')	
 end if
 
 if (pWriteFlag(11)==1) then
-	msg = nf90_def_var( oFile, 'lVDefm', sp_nc, (/ olXDim, olYDim, oTimeDim /), olVDefm, &
+	msg = nf90_def_var( oFile, 'lVDefm', dp_nc, (/ olXDim, olYDim, oTimeDim /), olVDefm, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olUDefm, 'long_name', 'ice deformation velocity, y-component, low resolution grid')
 	msg = nf90_put_att( oFile, olVDefm, 'units', 'm/yr')	
 end if
 
 if (pWriteFlag(12)==1) then
-	msg = nf90_def_var( oFile, 'lUSlid', sp_nc, (/ olXDim, olYDim, oTimeDim /), olUSlid, &
+	msg = nf90_def_var( oFile, 'lUSlid', dp_nc, (/ olXDim, olYDim, oTimeDim /), olUSlid, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olUSlid, 'long_name', 'ice sliding velocity, x-component, low resolution grid')
 	msg = nf90_put_att( oFile, olUSlid, 'units', 'm/yr')	
 end if
 
 if (pWriteFlag(13)==1) then
-	msg = nf90_def_var( oFile, 'lVSlid', sp_nc, (/ olXDim, olYDim, oTimeDim /), olVSlid, &
+	msg = nf90_def_var( oFile, 'lVSlid', dp_nc, (/ olXDim, olYDim, oTimeDim /), olVSlid, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olVSlid, 'long_name', 'ice sliding velocity, y-component, low resolution grid')
 	msg = nf90_put_att( oFile, olVSlid, 'units', 'm/yr')	
 end if
 
 if (pWriteFlag(14)==1) then
-	msg = nf90_def_var( oFile, 'lSliding', sp_nc, (/ olXDim, olYDim, oTimeDim /), olSliding, &
+	msg = nf90_def_var( oFile, 'lSliding', dp_nc, (/ olXDim, olYDim, oTimeDim /), olSliding, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olSliding, 'long_name', 'ice sliding velocity magnitude, low resolution grid')
 	msg = nf90_put_att( oFile, olSliding, 'units', 'm/yr')	
 end if
 
 if (pWriteFlag(15)==1) then	
-	msg = nf90_def_var( oFile, 'fSliding', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSliding, &
+	msg = nf90_def_var( oFile, 'fSliding', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSliding, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofSliding, 'long_name', 'ice sliding velocity magnitude, high resolution grid')
 	msg = nf90_put_att( oFile, ofSliding, 'units', 'm/yr')
 end if
 
 if (pWriteFlag(16)==1) then
-	msg = nf90_def_var( oFile, 'lConstrict', sp_nc, (/ olXDim, olYDim, oTimeDim /), olConstrict, &
+	msg = nf90_def_var( oFile, 'lConstrict', dp_nc, (/ olXDim, olYDim, oTimeDim /), olConstrict, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olConstrict, 'long_name', 'ice constriction factor, low resolution grid')
 	msg = nf90_put_att( oFile, olConstrict, 'units', 'non-dimensional')	
 end if
 
 if (pWriteFlag(17)==1) then	
-	msg = nf90_def_var( oFile, 'fUpliftRate', sp_nc, (/ ofXDim, ofYDim /), ofUpliftRate, &
+	msg = nf90_def_var( oFile, 'fUpliftRate', dp_nc, (/ ofXDim, ofYDim /), ofUpliftRate, &
 		chunksizes = (/ fNx, fNy /), shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofUpliftRate, 'long_name', 'tectonic uplift rate,  high resolution grid')
 	msg = nf90_put_att( oFile, ofUpliftRate, 'units', 'm/yr')
 end if
 
 if (pWriteFlag(18)==1) then	
-	msg = nf90_def_var( oFile, 'fGlacErosRate', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofGlacErosRate, &
+	msg = nf90_def_var( oFile, 'fGlacErosRate', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofGlacErosRate, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofGlacErosRate, 'long_name', 'glacial erosion rate,  high resolution grid')
 	msg = nf90_put_att( oFile, ofGlacErosRate, 'units', 'm/yr')
 end if
 
 if (pWriteFlag(19)==1) then	
-	msg = nf90_def_var( oFile, 'fHillErosRate', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofHillErosRate, &
+	msg = nf90_def_var( oFile, 'fHillErosRate', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofHillErosRate, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofHillErosRate, 'long_name', 'hillslope erosion rate,  high resolution grid')
 	msg = nf90_put_att( oFile, ofHillErosRate, 'units', 'm/yr')
 end if
 
 if (pWriteFlag(20)==1) then	
-	msg = nf90_def_var( oFile, 'fSlope', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSlope, &
+	msg = nf90_def_var( oFile, 'fSlope', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSlope, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofSlope, 'long_name', 'bedrock slope,  high resolution grid')
 	msg = nf90_put_att( oFile, ofSlope, 'units', 'nondim')
 end if
 
 if (pWriteFlag(21)==1) then	
-	msg = nf90_def_var( oFile, 'fQWater', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofQWater, &
+	msg = nf90_def_var( oFile, 'fQWater', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofQWater, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofQWater, 'long_name', 'water discharge, high resolution grid')
 	msg = nf90_put_att( oFile, ofQWater, 'units', 'm^3/yr')
 end if
 
 if (pWriteFlag(22)==1) then	
-	msg = nf90_def_var( oFile, 'fFluvErosRate', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofFluvErosRate, &
+	msg = nf90_def_var( oFile, 'fFluvErosRate', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofFluvErosRate, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofFluvErosRate, 'long_name', 'fluvial erosion rate,  high resolution grid')
 	msg = nf90_put_att( oFile, ofFluvErosRate, 'units', 'm/yr')
 end if
 
 if (pWriteFlag(23)==1) then	
-	msg = nf90_def_var( oFile, 'fWater', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofWater, &
+	msg = nf90_def_var( oFile, 'fWater', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofWater, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofWater, 'long_name', 'water input rate (rainfall + ice melt),  high resolution grid')
 	msg = nf90_put_att( oFile, ofWater, 'units', 'm/yr')
@@ -842,17 +842,17 @@ end if
 
 if (pWriteFlag(24)==1) then
 	
-	msg = nf90_def_var( oFile, 'dvolIceSrc', sp_nc, (/ oTimeDim /), oDvolIceSrc )
+	msg = nf90_def_var( oFile, 'dvolIceSrc', dp_nc, (/ oTimeDim /), oDvolIceSrc )
 	msg = nf90_put_att( oFile, oDvolIceSrc, 'long_name', &
 		'ice volume added by mass balance and flux at domain boudaries for each step,  scalar')
 	msg = nf90_put_att( oFile, oDvolIceSrc, 'units', 'm^3')
 	
-	msg = nf90_def_var( oFile, 'dvolIceSnk', sp_nc, (/ oTimeDim /), oDvolIceSnk )
+	msg = nf90_def_var( oFile, 'dvolIceSnk', dp_nc, (/ oTimeDim /), oDvolIceSnk )
 	msg = nf90_put_att( oFile, oDvolIceSnk, 'long_name', &
 		'ice volume lost by mass balance and flux at domain boudaries for each step, scalar')
 	msg = nf90_put_att( oFile, oDvolIceSnk, 'units', 'm^3')
 
-	msg = nf90_def_var( oFile, 'dvolIce', sp_nc, (/ oTimeDim /), oDvolIce )
+	msg = nf90_def_var( oFile, 'dvolIce', dp_nc, (/ oTimeDim /), oDvolIce )
 	msg = nf90_put_att( oFile, oDvolIce, 'long_name', 'change in ice volume for each step, scalar')
 	msg = nf90_put_att( oFile, oDvolIce, 'units', 'm^3')
 
@@ -861,7 +861,7 @@ end if
 !! Note: dropped pWriteFlag(25), this variable was used for lHSoln
 
 if (pWriteFlag(26)==1) then
-	msg = nf90_def_var( oFile, 'fSolnHss', sp_nc, (/ ofXDim, ofYDim /), ofSolnHss, &
+	msg = nf90_def_var( oFile, 'fSolnHss', dp_nc, (/ ofXDim, ofYDim /), ofSolnHss, &
 		chunksizes = (/ fNx, fNy /), shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofSolnHss, 'long_name', &
 		'Exact solution for ice thickness at steady state,  high resolution grid')
@@ -869,7 +869,7 @@ if (pWriteFlag(26)==1) then
 end if
 
 if (pWriteFlag(27)==1) then
-	msg = nf90_def_var( oFile, 'lBalRate', sp_nc, (/ olXDim, olYDim, oTimeDim /), olBalRate, &
+	msg = nf90_def_var( oFile, 'lBalRate', dp_nc, (/ olXDim, olYDim, oTimeDim /), olBalRate, &
 		chunksizes = lChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, olBalRate, 'long_name', 'balance rate, low resolution grid')
 	msg = nf90_put_att( oFile, olBalRate, 'units', 'm ice / yr')
@@ -890,26 +890,26 @@ if (pWriteFlag(29)==1) then
 end if
 
 if (pWriteFlag(30)==1) then
-	msg = nf90_def_var( oFile, 'timeStepIceMean', sp_nc, (/ oTimeDim /), oTimeStepIceMean )
+	msg = nf90_def_var( oFile, 'timeStepIceMean', dp_nc, (/ oTimeDim /), oTimeStepIceMean )
 	msg = nf90_put_att( oFile, oTimeStepIceMean, 'long_name','mean time step for the ice model')
 	msg = nf90_put_att( oFile, oTimeStepIceMean, 'units', 'yr')
 end if
 
 if (pWriteFlag(31)==1) then
-	msg = nf90_def_var( oFile, 'tempSl', sp_nc, (/ oTimeDim /), oTempSl )
+	msg = nf90_def_var( oFile, 'tempSl', dp_nc, (/ oTimeDim /), oTempSl )
 	msg = nf90_put_att( oFile, oTempSl, 'long_name','sea level temperature, mean annual')
 	msg = nf90_put_att( oFile, oTempSl, 'units', 'deg C')
 end if
 
 if (pWriteFlag(32)==1) then
-	msg = nf90_def_var( oFile, 'fFlex', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofFlex, &
+	msg = nf90_def_var( oFile, 'fFlex', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofFlex, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofFlex, 'long_name', 'flexural isostatic deflection, high resolution grid')
 	msg = nf90_put_att( oFile, ofFlex, 'units', 'm')
 end if
 
 if (pWriteFlag(33)==1) then
-	msg = nf90_def_var( oFile, 'fSolnH', sp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSolnH, &
+	msg = nf90_def_var( oFile, 'fSolnH', dp_nc, (/ ofXDim, ofYDim, oTimeDim /), ofSolnH, &
 		chunksizes = fChunk, shuffle = shuf, deflate_level = deflateLevel )
 	msg = nf90_put_att( oFile, ofSolnH, 'long_name', &
 		'Exact solution for ice thickness, time dependant, high resolution grid')
@@ -956,11 +956,11 @@ real(dp), intent(in) :: fUpliftRate(:,:), fSolnHss(:,:)
 integer :: msg
 
 if (pWriteFlag(17)==1) then
-	msg = nf90_put_var(oFile, ofUpliftRate, real(fUpliftRate,sp), (/ 1, 1 /) )
+	msg = nf90_put_var(oFile, ofUpliftRate, real(fUpliftRate,dp), (/ 1, 1 /) )
 end if
 
 if (pWriteFlag(26)==1) then
-	msg = nf90_put_var(oFile, ofSolnHss, real(fSolnHss,sp), (/ 1, 1 /) )
+	msg = nf90_put_var(oFile, ofSolnHss, real(fSolnHss,dp), (/ 1, 1 /) )
 end if
 
 return
@@ -1021,110 +1021,110 @@ print*,'time = ',time
 print*,'fT min,mean,max', nint(minval(fT)), nint(sum(fT)/size(fT)), nint(maxval(fT))
 print*,'lH min,mean,max', nint(minval(lH(2:lNx-1,2:lNy-1))), &
 	nint(sum(lH(2:lNx-1,2:lNy-1))/(lNx-2)/(lNy-2)), nint(maxval(lH(2:lNx-1,2:lNy-1)))
-print*,'timeStepIceMean',real(timeStepIceMean,sp)
-print*,'fQWater min,mean,max', real(minval(fQWater),sp), real(sum(fQWater)/size(fQWater),sp), &
-	real(maxval(fQWater),sp)
+print*,'timeStepIceMean',real(timeStepIceMean,dp)
+print*,'fQWater min,mean,max', real(minval(fQWater),dp), real(sum(fQWater)/size(fQWater),dp), &
+	real(maxval(fQWater),dp)
 
 
 ! Write output to netcdf 
 msg = nf90_put_var(oFile, oTime, time, (/ step /) )
 
 if (pWriteFlag(1)==1) then
-	msg = nf90_put_var(oFile, olH, real(lH(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olH, real(lH(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(2)==1) then
-	msg = nf90_put_var(oFile, ofH, real(fH,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofH, real(fH,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(3)==1) then
-	msg = nf90_put_var(oFile, olT, real(lT(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olT, real(lT(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(4)==1) then
-	msg = nf90_put_var(oFile, ofT, real(fT,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofT, real(fT,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(5)==1) then
-	msg = nf90_put_var(oFile, olHT, real(lHT(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olHT, real(lHT(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(6)==1) then
-	msg = nf90_put_var(oFile, ofHT, real(fHT,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofHT, real(fHT,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(7)==1) then	
-	msg = nf90_put_var(oFile, olTempS, real(lTempS(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )	
+	msg = nf90_put_var(oFile, olTempS, real(lTempS(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )	
 end if
 
 if (pWriteFlag(8)==1) then
-	msg = nf90_put_var(oFile, olTempB, real(lTempB(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olTempB, real(lTempB(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(9)==1) then
-	msg = nf90_put_var(oFile, olTempM, real(lTempM(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olTempM, real(lTempM(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(10)==1) then
-	msg = nf90_put_var(oFile, olUDefm, real(lUDefm(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olUDefm, real(lUDefm(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(11)==1) then
-	msg = nf90_put_var(oFile, olVDefm, real(lVDefm(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olVDefm, real(lVDefm(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(12)==1) then
-	msg = nf90_put_var(oFile, olUSlid, real(lUSlid(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olUSlid, real(lUSlid(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(13)==1) then
-	msg = nf90_put_var(oFile, olVSlid, real(lVSlid(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olVSlid, real(lVSlid(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(14)==1) then
-	msg = nf90_put_var(oFile, olSliding, real(lSliding(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olSliding, real(lSliding(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(15)==1) then
-	msg = nf90_put_var(oFile, ofSliding, real(fSliding,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofSliding, real(fSliding,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(16)==1) then
-	msg = nf90_put_var(oFile, olConstrict, real(lConstrict(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olConstrict, real(lConstrict(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(18)==1) then
-	msg = nf90_put_var(oFile, ofGlacErosRate, real(fGlacErosRate,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofGlacErosRate, real(fGlacErosRate,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(19)==1) then
-	msg = nf90_put_var(oFile, ofHillErosRate, real(fHillErosRate,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofHillErosRate, real(fHillErosRate,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(20)==1) then
-	msg = nf90_put_var(oFile, ofSlope, real(fSlope,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofSlope, real(fSlope,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(21)==1) then
-	msg = nf90_put_var(oFile, ofQWater, real(fQWater,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofQWater, real(fQWater,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(22)==1) then
-	msg = nf90_put_var(oFile, ofFluvErosRate, real(fFluvErosRate,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofFluvErosRate, real(fFluvErosRate,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(23)==1) then
-	msg = nf90_put_var(oFile, ofWater, real(fWater,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofWater, real(fWater,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(24)==1) then
-	msg = nf90_put_var(oFile, oDvolIceSrc, real(dvolIceSrc,sp), (/ step /) )
-	msg = nf90_put_var(oFile, oDvolIceSnk, real(dvolIceSnk,sp), (/ step /) )
-	msg = nf90_put_var(oFile, oDvolIce, real(dvolIce,sp), (/ step /) )	
+	msg = nf90_put_var(oFile, oDvolIceSrc, real(dvolIceSrc, dp), (/ step /) )
+	msg = nf90_put_var(oFile, oDvolIceSnk, real(dvolIceSnk,dp), (/ step /) )
+	msg = nf90_put_var(oFile, oDvolIce, real(dvolIce,dp), (/ step /) )	
 end if
 
 if (pWriteFlag(27)==1) then
-	msg = nf90_put_var(oFile, olBalRate, real(lBalRate(2:lNx-1,2:lNy-1),sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, olBalRate, real(lBalRate(2:lNx-1,2:lNy-1),dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(28)==1) then
@@ -1144,11 +1144,11 @@ if (pWriteFlag(31)==1) then
 end if
 
 if (pWriteFlag(32)==1) then
-	msg = nf90_put_var(oFile, ofFlex, real(fFlex,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofFlex, real(fFlex,dp), (/ 1, 1, step /) )
 end if
 
 if (pWriteFlag(33)==1) then
-	msg = nf90_put_var(oFile, ofSolnH, real(fSolnH,sp), (/ 1, 1, step /) )
+	msg = nf90_put_var(oFile, ofSolnH, real(fSolnH,dp), (/ 1, 1, step /) )
 end if
 
 return

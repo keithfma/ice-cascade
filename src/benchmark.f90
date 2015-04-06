@@ -173,6 +173,7 @@ case (1)
 	pDoEros = .false.
 	pDoUplift = .false.
 	pRhoIce = 910._dp
+	pRhoWater = 1000._dp
 	pWriteFlag = &
 		[ 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, &
 		  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
@@ -352,10 +353,10 @@ case (6)
 ! Egholm 1 Benchmark, steady state	  
 case (9) 
 	pRunName = 'egholm_1_ss'
-  !! choose fNx, set others grid vars to make cells approx square
-	fNx = 200 	
-  fDx = cEgholmL/(fNx-1) 
-  fNy = int(2.0_dp*cEgholmW/fDx)+1
+        !! choose fNx, set others grid vars to make cells approx square
+	fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
 	fDy = 2.0_dp*cEgholmW/(fNy-1)
 	lNx = fNx
 	lNy = fNy
@@ -384,13 +385,14 @@ case (9)
 
 ! Egholm 1a Benchmark	  
 case (10) 
-	pRunName = 'Egholm_1a'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+        pRunName = 'Egholm_1a'
+!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
 	pTimeEnd = cEgholmATimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -417,12 +419,13 @@ case (10)
 ! Egholm 1b Benchmark	  
 case (11) 
 	pRunName = 'Egholm_1b'
-	fNx = 60
-	fNy = 60
-	fDx = cEgholmL/(fNx-1) ! makes grid 825 km x 825 km 
-	fDy = cEgholmW/(fNy-1)
-	lNx = 60
-	lNy = 60
+	!! choose fNx, set others grid vars to make cells approx square
+        fNx = 200 
+        fDx = cEgholmL/(fNx-1) 
+        fNy = int(2.0_dp*cEgholmW/fDx)+1
+	fDy = 2.0_dp*cEgholmW/(fNy-1)
+	lNx = fNx
+	lNy = fNy
 	pTimeEnd = cEgholmBTimeEnd
 	pTimeStepIceMax = 10._dp 
 	pTimeStepIceMin = 0.001_dp
@@ -432,7 +435,7 @@ case (11)
 	pDoFluv = .false.
 	pDoHill = .false.
 	pDoFlex = .false.
-	pDoEros = .true. 
+	pDoEros = .false.
 	pQheatb = 42.e-3_dp
 	pHeatConduct = 2.1_dp
 	pDoUplift = .false.
@@ -442,6 +445,7 @@ case (11)
 	pGlacBcE = 4
 	pGlacBcW = 4
 	pRhoIce = 910._dp
+        pRhoWater = 1000.
 	pWriteFlag = &
 		[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
 		  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, &
