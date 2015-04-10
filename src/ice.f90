@@ -190,7 +190,7 @@ do while (time<pTimeEnd)
 	! Climate forcing
 	!! Normal model
 	if (pBenchmark==0) then
-		call surfaceTemp( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
+		call surfaceTempRhone( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
 			lTempS, tempSl )			
 		call balanceRate( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
 			lTempS, lRain, lSnow, lMelt )			
@@ -805,17 +805,60 @@ if (iwork2 > irank) iend = iend + 1
 return
 end subroutine paraRange
 
+!! ==================================================================================================
+!! surfaceTemp: Compute surface temperatures using a simple lapse rate 
+!! ==================================================================================================
+!subroutine surfaceTemp ( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
+!	lTempS, tempSl )	
+!	
+!! Arguments:
+!!! jSta, jEnd (in) =  indices of the rows handled by this thread
+!!! time (in) = current model time, yr
+!!! pTempSlMax, pTempSlMin (in) = Maximum and minimum sea-level temperature over a sinusoidal climate cycle
+!!! pTempPeriod (in) = Duration of one full sinusoidal climate cycle, yr
+!!! pTempLapse (in) = Temperature lapse rate, C/m
+!!! lHT (in) = ice surface topography grid, m
+!!! lTempS (out) = surface temperature grid, C
+!!! lDx, lDy (in) = low-res grid spacing, m
+!!! tempSl (out) = sea-level temperature. C
+!			
+!integer, intent(in) :: jSta, jEnd
+!real(dp), intent(in) :: time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT(:,:)
+!real(dp), intent(out) :: lTempS(:,:), tempSl
+!
+!integer :: i, j, j0, j1, lNx, lNy
+!real(dp) :: tempRng
+!
+!! Get grid dimensions
+!lNx = size(lHT,1)
+!lNy = size(lHT,2)
+!
+!! Mean sea-level temperature (sinusoidal cycle)
+!tempRng = pTempSlMax-pTempSlMin
+!tempSl = pTempSlMin+tempRng*(sin(2._dp*pi*time/pTempPeriod-pi/2._dp)+1._dp)/2._dp 
+!
+!! Surface temperature
+!j0 = max(2,jSta); j1 = min(lNy-1,jEnd) ! interior points in proc range only
+!do j = j0,j1
+!	do i = 2,lNx-1
+!		lTempS(i,j) = tempSl-pTempLapse*lHT(i,j)
+!	end do 
+!end do
+!
+!return
+!end subroutine surfaceTemp
+
 ! ==================================================================================================
-! surfaceTemp: Compute surface temperatures using a simple lapse rate 
+! surfaceTempRhone: Compute surface temperatures from sawtooth forcing and lapse rate 
 ! ==================================================================================================
-subroutine surfaceTemp ( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
+subroutine surfaceTempRhone ( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
 	lTempS, tempSl )	
 	
 ! Arguments:
 !! jSta, jEnd (in) =  indices of the rows handled by this thread
 !! time (in) = current model time, yr
-!! pTempSlMax, pTempSlMin (in) = Maximum and minimum sea-level temperature over a sinusoidal climate cycle
-!! pTempPeriod (in) = Duration of one full sinusoidal climate cycle, yr
+!! pTempSlMax, pTempSlMin (in) = Maximum and minimum sea-level temperature over a sawtooth climate cycle
+!! pTempPeriod (in) = Duration of one full sawtoth climate cycle, yr
 !! pTempLapse (in) = Temperature lapse rate, C/m
 !! lHT (in) = ice surface topography grid, m
 !! lTempS (out) = surface temperature grid, C
@@ -826,16 +869,26 @@ integer, intent(in) :: jSta, jEnd
 real(dp), intent(in) :: time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT(:,:)
 real(dp), intent(out) :: lTempS(:,:), tempSl
 
+! Fraction of pTempPeriod climate is cooling, hardcoded to avoid changing to IO
+real(dp), parameter :: fc = 0.8 
+
 integer :: i, j, j0, j1, lNx, lNy
-real(dp) :: tempRng
+real(dp) :: tprime, fcp, mc, mw
 
 ! Get grid dimensions
 lNx = size(lHT,1)
 lNy = size(lHT,2)
 
-! Mean sea-level temperature (sinusoidal cycle)
-tempRng = pTempSlMax-pTempSlMin
-tempSl = pTempSlMin+tempRng*(sin(2._dp*pi*time/pTempPeriod-pi/2._dp)+1._dp)/2._dp 
+! Sea-level temperature
+tprime = mod(time, pTempPeriod)
+fcp = fc*pTempPeriod
+if (tprime .le. fcp) then
+  mc = (pTempSlMin-pTempSlMax)/fcp
+  tempSl = pTempSlMax+mc*tprime
+else
+  mw = (pTempSlMax-pTempSlMin)/(pTempPeriod-fcp)
+  tempSl = pTempSlMin+mw*(tprime-fcp)
+end if
 
 ! Surface temperature
 j0 = max(2,jSta); j1 = min(lNy-1,jEnd) ! interior points in proc range only
@@ -846,7 +899,7 @@ do j = j0,j1
 end do
 
 return
-end subroutine surfaceTemp
+end subroutine surfaceTempRhone
 
 ! ==================================================================================================
 ! updateHeight: Computes ice thickness change due to deformation and sliding
