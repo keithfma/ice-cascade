@@ -1,10 +1,9 @@
 # Customized for the BU Shared Computing Cluster
 # 
-# Requires:
-# 	NetCDF-C 4.?
-# 	NetCDF-Fortran 4.?
-# 	FFTW 3.3.4
-# 	OpenMPI 1.?
+# Required modules:
+#		netcdf/4.3.0
+#		netcdf-fortran/4.4.2
+#		fftw/3.3.4
 #
 # Uses system default compiler and MPI distribution, which are:
 # 	GCC v.4.4.7
@@ -12,12 +11,12 @@
 #
 # Other library paths are defined explicitly (not using modules) 
 
-NETCDF_INC = /project/earth/packages/netcdf-4.3.0/include
-NETCDF_LIB = /project/earth/packages/netcdf-4.3.0/lib
-NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/install/include
-NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/install/lib
-FFTW3_INC = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/include
-FFTW3_LIB = /share/pkg/fftw/3.3.4b/openmpi-1.6.4/install/lib
+NETCDF_INC = $(SCC_NETCDF_INCLUDE)
+NETCDF_LIB = $(SCC_NETCDF_LIB)
+NETCDFF_INC = $(SCC_NETCDF_FORTRAN_INCLUDE)
+NETCDFF_LIB = $(SCC_NETCDF_FORTRAN_LIB)
+FFTW3_INC = $(SCC_FFTW_INCLUDE)
+FFTW3_LIB = $(SCC_FFTW_LIB)
 
 FORT = mpif90
 FFLAGS = -c -ffree-line-length-none -g
