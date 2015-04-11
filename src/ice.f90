@@ -192,7 +192,7 @@ do while (time<pTimeEnd)
 	if (pBenchmark==0) then
 		call surfaceTempRhone( jSta, jEnd, time, pTempSlMin, pTempSlMax, pTempPeriod, pTempLapse, lHT, &
 			lTempS, tempSl )			
-		call balanceRate( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
+		call balanceRateRhone( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
 			lTempS, lRain, lSnow, lMelt )			
 	!! Benchmarks		
 	else
@@ -479,27 +479,112 @@ end if
 return
 end subroutine applyBc
 
+!! ==================================================================================================
+!! balanceRate: Compute ice & water balance using a positive-degree-day scheme
+!! ==================================================================================================
+!subroutine balanceRate( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
+!	lTempS, lRainRate, lSnowRate, lMeltRate )
+!	
+!! About: The positive-degree-day scheme, based on Kessler et al 2006, JGR and references therein,
+!!! provides a balance rate that depends on precip and temperature, and allows the model to conserve
+!!! water. This implementation assumes a sinusoidal annual temperature cycle centered on the mean annual surface 
+!!! temperature. The snowfall fraction is computed from the fraction of the year when the surface 
+!!! temperature is <=0 C. Ice melting varys linearly with the annual positive-degree-days (the 
+!!! integral of the positive part of the yearly temperature cycle. 	
+!
+!! Arguments:
+!!! jSta, jEnd (in) =  indices of the rows handled by this thread
+!!! lDx, lDy (in) = low-res grid spacing, m
+!!! pRhoIce, pRhoWater (in) = ice, water density, kg/m^3
+!!! pPrecipRate (in) = spatially uniform precipitation rate, m/yr
+!!! pTempYrRng (in) = amplitude of the yearly temperature cycle, C
+!!! pMeltFact (in) = positive-degree-day melting rate constant
+!!! lTempS (out) = surface temperature grid, C
+!!! lRainRate (out) = rainfall rate, m_water/yr
+!!! lSnowRate (out) = snowfall rate, m_ice/yr
+!!! lMeltRate (out) = ice melting rate, m_ice/yr
+!
+!! Notes:
+!!! The current version computes positive degree days at each point, which requires a fairly large
+!!! number of computations. A more efficient implementation would be to compute a snowfall-elevation
+!!! curve and a melt-elevation curve and interpolate from these to get the value at each point. This 
+!!! should be done sometime soon.
+!
+!integer, intent(in) :: jSta, jEnd
+!real(dp), intent(in) :: pMeltFact, pTempYrRng, pPrecipRate, lTempS(:,:), pRhoIce, pRhoWater
+!real(dp), intent(out) :: lRainRate(:,:), lSnowRate(:,:), lMeltRate(:,:)
+!
+!integer :: i, j, j0, j1, lNx, lNy
+!real(dp) :: pdd, fs, invTempYrRng, invPi, twot, waterToIce
+!
+!real(dp), parameter :: cliff_xm = 20000._dp 
+!real(dp), parameter :: cliff_mdot0 = 2._dp
+!real(dp), parameter :: cliff_n = 3._dp
+!
+!! Get grid dimensions
+!lNx = size(lSnowRate,1)
+!lNy = size(lSnowRate,2)
+!
+!! Initialize to zero
+!lMeltRate = 0._dp
+!lRainRate = 0._dp
+!lSnowRate = 0._dp
+!
+!! Interior points only
+!j0 = max(2,jSta); j1 = min(lNy-1,jEnd) 
+!
+!! A few constants to save on computations
+!invTempYrRng = 1/pTempYrRng
+!invPi = 1/pi
+!waterToIce = pRhoWater/pRhoIce
+!
+!do j = j0,j1
+!	do i = 2,lNx-1
+!		
+!		if (lTempS(i,j)>=pTempYrRng) then ! temperatures are uniformly positive throughout the year
+!			pdd = dayInYr*lTempS(i,j) ! positive degree days
+!			fs = 0._dp ! fraction snowfall
+!			
+!		elseif (lTempS(i,j)<=-pTempYrRng) then ! temperatures are uniformly negative throughout the year
+!			pdd = 0._dp
+!			fs = 1._dp
+!		
+!		else ! temperature sign depends on the season				
+!			!!...original, slow
+!			!lT = asin(-lTempS(i,j)/pTempYrRng)/2/pi
+!			!pdd = dayInYr*( lTempS(i,j)*(0.5-2*lT) + pTempYrRng/pi*cos(2*pi*lT) )
+!			!fs = 0.5 + 2*lT				
+!			!...slightly faster (~10%)
+!			twot = asin(-lTempS(i,j)*invTempYrRng)*invPi
+!			pdd = dayInYr*( lTempS(i,j)*(0.5_dp-twot) + pTempYrRng*invPi*cos(pi*twot) )
+!			fs = 0.5_dp + twot
+!			
+!		endif
+!		
+!		lRainRate(i,j) = (1-fs)*pPrecipRate ! m_water / yr
+!		lSnowRate(i,j) = fs*pPrecipRate*waterToIce ! m_ice / yr
+!		lMeltRate(i,j) = pMeltFact*pdd ! m_ice / yr
+!		
+!	end do 
+!end do
+!
+!return
+!end subroutine balanceRate
+
 ! ==================================================================================================
-! balanceRate: Compute ice & water balance using a positive-degree-day scheme
+! balanceRateRhone: Compute surface ice flux as a simple function of surface temperature
 ! ==================================================================================================
-subroutine balanceRate( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
+subroutine balanceRateRhone( jSta, jEnd, pRhoIce, pRhoWater, pPrecipRate, pTempYrRng, pMeltFact, &
 	lTempS, lRainRate, lSnowRate, lMeltRate )
 	
-! About: The positive-degree-day scheme, based on Kessler et al 2006, JGR and references therein,
-!! provides a balance rate that depends on precip and temperature, and allows the model to conserve
-!! water. This implementation assumes a sinusoidal annual temperature cycle centered on the mean annual surface 
-!! temperature. The snowfall fraction is computed from the fraction of the year when the surface 
-!! temperature is <=0 C. Ice melting varys linearly with the annual positive-degree-days (the 
-!! integral of the positive part of the yearly temperature cycle. 	
-
 ! Arguments:
 !! jSta, jEnd (in) =  indices of the rows handled by this thread
 !! lDx, lDy (in) = low-res grid spacing, m
 !! pRhoIce, pRhoWater (in) = ice, water density, kg/m^3
-!! pPrecipRate (in) = spatially uniform precipitation rate, m/yr
-!! pTempYrRng (in) = amplitude of the yearly temperature cycle, C
-!! pMeltFact (in) = positive-degree-day melting rate constant
-!! lTempS (out) = surface temperature grid, C
+!! pPrecipRate (in) = (RECYCLED) Sternai constant 'gamma', m/degC
+!! pTempYrRng (in) = (RECYCLED) Sternai constant Mmax, m/yr 
+!! pMeltFact (in) = (RECYCLED) Sternai constant Mmin, m/yr
+!! lTempS (in) = surface temperature grid, C
 !! lRainRate (out) = rainfall rate, m_water/yr
 !! lSnowRate (out) = snowfall rate, m_ice/yr
 !! lMeltRate (out) = ice melting rate, m_ice/yr
@@ -515,15 +600,16 @@ real(dp), intent(in) :: pMeltFact, pTempYrRng, pPrecipRate, lTempS(:,:), pRhoIce
 real(dp), intent(out) :: lRainRate(:,:), lSnowRate(:,:), lMeltRate(:,:)
 
 integer :: i, j, j0, j1, lNx, lNy
-real(dp) :: pdd, fs, invTempYrRng, invPi, twot, waterToIce
-
-real(dp), parameter :: cliff_xm = 20000._dp 
-real(dp), parameter :: cliff_mdot0 = 2._dp
-real(dp), parameter :: cliff_n = 3._dp
+real(dp) :: gamma, Mmax, Mmin
 
 ! Get grid dimensions
 lNx = size(lSnowRate,1)
 lNy = size(lSnowRate,2)
+
+! Rename recycled parameters
+gamma = pPrecipRate
+Mmax = pTempYrRng
+Mmin = pMeltFact
 
 ! Initialize to zero
 lMeltRate = 0._dp
@@ -532,44 +618,14 @@ lSnowRate = 0._dp
 
 ! Interior points only
 j0 = max(2,jSta); j1 = min(lNy-1,jEnd) 
-
-! A few constants to save on computations
-invTempYrRng = 1/pTempYrRng
-invPi = 1/pi
-waterToIce = pRhoWater/pRhoIce
-
 do j = j0,j1
 	do i = 2,lNx-1
-		
-		if (lTempS(i,j)>=pTempYrRng) then ! temperatures are uniformly positive throughout the year
-			pdd = dayInYr*lTempS(i,j) ! positive degree days
-			fs = 0._dp ! fraction snowfall
-			
-		elseif (lTempS(i,j)<=-pTempYrRng) then ! temperatures are uniformly negative throughout the year
-			pdd = 0._dp
-			fs = 1._dp
-		
-		else ! temperature sign depends on the season				
-			!!...original, slow
-			!lT = asin(-lTempS(i,j)/pTempYrRng)/2/pi
-			!pdd = dayInYr*( lTempS(i,j)*(0.5-2*lT) + pTempYrRng/pi*cos(2*pi*lT) )
-			!fs = 0.5 + 2*lT				
-			!...slightly faster (~10%)
-			twot = asin(-lTempS(i,j)*invTempYrRng)*invPi
-			pdd = dayInYr*( lTempS(i,j)*(0.5_dp-twot) + pTempYrRng*invPi*cos(pi*twot) )
-			fs = 0.5_dp + twot
-			
-		endif
-		
-		lRainRate(i,j) = (1-fs)*pPrecipRate ! m_water / yr
-		lSnowRate(i,j) = fs*pPrecipRate*waterToIce ! m_ice / yr
-		lMeltRate(i,j) = pMeltFact*pdd ! m_ice / yr
-		
+    lSnowRate(i,j) = min(Mmax, max(Mmin, -gamma*lTempS(i,j)))
 	end do 
 end do
 
 return
-end subroutine balanceRate
+end subroutine balanceRateRhone
 
 ! ==================================================================================================
 ! basalTemp: Compute temperatures at the glacier bed
