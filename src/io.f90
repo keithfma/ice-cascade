@@ -138,6 +138,7 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'model_end_time__a', time%finish)
     msg = nf90_put_att(id_file, nf90_global, 'model_time_step__a', time%step)
     msg = nf90_put_att(id_file, nf90_global, 'model_output_interval__steps', time%write_period)
+    msg = nf90_put_att(id_file, nf90_global, 'const_density_ice__kg1m-3', fclimate%rhoi)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_nx__1', fgrid%nx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_ny__1', fgrid%ny)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
@@ -145,10 +146,12 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'topo_high_res_name__file', ftopo%filename)
     msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_on__tf', merge(1, 0, fclimate%on))
     if (fclimate%on) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_model__name', fclimate%tName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp__name', fclimate%tName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_param__various', fclimate%tParam)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_model__name', fclimate%pName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip__name', fclimate%pName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_param__various', fclimate%pParam)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux__name', fclimate%iName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux_param__various', fclimate%iParam)
     end if
     msg = nf90_put_att(id_file, nf90_global, 'hill_on__tf', merge(1, 0, fhill%on))
     if (fhill%on) then
@@ -198,6 +201,13 @@ contains
      	msg = nf90_def_var(id_file, 'fclim_p', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'precipitation_rate_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
+    end if
+
+    if (fclimate%write_i) then
+     	msg = nf90_def_var(id_file, 'fclim_i', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_ice_flux_high_res')
      	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
     end if
 
@@ -280,6 +290,11 @@ contains
     if (fclimate%write_p) then
       msg = nf90_inq_varid(id_file, 'fclim_p', id_var)
       msg = nf90_put_var(id_file, id_var, real(fclimate%p(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    if (fclimate%write_i) then
+      msg = nf90_inq_varid(id_file, 'fclim_i', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fclimate%i(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
     ! write hillslope data

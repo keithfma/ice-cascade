@@ -87,9 +87,9 @@ $   parameter definitions depend on the model name, see climate.f90
 2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
 $ Surface ice flux model name ( string )
-$   options: none
+$   options: none, constant
 $   see climate.f90 for details
-none
+constant
 
 $ Surface ice flux model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
@@ -102,7 +102,7 @@ $ Write precipitation rate (.true. or .false)
 .true.
 
 $ Write surface ice flux (.true. or .false)
-.true.
+.false.
 
 $ -------------------
 $ Hillslope model
