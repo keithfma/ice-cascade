@@ -16,7 +16,7 @@ $  Run
 $ -------------------
 
 $ Name (string)
-bench_hill_ss
+default
 
 $ Model start time (real, yr)
 0.
@@ -59,7 +59,8 @@ $ Climate model
 $ -------------------
 
 $ On/off (.true. or .false)
-.true.
+$.true.
+.false.
 
 $ Temperature model name ( string )
 $   options: none, constant 

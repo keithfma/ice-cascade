@@ -24,11 +24,11 @@ call fgrid%init()
 call time%init()
 call ftopo%init(fgrid)
 call fclimate%init(fgrid)
-call fclimate%run(time%now, ftopo%z)
+if (fclimate%on) call fclimate%run(time%now, ftopo%z)
 call fhill%init(fgrid)
 
 ! Create output file and write initial values
-call createOutfile(runname, fgrid, time, ftopo, fhill)
+call createOutfile(runname, fgrid, time, ftopo, fclimate, fhill)
 call writeStep(runname, time, ftopo, fhill)
 
 

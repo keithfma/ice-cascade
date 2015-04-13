@@ -103,13 +103,14 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create netcdf file and vars for output
   ! ---------------------------------------------------------------------------
-  subroutine createOutfile(runname, fgrid, time, ftopo, fhill)
+  subroutine createOutfile(runname, fgrid, time, ftopo, fclimate, fhill)
 
-    character(len=*), intent(in) :: runname
-    type(grid_type), intent(in)  :: fgrid
-    type(time_type), intent(in)  :: time
-    type(topo_type), intent(in)  :: ftopo
-    type(hill_type), intent(in)  :: fhill
+    character(len=*), intent(in)   :: runname
+    type(grid_type), intent(in)    :: fgrid
+    type(time_type), intent(in)    :: time
+    type(topo_type), intent(in)    :: ftopo
+    type(climate_type), intent(in) :: fclimate
+    type(hill_type), intent(in)    :: fhill
 
     logical :: shuf
     integer, dimension(3) :: fchunk
@@ -133,13 +134,20 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_ny__1', fgrid%ny)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dy__m', fgrid%dy)
+    msg = nf90_put_att(id_file, nf90_global, 'topo_high_res_name__file', ftopo%filename)
+    if (fclimate%on) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_model__name', fclimate%tName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_param__various', fclimate%tParam)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_model__name', fclimate%pName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_param__various', fclimate%pParam)
+    end if
     if (fhill%on) then
       msg = nf90_put_att(id_file, nf90_global, 'hill_diffusivity__m2a-1', fhill%D)
-      msg = nf90_put_att(id_file, nf90_global, 'hill_north_bc', trim(fhill%nbcName))
-      msg = nf90_put_att(id_file, nf90_global, 'hill_south_bc', trim(fhill%sbcName))
-      msg = nf90_put_att(id_file, nf90_global, 'hill_west_bc', trim(fhill%wbcName))
-      msg = nf90_put_att(id_file, nf90_global, 'hill_east_bc', trim(fhill%ebcName))
-      msg = nf90_put_att(id_file, nf90_global, 'hill_topo_soln', trim(fhill%solnName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_north_bc__name', trim(fhill%nbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_south_bc__name', trim(fhill%sbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_west_bc__name', trim(fhill%wbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_east_bc__name', trim(fhill%ebcName))
+      msg = nf90_put_att(id_file, nf90_global, 'hill_topo_soln__name', trim(fhill%solnName))
     end if
 
     ! define dimensions
