@@ -65,8 +65,8 @@ $ -------------------
 $ Climate model
 $ -------------------
 
-$ On/off (.true. or .false)
-.true.
+$ Surface temperature model on/off (.true. or .false)
+.false.
 
 $ Temperature model name ( string )
 $   options: none, constant, sawtooth_lapse 
@@ -77,6 +77,9 @@ $ Temperature model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90
 18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
 
+$ Precipitation model on/off (.true. or .false)
+.true.
+
 $ Precipitation rate model name ( string )
 $   options: none, constant 
 $   see climate.f90 for details
@@ -85,6 +88,9 @@ constant
 $ Precipitation model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
 2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Surface ice flux model on/off (.true. or .false)
+.true.
 
 $ Surface ice flux model name ( string )
 $   options: none, constant

@@ -19,7 +19,9 @@ public climate_type
   ! TYPE: all variables and procedures for the climate model component
   ! ---------------------------------------------------------------------------
   type climate_type
-    logical                       :: on        ! enable/disable model component
+    logical                       :: on_t      ! enable/disable surface temperature component
+    logical                       :: on_p      ! enable/disable surface temperature component
+    logical                       :: on_i      ! enable/disable surface temperature component
     integer                       :: nx        ! num grid points in x-dir, [1]
     integer                       :: ny        ! num grid points in y-dir, [1]
     real(dp)                      :: rhoi      ! density of glacial ice, [kg/m3]
@@ -71,92 +73,104 @@ contains
     class(climate_type), intent(inout) :: c ! climate modekl object to init
     class(grid_type), intent(in)       :: g ! coordinate grid information
 
-    ! model disabled, clear all object components
-    if (c%on .eqv. .false.) then
-    
-      c%nx = -1
-      c%ny = -1
-      c%tName = 'none'
-      c%pName = 'none'
-      c%iName = 'none'
-      c%tParam(:) = -1.0_dp
-      c%pParam(:) = -1.0_dp
-      c%iParam(:) = -1.0_dp
-      if (allocated(c%t) .eqv. .true.) deallocate(c%t)
-      allocate(c%t(1,1))
-      c%t(1,1) = -1.0_dp
-      if (allocated(c%p) .eqv. .true.) deallocate(c%p)
-      allocate(c%p(1,1))
-      c%p(1,1) = -1.0_dp
-      if (allocated(c%i) .eqv. .true.) deallocate(c%i)
-      allocate(c%i(1,1))
-      c%i(1,1) = -1.0_dp
-      if (allocated(c%x) .eqv. .true.) deallocate(c%x)
-      allocate(c%x(1))
-      c%x = -1.0_dp
-      if (allocated(c%y) .eqv. .true.) deallocate(c%y)
-      allocate(c%y(1))
-      c%y = -1.0_dp
-      c%getTemp => NULL()
-      c%getPrecip => NULL()
-      c%getIce => NULL()
-      c%write_t = .false.
-      c%write_p = .false.
-   
-    ! model enabled, init components
-    else
+    logical :: on
 
+    on = c%on_t .and. c%on_p .and. c%on_i
+
+    ! climate model common components
+    if (c%on_t .or. c%on_p .or. c%on_i) then
       c%nx = g%nx
       c%ny = g%ny
-      if (allocated(c%t) .eqv. .true.) deallocate(c%t)
-      allocate(c%t(g%nx+2, g%ny+2))
-      if (allocated(c%p) .eqv. .true.) deallocate(c%p)
-      allocate(c%p(g%nx+2, g%ny+2))
-      if (allocated(c%i) .eqv. .true.) deallocate(c%i)
-      allocate(c%i(g%nx+2, g%ny+2))
-      if (allocated(c%x) .eqv. .true.) deallocate(c%x)
+      if (allocated(c%x)) deallocate(c%x)
       allocate(c%x(g%nx+2))
       c%x = g%x
-      if (allocated(c%y) .eqv. .true.) deallocate(c%y)
+      if (allocated(c%y)) deallocate(c%y)
       allocate(c%y(g%ny+2))
       c%y = g%y
-
-      ! parse surface temperature model name, set procedure pointer
-      select case (c%tName)
-        case ("none") 
-          c%getTemp => t_none
-        case ("constant")
-          c%getTemp => t_constant
-        case ("sawtooth_lapse")
-          c%getTemp => t_sawtooth_lapse
-        case default
-          print *, "Invalid name for surface temperature model name: ", trim(c%tName)
-          stop -1
-      end select
-
-      ! parse precipitation model name, set procedure pointer
-      select case (c%pName)
-        case ("none")
-          c%getPrecip => p_none
-        case ("constant")
-          c%getPrecip => p_constant
-        case default
-          print *, "Invalid name for precipitation model name: ", trim(c%pName)
-          stop -1
-      end select
-
-      ! parse surface ice flux model name, set procedure pointer
-      select case (c%iName)
-        case ("none")
-          c%getIce => i_none
-        case ("constant")
-          c%getIce => i_constant
-        case default 
-          print *, 'Invalid name for surface ice flux model: ', trim(c%iName)
-          stop -1
-      end select
-      
+    else
+      c%nx = -1
+      c%ny = -1
+      if (allocated(c%x)) deallocate(c%x)
+      allocate(c%x(1))
+      c%x = -1.0_dp
+      if (allocated(c%y)) deallocate(c%y)
+      allocate(c%y(1))
+      c%y = -1.0_dp
     end if
+
+    ! surface temperature model components
+    if (c%on_t) then
+      if (allocated(c%t)) deallocate(c%t)
+      allocate(c%t(g%nx+2, g%ny+2))
+    else
+      c%tName = 'none'
+      c%tParam(:) = -1.0_dp
+      if (allocated(c%t)) deallocate(c%t)
+      allocate(c%t(1,1))
+      c%t(1,1) = -1.0_dp
+      c%write_t = .false.
+    end if
+    
+    ! precipitation model componenets
+    if (c%on_p) then
+      if (allocated(c%p)) deallocate(c%p)
+      allocate(c%p(g%nx+2, g%ny+2))
+    else
+      c%pName = 'none'
+      c%pParam(:) = -1.0_dp
+      if (allocated(c%p)) deallocate(c%p)
+      allocate(c%p(1,1))
+      c%p(1,1) = -1.0_dp
+      c%write_p = .false.
+    end if
+
+    ! surface ice flux model components
+    if (c%on_i) then
+      if (allocated(c%i)) deallocate(c%i)
+      allocate(c%i(g%nx+2, g%ny+2))
+    else
+      c%iName = 'none'
+      c%iParam(:) = -1.0_dp
+      if (allocated(c%i)) deallocate(c%i)
+      allocate(c%i(1,1))
+      c%i(1,1) = -1.0_dp
+      c%write_i = .false.
+    end if
+
+    ! parse surface temperature model name, set procedure pointer
+    select case (c%tName)
+      case ("none") 
+        c%getTemp => NULL()
+      case ("constant")
+        c%getTemp => t_constant
+      case ("sawtooth_lapse")
+        c%getTemp => t_sawtooth_lapse
+      case default
+        print *, "Invalid name for surface temperature model name: ", trim(c%tName)
+        stop -1
+    end select
+
+    ! parse precipitation model name, set procedure pointer
+    select case (c%pName)
+      case ("none")
+        c%getPrecip => NULL()
+      case ("constant")
+        c%getPrecip => p_constant
+      case default
+        print *, "Invalid name for precipitation model name: ", trim(c%pName)
+        stop -1
+    end select
+
+    ! parse surface ice flux model name, set procedure pointer
+    select case (c%iName)
+      case ("none")
+        c%getIce => NULL()
+      case ("constant")
+        c%getIce => i_constant
+      case default 
+        print *, 'Invalid name for surface ice flux model: ', trim(c%iName)
+        stop -1
+    end select
   
   end subroutine init
 
@@ -170,27 +184,11 @@ contains
     real(dp), intent(in)               :: time   ! current model time, [a]
     real(dp), intent(in)               :: z(:,:) ! surface elevation, [m]
 
-    call c%getTemp(time, z)
-    call c%getPrecip(time, z)
-    call c%getIce(time, z)
+    if (c%on_t) call c%getTemp(time, z)
+    if (c%on_p) call c%getPrecip(time, z)
+    if (c%on_i) call c%getIce(time, z)
     
   end subroutine run
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: Surface temperature model, leave as zeros 
-  !   Parameters:
-  !     all unused.
-  ! ---------------------------------------------------------------------------
-  subroutine t_none(c, time, z) 
-
-    class(climate_type), intent(inout) :: c      ! climate object to update
-    real(dp), intent(in)               :: time   ! model time, [a] (unused)
-    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
-  
-    ! do nothing
-
-  end subroutine t_none 
 
 
   ! ---------------------------------------------------------------------------
@@ -258,22 +256,6 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Precipitation model, leave as zeros
-  !   Parameters:
-  !     all unused.
-  ! ---------------------------------------------------------------------------
-  subroutine p_none(c, time, z) 
-
-    class(climate_type), intent(inout) :: c      ! climate object to update
-    real(dp), intent(in)               :: time   ! model time, [a] (unused)
-    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
-
-    ! do nothing
-      
-  end subroutine p_none 
-  
-  
-  ! ---------------------------------------------------------------------------
   ! SUB: Precipitation model, constant in space and time
   !   Parameters:
   !     c%pParam(1) = precipitation rate, [m/a]
@@ -289,22 +271,6 @@ contains
 
   end subroutine p_constant 
   
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: Surface ice flux model, leave as zeros
-  !   Parameters:
-  !     all unused.
-  ! ---------------------------------------------------------------------------
-  subroutine i_none(c, time, z) 
-
-    class(climate_type), intent(inout) :: c      ! climate object to update
-    real(dp), intent(in)               :: time   ! model time, [a] (unused)
-    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
-
-    ! do nothing
-      
-  end subroutine i_none 
-
 
   ! ---------------------------------------------------------------------------
   ! SUB: Surface ice flux  model, constant in space and time

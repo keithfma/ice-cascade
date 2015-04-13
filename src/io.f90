@@ -82,11 +82,13 @@ contains
     read (55,*) fgrid%dy	
     read (55,*) ftopo%filename
     read (55,*) ftopo%write_z
-    read (55,*) fclimate%on 
+    read (55,*) fclimate%on_t 
     read (55,*) fclimate%tName 
     read (55,*) fclimate%tParam(:) 
+    read (55,*) fclimate%on_p 
     read (55,*) fclimate%pName
     read (55,*) fclimate%pParam(:) 
+    read (55,*) fclimate%on_i 
     read (55,*) fclimate%iName
     read (55,*) fclimate%iParam(:) 
     read (55,*) fclimate%write_t
@@ -144,12 +146,18 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dy__m', fgrid%dy)
     msg = nf90_put_att(id_file, nf90_global, 'topo_high_res_name__file', ftopo%filename)
-    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_on__tf', merge(1, 0, fclimate%on))
-    if (fclimate%on) then
+    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_on__tf', merge(1, 0, fclimate%on_t))
+    if (fclimate%on_t) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp__name', fclimate%tName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_param__various', fclimate%tParam)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_on__tf', merge(1, 0, fclimate%on_p))
+    if (fclimate%on_p) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip__name', fclimate%pName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_param__various', fclimate%pParam)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux_on__tf', merge(1, 0, fclimate%on_i))
+    if (fclimate%on_i) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux__name', fclimate%iName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux_param__various', fclimate%iParam)
     end if
