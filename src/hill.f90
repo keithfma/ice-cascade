@@ -11,6 +11,7 @@
 module hill_module
 
 use types, only: dp
+use grid_module, only: grid_type
 
 implicit none
 private
@@ -35,11 +36,11 @@ public hill_type
     character(len=100)              :: wbcName     ! west BC name
     character(len=100)              :: ebcName     ! east BC name
     character(len=100)              :: solnName    ! topo soln name
-    procedure (bc), pointer, nopass :: nbc         ! set north BC
-    procedure (bc), pointer, nopass :: sbc         ! set south BC
-    procedure (bc), pointer, nopass :: wbc         ! set west BC
-    procedure (bc), pointer, nopass :: ebc         ! set east BC
-    procedure (soln), pointer, pass :: solve       ! compute topo soln
+    procedure(bc), pointer, nopass :: nbc          ! set north BC
+    procedure(bc), pointer, nopass :: sbc          ! set south BC
+    procedure(bc), pointer, nopass :: wbc          ! set west BC
+    procedure(bc), pointer, nopass :: ebc          ! set east BC
+    procedure(soln), pointer, pass :: solve        ! compute topo soln
   contains
     procedure, pass                 :: init        ! initialize all components
     procedure, pass                 :: run         ! run model                   
@@ -67,7 +68,7 @@ public hill_type
       import                          :: dp, hill_type ! use special types
       class(hill_type), intent(inout) :: h             ! model object
       real(dp), intent(in)            :: t             ! model time
-      real(dp), dimension(h%nx, h%ny)  :: z             ! soln for topo
+      real(dp), dimension(h%nx, h%ny) :: z             ! soln for topo
     end function soln
   end interface
 
@@ -86,9 +87,10 @@ contains
   !   Note: components nx, ny, dx, dy, D, dtMax, *Name, and write_dzdt must be
   !   set before init
   ! --------------------------------------------------------------------------- 
-  subroutine init(h)
+  subroutine init(h, g)
 
     class(hill_type), intent(inout) :: h ! object to initialize
+    class(grid_type), intent(in)    :: g ! coordinate grid info
     
     if (h%on .eqv. .false.) then
       ! model disabled, clear all object components
@@ -115,6 +117,10 @@ contains
       h%solve => NULL()
     else
       ! model enabled, init components
+      h%nx = g%nx
+      h%ny = g%ny
+      h%dx = g%dx
+      h%dy = g%dy
       if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
       allocate(h%dzdt(h%nx+2, h%ny+2))
       call set_bc_proc(h%nbcName, h%nbc)
@@ -232,7 +238,7 @@ contains
         print *, "Invalid name for hillslope BC: ", trim(str)
         stop -1
    
-      end select
+    end select
     
   end subroutine set_bc_proc
   

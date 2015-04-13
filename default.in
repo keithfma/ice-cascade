@@ -1,6 +1,13 @@
 $ ===========================================================================
-$ Default input file: runs a simple example case and provides reasonable guesses
-$   for many parameters
+$ Benchmark, Hill, Steady-state 
+$  
+$ Diffusion with sinusoidal BC at the north boundary, and constant BCs at
+$ other boundaries. Solution is derived at: 
+$
+$ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
+$
+$ Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
+$ Transfer (9th ed.).
 $ ===========================================================================
 
 
@@ -11,23 +18,33 @@ $ -------------------
 $ Name (string)
 default
 
-$ End time (real, yr)
-1000.
+$ Model start time (real, yr)
+0.
 
-$ Timestep for topography update (real, yr)
+$ Model end time (real, yr)
+100.
+
+$ Model timestep (real, yr)
 1.
 
 $ Output period, (integer) 
-$ e.g. 10 = ouput every 10th main timestep
-100
+$ e.g. 10 = ouput every 10th timestep
+10
+
+$ -------------------
+$ Physical constants
+$ -------------------
+
+$ Density, glacial ice [kg/m^3]
+910.0
 
 $ -------------------
 $ Grids 
 $ -------------------
 
 $ high-res grid dimensions, number of points in the x; y directions
-308
-222
+50
+50
 
 $ high-res grid spacing in x; y directions, meters
 1. 
@@ -39,17 +56,66 @@ $ -------------------
 
 $ initial high-res topography (string)
 $$ options: netcdf filename, or "zero" for flat at 0.0 m
-test.grd
+zero
 
-$ write topography (1/0)
-1
+$ write topography (.true. or .false)
+.true.
+
+$ -------------------
+$ Climate model
+$ -------------------
+
+$ Surface temperature model on/off (.true. or .false)
+.true.
+
+$ Temperature model name ( string )
+$   options: none, constant, sawtooth_lapse 
+$   see climate.f90 for details
+sawtooth_lapse
+
+$ Temperature model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90
+18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
+
+$ Precipitation model on/off (.true. or .false)
+.true.
+
+$ Precipitation rate model name ( string )
+$   options: none, constant 
+$   see climate.f90 for details
+constant
+
+$ Precipitation model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90 
+2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Surface ice flux model on/off (.true. or .false)
+.true.
+
+$ Surface ice flux model name ( string )
+$   options: none, constant, linear_temp_capped_max_min
+$   see climate.f90 for details
+linear_temp_capped_max_min
+
+$ Surface ice flux model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90 
+3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Write surface temperature (.true. or .false)
+.true.
+
+$ Write precipitation rate (.true. or .false)
+.true.
+
+$ Write surface ice flux (.true. or .false)
+.false.
 
 $ -------------------
 $ Hillslope model
 $ -------------------
 
-$ On/off (1/0)
-1
+$ On/off (.true. or .false)
+.true.
 
 $ Diffusivity (real, m^2/yr)
 0.5
@@ -65,6 +131,6 @@ $ exact solution for topography ( string )
 $ options: none, bench_hill_ss
 bench_hill_ss
 
-$ write hillslope dz/dt? (1,0)
-1
+$ write hillslope dz/dt? (.true. or .false.)
+.true.
 
