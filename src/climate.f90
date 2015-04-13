@@ -19,37 +19,44 @@ public climate_type
   ! TYPE: all variables and procedures for the climate model component
   ! ---------------------------------------------------------------------------
   type climate_type
-    logical                        :: on        ! enable/disable model component
-    integer                        :: nx        ! num grid points in x-dir, [1]
-    integer                        :: ny        ! num grid points in y-dir, [1]
-    character(len=100)             :: tName     ! surface temperature model name
-    character(len=100)             :: pName     ! precipitation model name
-    real(dp), dimension(10)        :: tParam    ! temperature model parameters, [various]
-    real(dp), dimension(10)        :: pParam    ! precipitation model parameters, [various]
-    real(dp), allocatable          :: x(:)      ! x coordinate vector, [m]
-    real(dp), allocatable          :: y(:)      ! y coordinate vector, [m]
-    real(dp), allocatable          :: t(:,:)    ! surface temperature, [C]
-    real(dp), allocatable          :: p(:,:)    ! precipitation rate, [m/a]
-    procedure(tp), pointer, pass :: getTemp   ! compute temperature
-    procedure(tp), pointer, pass :: getPrecip ! compute precipitation
-    logical                        :: write_t   ! enable/disable writing temperature
-    logical                        :: write_p   ! enable/disable writing precip
+    logical                       :: on        ! enable/disable model component
+    integer                       :: nx        ! num grid points in x-dir, [1]
+    integer                       :: ny        ! num grid points in y-dir, [1]
+    real(dp)                      :: rhoi      ! density of glacial ice, [kg/m3]
+    character(len=100)            :: tName     ! surface temperature model name
+    character(len=100)            :: pName     ! precipitation model name
+    character(len=100)            :: iName     ! surface ice flux model name
+    real(dp), dimension(10)       :: tParam    ! temperature model parameters, [various]
+    real(dp), dimension(10)       :: pParam    ! precipitation model parameters, [various]
+    real(dp), dimension(10)       :: iParam    ! surface ice flux model parameters, [various]
+    real(dp), allocatable         :: x(:)      ! x coordinate vector, [m]
+    real(dp), allocatable         :: y(:)      ! y coordinate vector, [m]
+    real(dp), allocatable         :: t(:,:)    ! surface temperature, [C]
+    real(dp), allocatable         :: p(:,:)    ! precipitation rate, [m/a]
+    real(dp), allocatable         :: i(:,:)    ! surface ice flux, [m_ice/a]
+    procedure(tpi), pointer, pass :: getTemp   ! compute temperature
+    procedure(tpi), pointer, pass :: getPrecip ! compute precipitation
+    procedure(tpi), pointer, pass :: getIce    ! compute surface ice flux
+    logical                       :: write_t   ! enable/disable writing temperature
+    logical                       :: write_p   ! enable/disable writing precip
+    logical                       :: write_i   ! enable/disable writing surface ice flux
   contains
-   procedure, pass                 :: init      ! initialize components 
-   procedure, pass                 :: run       ! run the climate model 
+   procedure, pass                :: init      ! initialize components 
+   procedure, pass                :: run       ! run the climate model 
   end type climate_type
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB TEMPLATE: common form for temperature and precipitation subroutines
+  ! SUB TEMPLATE: common form for surface temperature, precipitation, and
+  !   surface ice flux subroutines
   ! ---------------------------------------------------------------------------
   abstract interface
-    subroutine tp(c, time, z) 
+    subroutine tpi(c, time, z) 
       import                             :: dp, climate_type ! use special types
       class(climate_type), intent(inout) :: c                ! climate object to update
       real(dp), intent(in)               :: time             ! model time, [a]
       real(dp), intent(in)               :: z(:,:)           ! surface elevation, [m]
-    end subroutine tp 
+    end subroutine tpi 
   end interface
 
 contains
@@ -71,14 +78,19 @@ contains
       c%ny = -1
       c%tName = 'none'
       c%pName = 'none'
+      c%iName = 'none'
       c%tParam(:) = -1.0_dp
       c%pParam(:) = -1.0_dp
+      c%iParam(:) = -1.0_dp
       if (allocated(c%t) .eqv. .true.) deallocate(c%t)
       allocate(c%t(1,1))
       c%t(1,1) = -1.0_dp
       if (allocated(c%p) .eqv. .true.) deallocate(c%p)
       allocate(c%p(1,1))
       c%p(1,1) = -1.0_dp
+      if (allocated(c%i) .eqv. .true.) deallocate(c%i)
+      allocate(c%i(1,1))
+      c%i(1,1) = -1.0_dp
       if (allocated(c%x) .eqv. .true.) deallocate(c%x)
       allocate(c%x(1))
       c%x = -1.0_dp
@@ -87,6 +99,7 @@ contains
       c%y = -1.0_dp
       c%getTemp => NULL()
       c%getPrecip => NULL()
+      c%getIce => NULL()
       c%write_t = .false.
       c%write_p = .false.
    
@@ -99,6 +112,8 @@ contains
       allocate(c%t(g%nx+2, g%ny+2))
       if (allocated(c%p) .eqv. .true.) deallocate(c%p)
       allocate(c%p(g%nx+2, g%ny+2))
+      if (allocated(c%i) .eqv. .true.) deallocate(c%i)
+      allocate(c%i(g%nx+2, g%ny+2))
       if (allocated(c%x) .eqv. .true.) deallocate(c%x)
       allocate(c%x(g%nx+2))
       c%x = g%x
@@ -127,6 +142,15 @@ contains
           c%getPrecip => p_constant
         case default
           print *, "Invalid name for precipitation model name: ", trim(c%pName)
+          stop -1
+      end select
+
+      ! parse surface ice flux model name, set procedure pointer
+      select case (c%iName)
+        case ("none")
+          c%getIce => i_none
+        case default 
+          print *, 'Invalid name for surface ice flux model: ', trim(c%iName)
           stop -1
       end select
       
@@ -261,5 +285,21 @@ contains
     c%p = c%pParam(1)    
 
   end subroutine p_constant 
+  
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Surface ice flux model, leave as zeros
+  !   Parameters:
+  !     all unused.
+  ! ---------------------------------------------------------------------------
+  subroutine i_none(c, time, z) 
+
+    class(climate_type), intent(inout) :: c      ! climate object to update
+    real(dp), intent(in)               :: time   ! model time, [a] (unused)
+    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
+
+    ! do nothing
+      
+  end subroutine i_none 
 
 end module climate_module

@@ -43,6 +43,7 @@ contains
     type(hill_type), intent(out)    :: fhill    ! hilllslope model
 
     character(len=100) :: infile, line
+    real(dp) :: rhoi
     integer :: i, tmp, msg
   	
     ! Get input file name
@@ -74,6 +75,7 @@ contains
     read (55,*) time%finish
     read (55,*) time%step
     read (55,*) time%write_period
+    read (55,*) rhoi ! shared
     read (55,*) fgrid%nx	
     read (55,*) fgrid%ny
     read (55,*) fgrid%dx
@@ -85,8 +87,11 @@ contains
     read (55,*) fclimate%tParam(:) 
     read (55,*) fclimate%pName
     read (55,*) fclimate%pParam(:) 
+    read (55,*) fclimate%iName
+    read (55,*) fclimate%iParam(:) 
     read (55,*) fclimate%write_t
     read (55,*) fclimate%write_p 
+    read (55,*) fclimate%write_i 
     read (55,*) fhill%on 
     read (55,*) fhill%D	
     read (55,*) fhill%nbcName
@@ -96,6 +101,9 @@ contains
     read (55,*) fhill%solnName 	
     read (55,*) fhill%write_dzdt
     close(55)
+
+    ! assign shared values
+    fclimate%rhoi = rhoi
 
   end subroutine readParam
 

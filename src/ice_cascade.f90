@@ -18,7 +18,7 @@ type(hill_type)    :: fhill
 
 ! Read model parameters
 call readParam(runname, fgrid, time, ftopo, fclimate, fhill)
-	
+
 ! Initialize objects
 call fgrid%init()
 call time%init()
