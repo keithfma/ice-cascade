@@ -66,7 +66,7 @@ $ Climate model
 $ -------------------
 
 $ Surface temperature model on/off (.true. or .false)
-.false.
+.true.
 
 $ Temperature model name ( string )
 $   options: none, constant, sawtooth_lapse 
@@ -93,9 +93,9 @@ $ Surface ice flux model on/off (.true. or .false)
 .true.
 
 $ Surface ice flux model name ( string )
-$   options: none, constant
+$   options: none, constant, linear_temp_capped_max_min
 $   see climate.f90 for details
-constant
+linear_temp_capped_max_min
 
 $ Surface ice flux model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 

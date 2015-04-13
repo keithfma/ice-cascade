@@ -139,12 +139,16 @@ contains
 
     ! parse surface temperature model name, set procedure pointer
     select case (c%tName)
+
       case ("none") 
         c%getTemp => NULL()
+    
       case ("constant")
         c%getTemp => t_constant
+      
       case ("sawtooth_lapse")
         c%getTemp => t_sawtooth_lapse
+      
       case default
         print *, "Invalid name for surface temperature model name: ", trim(c%tName)
         stop -1
@@ -152,10 +156,13 @@ contains
 
     ! parse precipitation model name, set procedure pointer
     select case (c%pName)
+      
       case ("none")
         c%getPrecip => NULL()
+      
       case ("constant")
         c%getPrecip => p_constant
+      
       case default
         print *, "Invalid name for precipitation model name: ", trim(c%pName)
         stop -1
@@ -163,10 +170,20 @@ contains
 
     ! parse surface ice flux model name, set procedure pointer
     select case (c%iName)
+      
       case ("none")
         c%getIce => NULL()
+      
       case ("constant")
         c%getIce => i_constant
+      
+      case ("linear_temp_capped_max_min")
+        if (c%on_t .eqv. .false.) then
+          print *, 'Invalid combination of climate model parameters: this surface ice flux model requires a temperature model.'
+          stop -1
+        end if
+        c%getIce => i_linear_temp_capped_max_min
+
       case default 
         print *, 'Invalid name for surface ice flux model: ', trim(c%iName)
         stop -1
@@ -287,5 +304,36 @@ contains
     c%i = c%iParam(1)    
 
   end subroutine i_constant 
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Surface ice flux model, linear f(temp), capped min and max
+  !
+  !   Ice flux scales linearly with temperature, and is 0 where temp = 0 C. The
+  !   result is clipped to the maximum and minimum values provided in the
+  !   parameters. 
+  !
+  !   Parameters:
+  !     c%iParam(1) = scaling constant, [m_ice/a/C]
+  !     c%iParam(2) = maximum surface ice flux, [m_ice/a]
+  !     c%iParam(3) = minimum surface ice flux, [m_ice/a]
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine i_linear_temp_capped_max_min(c, time, z) 
+
+    class(climate_type), intent(inout) :: c      ! climate object to update
+    real(dp), intent(in)               :: time   ! model time, [a] (unused)
+    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
+
+    real(dp) :: temp2flux, maxflux, minflux
+
+    ! gather parameters
+    temp2flux = c%iParam(1)
+    maxflux = c%iParam(2)
+    minflux = c%iParam(3)
+
+    ! compute ice flux
+    c%i = min(maxflux, max(minflux, temp2flux*c%t))    
+
+  end subroutine i_linear_temp_capped_max_min 
 
 end module climate_module
