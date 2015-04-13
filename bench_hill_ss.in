@@ -59,7 +59,7 @@ $ Climate model
 $ -------------------
 
 $ On/off (.true. or .false)
-.true.
+.false.
 
 $ Temperature model name ( string )
 $ options: constant 

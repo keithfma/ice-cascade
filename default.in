@@ -62,22 +62,24 @@ $ On/off (.true. or .false)
 .true.
 
 $ Temperature model name ( string )
-$ options: constant 
+$   options: none, constant 
 constant
 
 $ Temperature model parameters ( double )
-$   parameter definitions depend on the model name, as stated below
-$   none: no parameters are used
-0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   parameter definitions depend on the model name, see below
+$   none: all unused
+$   constant: temperature [C], others unused
+1. 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
 $ Precipitation rate model name ( string )
-$ options: 
+$   options: none, constant 
 constant
 
 $ Precipitation model parameters ( double )
-$   parameter definitions depend on the model name, as stated below
-$   none: no parameters are used
-0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   parameter definitions depend on the model name, see below
+$   none: all unused
+$   constant: precip rate [m/a], others unused
+2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
 $ Write surface temperature (.true.or .false)
 .true.

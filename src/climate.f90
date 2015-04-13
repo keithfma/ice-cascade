@@ -108,6 +108,8 @@ contains
 
       ! parse surface temperature model name, set procedure pointer
       select case (c%tName)
+        case ("none") 
+          c%getTemp => t_none
         case ("constant")
           c%getTemp => t_constant
         case default
@@ -117,6 +119,8 @@ contains
 
       ! parse precipitation model name, set procedure pointer
       select case (c%pName)
+        case ("none")
+          c%getPrecip => p_none
         case ("constant")
           c%getPrecip => p_constant
         case default
@@ -145,6 +149,22 @@ contains
 
 
   ! ---------------------------------------------------------------------------
+  ! SUB: Surface temperature model, leave as zeros 
+  !   Parameters:
+  !     all unused.
+  ! ---------------------------------------------------------------------------
+  subroutine t_none(c, time, z) 
+
+    class(climate_type), intent(inout) :: c      ! climate object to update
+    real(dp), intent(in)               :: time   ! model time, [a] (unused)
+    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
+  
+    ! do nothing
+
+  end subroutine t_none 
+
+
+  ! ---------------------------------------------------------------------------
   ! SUB: Surface temperature model, constant in space and time
   !   Parameters:
   !     c%tParam(1) = temperature, [C]
@@ -161,6 +181,22 @@ contains
   end subroutine t_constant 
 
 
+  ! ---------------------------------------------------------------------------
+  ! SUB: Precipitation model, leave as zeros
+  !   Parameters:
+  !     all unused.
+  ! ---------------------------------------------------------------------------
+  subroutine p_none(c, time, z) 
+
+    class(climate_type), intent(inout) :: c      ! climate object to update
+    real(dp), intent(in)               :: time   ! model time, [a] (unused)
+    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
+
+    ! do nothing
+      
+  end subroutine p_none 
+  
+  
   ! ---------------------------------------------------------------------------
   ! SUB: Precipitation model, constant in space and time
   !   Parameters:
