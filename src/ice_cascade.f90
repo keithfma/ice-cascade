@@ -36,6 +36,9 @@ do while (time%now .lt. time%finish) ! main loop
 
 	! Trim last time step if needed
 	if ((time%now+time%step) .gt. time%finish) time%step = time%finish-time%now	
+
+  ! Climate model
+  if (fclimate%on) call fclimate%run(time%now, ftopo%z)
 	
   ! Hillslope model
   if (fhill%on) call fhill%run(ftopo%z, time%step)
