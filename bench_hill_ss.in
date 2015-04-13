@@ -51,15 +51,46 @@ $ initial high-res topography (string)
 $$ options: netcdf filename, or "zero" for flat at 0.0 m
 zero
 
-$ write topography (1/0)
-1
+$ write topography (.true. or .false)
+.true.
+
+$ -------------------
+$ Climate model
+$ -------------------
+
+$ On/off (.true. or .false)
+.true.
+
+$ Temperature model name ( string )
+$ options: constant 
+constant
+
+$ Temperature model parameters ( double )
+$   parameter definitions depend on the model name, as stated below
+$   none: no parameters are used
+9. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Precipitation rate model name ( string )
+$ options: 
+constant
+
+$ Precipitation model parameters ( double )
+$   parameter definitions depend on the model name, as stated below
+$   none: no parameters are used
+1. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Write surface temperature (.true.or .false)
+.true.
+
+$ Write precipitation rate (.true.or .false)
+.true.
 
 $ -------------------
 $ Hillslope model
 $ -------------------
 
-$ On/off (1/0)
-1
+$ On/off (.true. or .false)
+.true.
 
 $ Diffusivity (real, m^2/yr)
 0.5
@@ -75,6 +106,6 @@ $ exact solution for topography ( string )
 $ options: none, bench_hill_ss
 bench_hill_ss
 
-$ write hillslope dz/dt? (1,0)
-1
+$ write hillslope dz/dt? (.true. or .false.)
+.true.
 

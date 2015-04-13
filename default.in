@@ -45,6 +45,37 @@ $ write topography (1/0)
 1
 
 $ -------------------
+$ Climate model
+$ -------------------
+
+$ On/off (1/0)
+1
+
+$ Temperature model name ( string )
+$ options: none
+none
+
+$ Temperature model parameters ( double )
+$ definitions depend on the model name, as stated below
+$   none: no parameters are used
+0 0 0 0 0 0 0 0 0 0
+
+$ Precipitaion rate model name ( string )
+$ options: none
+none
+
+$ Precipitation model parameters ( double )
+$ definitions depend on the model name, as stated below
+$   none: no parameters are used
+0 0 0 0 0 0 0 0 0 0
+
+$ Write surface temperature (1/0)
+1
+
+$ Write precipitation rate (1/0)
+1
+
+$ -------------------
 $ Hillslope model
 $ -------------------
 

@@ -11,8 +11,9 @@ module io_module
 use types, only: sp, dp, sp_nc, dp_nc, int_nc
 use grid_module, only: grid_type
 use time_module, only: time_type
-use hill_module, only: hill_type
 use topo_module, only: topo_type
+use climate_module, only: climate_type
+use hill_module, only: hill_type
 use netcdf
 
 implicit none
@@ -32,16 +33,17 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: read from the input file specified on the command line
   ! ---------------------------------------------------------------------------
-  subroutine readParam (runname, fgrid, time, ftopo, fhill)
+  subroutine readParam (runname, fgrid, time, ftopo, fclimate, fhill)
     
-    character(len=*), intent(out) :: runname ! name for run
-    type(grid_type), intent(out) :: fgrid    ! high-res grid
-    type(time_type), intent(out) :: time     ! model time vars
-    type(topo_type), intent(out) :: ftopo    ! high-res topography
-    type(hill_type), intent(out) :: fhill    ! hilllslope model
+    character(len=*), intent(out)   :: runname  ! name for run
+    type(grid_type), intent(out)    :: fgrid    ! high-res grid
+    type(time_type), intent(out)    :: time     ! model time vars
+    type(topo_type), intent(out)    :: ftopo    ! high-res topography
+    type(climate_type), intent(out) :: fclimate ! climate model
+    type(hill_type), intent(out)    :: fhill    ! hilllslope model
 
     character(len=100) :: infile, line
-    integer :: tmp, msg
+    integer :: i, tmp, msg
   	
     ! Get input file name
     select case (command_argument_count())
@@ -60,7 +62,7 @@ contains
     end if	
     open (55, status = 'scratch')
     do while (msg .ge. 0)
-    	read (54, *, iostat = msg) line
+    	read (54, '(a)', iostat = msg) line
     	if ((line(1:1) .ne. '$') .and. (line(1:1) .ne. ' ')) write (55, '(a)') line		
     enddo 
     close (54)
@@ -73,27 +75,28 @@ contains
     read (55,*) time%step
     read (55,*) time%write_period
     read (55,*) fgrid%nx	
-    ftopo%nx = fgrid%nx
-    fhill%nx = fgrid%nx
     read (55,*) fgrid%ny
-    ftopo%ny = fgrid%ny
-    fhill%ny = fgrid%ny
     read (55,*) fgrid%dx
-    fhill%dx = fgrid%dx
     read (55,*) fgrid%dy	
-    fhill%dy = fgrid%dy
     read (55,*) ftopo%filename
     read (55,*) ftopo%write_z
-    read (55,*) tmp; fhill%on = merge(.true., .false., tmp==1)
+    read (55,*) fclimate%on 
+    read (55,*) fclimate%tName 
+    read (55,*) fclimate%tParam(:) 
+    read (55,*) fclimate%pName
+    read (55,*) fclimate%pParam(:) 
+    read (55,*) fclimate%write_t
+    read (55,*) fclimate%write_p 
+    read (55,*) fhill%on 
     read (55,*) fhill%D	
     read (55,*) fhill%nbcName
     read (55,*) fhill%sbcName 
     read (55,*) fhill%ebcName
     read (55,*) fhill%wbcName 
     read (55,*) fhill%solnName 	
-    read (55,*) tmp; fhill%write_dzdt = merge(.true., .false., tmp==1)
+    read (55,*) fhill%write_dzdt
     close(55)
-    
+
   end subroutine readParam
 
 

@@ -4,6 +4,7 @@ use types, only: dp
 use grid_module, only: grid_type
 use time_module, only: time_type
 use topo_module, only: topo_type
+use climate_module, only: climate_type
 use hill_module, only: hill_type
 use io_module, only: readParam, createOutfile, writeStep
 implicit none
@@ -12,22 +13,23 @@ character(len=100) :: runname
 type(grid_type)    :: fgrid
 type(time_type)    :: time
 type(topo_type)    :: ftopo
+type(climate_type) :: fclimate
 type(hill_type)    :: fhill
 
 ! Read model parameters
-call readParam(runname, fgrid, time, ftopo, fhill)
+call readParam(runname, fgrid, time, ftopo, fclimate, fhill)
 	
 ! Initialize objects
 call fgrid%init()
 call time%init()
-call ftopo%init()
-call fhill%init()
+call ftopo%init(fgrid)
+call fclimate%init(fgrid)
+call fhill%init(fgrid)
 
-! Create output file
+! Create output file and write initial values
 call createOutfile(runname, fgrid, time, ftopo, fhill)
 call writeStep(runname, time, ftopo, fhill)
 
-! Write initial values to output
 
 do while (time%now .lt. time%finish) ! main loop
 
