@@ -36,9 +36,9 @@ public climate_type
     logical                        :: write_p   ! enable/disable writing precip
   contains
    procedure, pass                 :: init      ! initialize components 
-   !procedure, pass                 :: run       ! run the climate model 
-
+   procedure, pass                 :: run       ! run the climate model 
   end type climate_type
+
 
   ! ---------------------------------------------------------------------------
   ! SUB TEMPLATE: common form for temperature and precipitation subroutines
@@ -53,6 +53,7 @@ public climate_type
   end interface
 
 contains
+
 
   ! ---------------------------------------------------------------------------
   ! SUB: initialize a climate model object
@@ -126,7 +127,22 @@ contains
     end if
   
   end subroutine init
- 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: evaluate the climate model for a specified time and topography
+  ! ---------------------------------------------------------------------------
+  subroutine run(c, time, z)
+    
+    class(climate_type), intent(inout) :: c      ! climate to evaluate and set
+    real(dp), intent(in)               :: time   ! current model time, [a]
+    real(dp), intent(in)               :: z(:,:) ! surface elevation, [m]
+
+    call c%getTemp(time, z)
+    call c%getPrecip(time, z)
+    
+  end subroutine run
+
 
   ! ---------------------------------------------------------------------------
   ! SUB: Surface temperature model, constant in space and time

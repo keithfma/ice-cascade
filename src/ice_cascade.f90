@@ -24,6 +24,7 @@ call fgrid%init()
 call time%init()
 call ftopo%init(fgrid)
 call fclimate%init(fgrid)
+call fclimate%run(time%now, ftopo%z)
 call fhill%init(fgrid)
 
 ! Create output file and write initial values
