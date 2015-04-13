@@ -112,6 +112,8 @@ contains
           c%getTemp => t_none
         case ("constant")
           c%getTemp => t_constant
+        case ("sawtooth_lapse")
+          c%getTemp => t_sawtooth_lapse
         case default
           print *, "Invalid name for surface temperature model name: ", trim(c%tName)
           stop -1
@@ -179,6 +181,53 @@ contains
     c%t = c%tParam(1)    
 
   end subroutine t_constant 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Surface temperature model, sawtooth in time, linear in elevation
+  !
+  !   Sea level temperature is a sawtooth function that begins at the maximum
+  !   value at time = 0, decreases to the minimum value over a fixed duration
+  !   cooling period, then increases to the maximum temperature over a fixed
+  !   duration warming period. Surface temperature is related to sea level
+  !   temperature by a simple liear lase rate (T = T_sl-lapse*elev)
+  !   
+  !   Parameters:
+  !     c%tParam(1) = maximum sea-level temperature, [C]
+  !     c%tParam(2) = minimum sea-level temperature, [C]
+  !     c%tParam(3) = duration of cooling period, [a]
+  !     c%tParam(4) = duration of warming period, [a]
+  !     c%tParam(5) = lapse rate, [C/m]
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine t_sawtooth_lapse(c, time, z) 
+
+    class(climate_type), intent(inout) :: c      ! climate object to update
+    real(dp), intent(in)               :: time   ! model time, [a] (unused)
+    real(dp), intent(in)               :: z(:,:) ! surface elev, [m] (unused)
+
+    real(dp) :: tempSlMax, tempSlMin, dtCool, dtWarm, dt, lapse, tempSl, tprime
+
+    ! gather parameters
+    tempSlMax = c%tParam(1)
+    tempSlMin = c%tParam(2)
+    dtCool = c%tParam(3)
+    dtWarm = c%tParam(4)
+    dt = dtCool+dtWarm
+    lapse = c%tParam(5)
+  
+    ! compute sea level temperature
+    tprime = mod(time, dt)
+    if (tprime <= dtCool) then
+      tempSl = tempSlMax+(tempSlMin-tempSlMax)/dtCool*tprime
+    else
+      tempSl = tempSlMin+(tempSlMax-tempSlMin)/dtWarm*(tprime-dtCool)
+    end if
+
+    ! compute surface temperature
+    c%t = tempSl-lapse*z    
+
+  end subroutine t_sawtooth_lapse 
 
 
   ! ---------------------------------------------------------------------------

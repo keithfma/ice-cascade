@@ -62,21 +62,19 @@ $ On/off (.true. or .false)
 .true.
 
 $ Temperature model name ( string )
-$   options: none, constant 
-constant
+$   options: none, constant, sawtooth_lapse 
+sawtooth_lapse
 
 $ Temperature model parameters ( double )
-$   parameter definitions depend on the model name, see below
-$   none: all unused
-$   constant: temperature [C], others unused
-1. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$   parameter definitions depend on the model name, see climate.f90
+18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
 
 $ Precipitation rate model name ( string )
 $   options: none, constant 
 constant
 
 $ Precipitation model parameters ( double )
-$   parameter definitions depend on the model name, see below
+$   parameter definitions depend on the model name, see climate.f90 
 $   none: all unused
 $   constant: precip rate [m/a], others unused
 2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
