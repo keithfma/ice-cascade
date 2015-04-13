@@ -129,18 +129,20 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'model_start_time__a', time%start)
     msg = nf90_put_att(id_file, nf90_global, 'model_end_time__a', time%finish)
     msg = nf90_put_att(id_file, nf90_global, 'model_time_step__a', time%step)
-    msg = nf90_put_att(id_file, nf90_global, 'output_interval__steps', time%write_period)
+    msg = nf90_put_att(id_file, nf90_global, 'model_output_interval__steps', time%write_period)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_nx__1', fgrid%nx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_ny__1', fgrid%ny)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dy__m', fgrid%dy)
     msg = nf90_put_att(id_file, nf90_global, 'topo_high_res_name__file', ftopo%filename)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_on__tf', merge(1, 0, fclimate%on))
     if (fclimate%on) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_model__name', fclimate%tName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_param__various', fclimate%tParam)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_model__name', fclimate%pName)
       msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_param__various', fclimate%pParam)
     end if
+    msg = nf90_put_att(id_file, nf90_global, 'hill_on__tf', merge(1, 0, fhill%on))
     if (fhill%on) then
       msg = nf90_put_att(id_file, nf90_global, 'hill_diffusivity__m2a-1', fhill%D)
       msg = nf90_put_att(id_file, nf90_global, 'hill_north_bc__name', trim(fhill%nbcName))
