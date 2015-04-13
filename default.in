@@ -22,7 +22,7 @@ $ Model start time (real, yr)
 0.
 
 $ Model end time (real, yr)
-1000.
+100.
 
 $ Model timestep (real, yr)
 1.
@@ -59,8 +59,7 @@ $ Climate model
 $ -------------------
 
 $ On/off (.true. or .false)
-$.true.
-.false.
+.true.
 
 $ Temperature model name ( string )
 $   options: none, constant 
@@ -82,10 +81,10 @@ $   none: all unused
 $   constant: precip rate [m/a], others unused
 2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
-$ Write surface temperature (.true.or .false)
+$ Write surface temperature (.true. or .false)
 .true.
 
-$ Write precipitation rate (.true.or .false)
+$ Write precipitation rate (.true. or .false)
 .true.
 
 $ -------------------

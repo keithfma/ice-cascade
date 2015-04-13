@@ -157,7 +157,7 @@ contains
     msg = nf90_def_dim(id_file, 'fy', fgrid%ny, id_dim_fy) 
     msg = nf90_def_dim(id_file, 'time', nf90_unlimited, id_dim_time)
 
-    ! create variables
+    ! create coordinate variables
     msg = nf90_def_var(id_file, 'time', p_nc, id_dim_time, id_var)
     msg = nf90_put_att(id_file, id_var, 'long_name', 'model_time')
     msg = nf90_put_att(id_file, id_var, 'units', 'a')
@@ -170,6 +170,7 @@ contains
     msg = nf90_put_att(id_file, id_var, 'long_name', 'y_coord_high_res')
     msg = nf90_put_att(id_file, id_var, 'units', 'm')
 
+    ! create topography variables
     if (ftopo%write_z) then
      	msg = nf90_def_var(id_file, 'ftopo_z', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
@@ -177,11 +178,27 @@ contains
      	msg = nf90_put_att(id_file, id_var, 'units', 'm')
     end if
 
+    ! create climate variables
+    if (fclimate%write_t) then
+     	msg = nf90_def_var(id_file, 'fclim_t', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_temperature_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
+    end if
+
+    if (fclimate%write_p) then
+     	msg = nf90_def_var(id_file, 'fclim_p', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'precipitation_rate_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
+    end if
+
+    ! create hillslope variables
     if (fhill%write_dzdt) then
      	msg = nf90_def_var(id_file, 'fhill_dzdt', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'hillslope_dzdt_high_res')
-     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
     end if
 
     if (fhill%write_soln) then
@@ -206,15 +223,17 @@ contains
 
   end subroutine createOutfile
 
+
   ! ---------------------------------------------------------------------------
   ! SUB: write data to output file for this step
   ! ---------------------------------------------------------------------------
-  subroutine writeStep(runname, time, ftopo, fhill)
+  subroutine writeStep(runname, time, ftopo, fclimate, fhill)
   
-    character(len=*), intent(in)    :: runname
-    type(time_type), intent(inout)  :: time
-    type(topo_type), intent(in)     :: ftopo
-    type(hill_type), intent(in)     :: fhill
+    character(len=*), intent(in)   :: runname
+    type(time_type), intent(inout) :: time
+    type(topo_type), intent(in)    :: ftopo
+    type(climate_type), intent(in) :: fclimate
+    type(hill_type), intent(in)    :: fhill
   
     real(dp) :: fsoln(ftopo%nx, ftopo%ny)
     integer :: i0f, i1f, j0f, j1f, msg, id_file, id_var
@@ -234,15 +253,28 @@ contains
     ! open file
     msg = nf90_open(trim(runname)//'.out', nf90_write, id_file)
 
-    ! write data
+    ! write time data
     msg = nf90_inq_varid(id_file, 'time', id_var)
     msg = nf90_put_var(id_file, id_var, real(time%now, p), [time%out_step] )
 
+    ! write topography data
     if (ftopo%write_z) then
       msg = nf90_inq_varid(id_file, 'ftopo_z', id_var)
       msg = nf90_put_var(id_file, id_var, real(ftopo%z(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
+    ! write climate data
+    if (fclimate%write_t) then
+      msg = nf90_inq_varid(id_file, 'fclim_t', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fclimate%t(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    if (fclimate%write_p) then
+      msg = nf90_inq_varid(id_file, 'fclim_p', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fclimate%p(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    ! write hillslope data
     if (fhill%write_dzdt) then
       msg = nf90_inq_varid(id_file, 'fhill_dzdt', id_var)
       msg = nf90_put_var(id_file, id_var, real(fhill%dzdt(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )

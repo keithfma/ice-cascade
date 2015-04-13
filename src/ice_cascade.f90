@@ -29,7 +29,7 @@ call fhill%init(fgrid)
 
 ! Create output file and write initial values
 call createOutfile(runname, fgrid, time, ftopo, fclimate, fhill)
-call writeStep(runname, time, ftopo, fhill)
+call writeStep(runname, time, ftopo, fclimate, fhill)
 
 
 do while (time%now .lt. time%finish) ! main loop
@@ -48,7 +48,7 @@ do while (time%now .lt. time%finish) ! main loop
   time%now_step = time%now_step+1
 	
 	! Write output
-  if (time%write_now()) call writeStep(runname, time, ftopo, fhill)
+  if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fhill)
 
 end do ! exit main loop		
 
