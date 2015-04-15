@@ -5,3 +5,4 @@ src/*.o
 src/*.mod
 *.swp
 .nfs*
+old.in
