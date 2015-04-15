@@ -111,26 +111,53 @@ $ Write surface ice flux (.true. or .false)
 .false.
 
 $ -------------------
-$ Hillslope model
+$ Glacier model
 $ -------------------
 
 $ On/off (.true. or .false)
 .true.
 
+$ Ice deformantion coefficient, [Pa^-3 a^-1]
+1.0
+
+$ Ice flow computational method, [string]
+$ options: mahaffy
+mahaffy
+
+$ n; s; e; w boundary conditions (string) 
+$ options: no_ice
+no_ice
+no_ice
+no_ice
+no_ice
+
+$ write ice thickness? (.true. or .false.)
+.true.
+
+$ write ice deformation velocity? (.true. or .false.)
+.true.
+
+$ -------------------
+$ Hillslope model
+$ -------------------
+
+$ On/off (.true. or .false)
+.false.
+
 $ Diffusivity (real, m^2/yr)
 0.5
 
 $ n; s; e; w boundary conditions (string) 
-$ options: zero_grad, bench_hill_ss_sin, bench_hill_ss_const
-bench_hill_ss_sin
-bench_hill_ss_const
-bench_hill_ss_const
-bench_hill_ss_const
+$ options: none, zero_grad, bench_hill_ss_sin, bench_hill_ss_const
+none
+none
+none
+none
 
 $ exact solution for topography ( string )
 $ options: none, bench_hill_ss
-bench_hill_ss
+none
 
 $ write hillslope dz/dt? (.true. or .false.)
-.true.
+.false.
 

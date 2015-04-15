@@ -33,9 +33,8 @@ call fhill%init(fgrid)
 if (fclimate%on) call fclimate%run(time%now, ftopo%z)
 
 ! Create output file and write initial values
-call createOutfile(runname, fgrid, time, ftopo, fclimate, fhill)
-call writeStep(runname, time, ftopo, fclimate, fhill)
-
+call createOutfile(runname, fgrid, time, ftopo, fclimate, fice, fhill)
+call writeStep(runname, time, ftopo, fclimate, fice, fhill)
 
 do while (time%now .lt. time%finish) ! main loop
 
@@ -44,16 +43,22 @@ do while (time%now .lt. time%finish) ! main loop
 
   ! Climate model
   if (fclimate%on) call fclimate%run(time%now, ftopo%z)
+
+  ! Ice model
 	
   ! Hillslope model
   if (fhill%on) call fhill%run(ftopo%z, time%step)
+
+  ! Apply erosion
+
+  ! Isostasy
 
 	! Step forward
 	time%now = time%now+time%step
   time%now_step = time%now_step+1
 	
 	! Write output
-  if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fhill)
+  if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fice, fhill)
 
 end do ! exit main loop		
 
