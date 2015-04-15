@@ -92,30 +92,7 @@ contains
     class(hill_type), intent(inout) :: h ! object to initialize
     class(grid_type), intent(in)    :: g ! coordinate grid info
     
-    if (h%on .eqv. .false.) then
-      ! model disabled, clear all object components
-      h%write_soln = .false.
-      h%write_dzdt = .false.
-      h%nx = -1
-      h%ny = -1
-      h%dx = -1.0_dp
-      h%dy = -1.0_dp
-      h%D = -1.0_dp
-      h%dtMax = -1.0_dp
-      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%dzdt(1,1))
-      h%dzdt = -1.0_dp
-      h%nbcName = "none"
-      h%sbcName = "none"
-      h%ebcName = "none"
-      h%wbcName = "none"
-      h%solnName = "none"
-      h%nbc => NULL()
-      h%sbc => NULL()
-      h%wbc => NULL()
-      h%ebc => NULL()
-      h%solve => NULL()
-    else
+    if (h%on) then
       ! model enabled, init components
       h%nx = g%nx
       h%ny = g%ny
@@ -129,6 +106,29 @@ contains
       call set_bc_proc(h%ebcName, h%ebc)
       call set_soln_proc(h%solnName, h%write_soln, h%solve)
       h%dtMax = 1.0_dp/(h%dx**-2.0_dp+h%dy**-2.0_dp)/(2.0_dp*h%D)
+    else
+      ! model disabled, clear all object components
+      h%write_soln = .false.
+      h%write_dzdt = .false.
+      h%nx = -1
+      h%ny = -1
+      h%dx = -1.0_dp
+      h%dy = -1.0_dp
+      h%D = -1.0_dp
+      h%dtMax = -1.0_dp
+      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
+      allocate(h%dzdt(1,1))
+      h%dzdt = -1.0_dp
+      h%nbcName = 'none'
+      h%sbcName = 'none'
+      h%ebcName = 'none'
+      h%wbcName = 'none'
+      h%solnName = 'none'
+      h%nbc => NULL()
+      h%sbc => NULL()
+      h%wbc => NULL()
+      h%ebc => NULL()
+      h%solve => NULL()
     end if
 
   end subroutine init
@@ -198,16 +198,16 @@ contains
 
     select case (str)
 
-      case ("bench_hill_ss")
-        on = .true.
-        ptr => solve_bench_hill_ss
-
-      case ("none")
+      case ('none')
         on = .false.
         ptr => NULL()
 
+      case ('bench_hill_ss')
+        on = .true.
+        ptr => solve_bench_hill_ss
+
       case default 
-        print *, "Invalid name for hillslope solution: ", trim(str)
+        print *, 'Invalid name for hillslope solution: ', trim(str)
         stop -1
    
       end select
@@ -225,17 +225,20 @@ contains
 
     select case (str)
       
-      case ("zero_grad")
+      case ('none')
+        ptr => NULL() ! NOTE: this will cause the program to fail by design
+
+      case ('zero_grad')
         ptr => bc_zero_grad
 
-      case ("bench_hill_ss_sin")
+      case ('bench_hill_ss_sin')
         ptr => bc_bench_hill_ss_sin
      
-      case ("bench_hill_ss_const")
+      case ('bench_hill_ss_const')
         ptr => bc_bench_hill_ss_const
       
       case default 
-        print *, "Invalid name for hillslope BC: ", trim(str)
+        print *, 'Invalid name for hillslope BC: ', trim(str)
         stop -1
    
     end select

@@ -13,6 +13,7 @@ use grid_module, only: grid_type
 use time_module, only: time_type
 use topo_module, only: topo_type
 use climate_module, only: climate_type
+use ice_module, only: ice_type
 use hill_module, only: hill_type
 use netcdf
 
@@ -33,13 +34,14 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: read from the input file specified on the command line
   ! ---------------------------------------------------------------------------
-  subroutine readParam (runname, fgrid, time, ftopo, fclimate, fhill)
+  subroutine readParam (runname, fgrid, time, ftopo, fclimate, fice, fhill)
     
     character(len=*), intent(out)   :: runname  ! name for run
     type(grid_type), intent(out)    :: fgrid    ! high-res grid
     type(time_type), intent(out)    :: time     ! model time vars
     type(topo_type), intent(out)    :: ftopo    ! high-res topography
     type(climate_type), intent(out) :: fclimate ! climate model
+    type(ice_type), intent(out)     :: fice     ! ice model
     type(hill_type), intent(out)    :: fhill    ! hilllslope model
 
     character(len=100) :: infile, line
@@ -70,38 +72,47 @@ contains
     rewind (55)
     
     ! Read in input parameters
-    read (55,*) runname	
-    read (55,*) time%start
-    read (55,*) time%finish
-    read (55,*) time%step
-    read (55,*) time%write_period
-    read (55,*) rhoi ! shared
-    read (55,*) fgrid%nx	
-    read (55,*) fgrid%ny
-    read (55,*) fgrid%dx
-    read (55,*) fgrid%dy	
-    read (55,*) ftopo%filename
-    read (55,*) ftopo%write_z
-    read (55,*) fclimate%on_t 
-    read (55,*) fclimate%tName 
-    read (55,*) fclimate%tParam(:) 
-    read (55,*) fclimate%on_p 
-    read (55,*) fclimate%pName
-    read (55,*) fclimate%pParam(:) 
-    read (55,*) fclimate%on_i 
-    read (55,*) fclimate%iName
-    read (55,*) fclimate%iParam(:) 
-    read (55,*) fclimate%write_t
-    read (55,*) fclimate%write_p 
-    read (55,*) fclimate%write_i 
-    read (55,*) fhill%on 
-    read (55,*) fhill%D	
-    read (55,*) fhill%nbcName
-    read (55,*) fhill%sbcName 
-    read (55,*) fhill%ebcName
-    read (55,*) fhill%wbcName 
-    read (55,*) fhill%solnName 	
-    read (55,*) fhill%write_dzdt
+    read(55, *) runname	
+    read(55, *) time%start
+    read(55, *) time%finish
+    read(55, *) time%step
+    read(55, *) time%write_period
+    read(55, *) rhoi ! shared
+    read(55, *) fgrid%nx	
+    read(55, *) fgrid%ny
+    read(55, *) fgrid%dx
+    read(55, *) fgrid%dy	
+    read(55, *) ftopo%filename
+    read(55, *) ftopo%write_z
+    read(55, *) fclimate%on_t 
+    read(55, *) fclimate%tName 
+    read(55, *) fclimate%tParam(:) 
+    read(55, *) fclimate%on_p 
+    read(55, *) fclimate%pName
+    read(55, *) fclimate%pParam(:) 
+    read(55, *) fclimate%on_i 
+    read(55, *) fclimate%iName
+    read(55, *) fclimate%iParam(:) 
+    read(55, *) fclimate%write_t
+    read(55, *) fclimate%write_p 
+    read(55, *) fclimate%write_i 
+    read(55, *) fice%on
+    read(55, *) fice%c_b
+    read(55, *) fice%flowName
+    read(55, *) fice%nbcName
+    read(55, *) fice%sbcName
+    read(55, *) fice%ebcName
+    read(55, *) fice%wbcName
+    read(55, *) fice%write_h
+    read(55, *) fice%write_uvdefm
+    read(55, *) fhill%on 
+    read(55, *) fhill%D	
+    read(55, *) fhill%nbcName
+    read(55, *) fhill%sbcName 
+    read(55, *) fhill%ebcName
+    read(55, *) fhill%wbcName 
+    read(55, *) fhill%solnName 	
+    read(55, *) fhill%write_dzdt
     close(55)
 
     ! assign shared values
