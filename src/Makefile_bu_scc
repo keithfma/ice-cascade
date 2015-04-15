@@ -1,14 +1,11 @@
 # Customized for the BU Shared Computing Cluster
 # 
 # Requires:
-# 	NetCDF-C 4.?
-# 	NetCDF-Fortran 4.?
-# 	FFTW 3.3.3
-# 	OpenMPI 1.?
+# 	NetCDF-C 4.3.0
+# 	NetCDF-Fortran 4.4.2
 #
 # Uses PGI compiler and MPI distribution, which are:
 # 	PGI 13.5 
-# 	OpenMPI v1.6.4
 #
 # Other library paths are defined explicitly (not using modules) 
 
@@ -16,11 +13,10 @@ NETCDF_INC = /project/earth/packages/netcdf-4.3.0/include
 NETCDF_LIB = /project/earth/packages/netcdf-4.3.0/lib
 NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
 NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
-MPI_LIB = /usr/local/IT/mpi/openmpi-1.6.4/pgi-13/lib
 
-FORT = mpif90
-FFLAGS = -c -tp=px-64 -g
-LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),-rpath,$(MPI_LIB),--enable-new-dtags
+FORT = pgfortran
+FFLAGS = -c -tp=px-64 -g -O0
+LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),--enable-new-dtags
 DEFS = 
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
 LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff

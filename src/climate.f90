@@ -19,9 +19,10 @@ public climate_type
   ! TYPE: all variables and procedures for the climate model component
   ! ---------------------------------------------------------------------------
   type climate_type
-    logical                       :: on_t      ! enable/disable surface temperature component
-    logical                       :: on_p      ! enable/disable surface temperature component
-    logical                       :: on_i      ! enable/disable surface temperature component
+    logical                       :: on        ! enable/disable 
+    logical                       :: on_t      ! enable/disable surf temp component
+    logical                       :: on_p      ! enable/disable precip component
+    logical                       :: on_i      ! enable/disable surf ice flux component
     integer                       :: nx        ! num grid points in x-dir, [1]
     integer                       :: ny        ! num grid points in y-dir, [1]
     real(dp)                      :: rhoi      ! density of glacial ice, [kg/m3]
@@ -73,12 +74,11 @@ contains
     class(climate_type), intent(inout) :: c ! climate modekl object to init
     class(grid_type), intent(in)       :: g ! coordinate grid information
 
-    logical :: on
 
-    on = c%on_t .and. c%on_p .and. c%on_i
+    c%on = c%on_t .and. c%on_p .and. c%on_i
 
     ! climate model common components
-    if (c%on_t .or. c%on_p .or. c%on_i) then
+    if (c%on) then
       c%nx = g%nx
       c%ny = g%ny
       if (allocated(c%x)) deallocate(c%x)
