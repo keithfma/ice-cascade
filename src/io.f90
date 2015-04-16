@@ -97,8 +97,8 @@ contains
     read(55, *) fclimate%write_p 
     read(55, *) fclimate%write_i 
     read(55, *) fice%on
-    read(55, *) fice%h0Name
     read(55, *) fice%c_b
+    read(55, *) fice%h0Name
     read(55, *) fice%flowName
     read(55, *) fice%nbcName
     read(55, *) fice%sbcName
@@ -183,12 +183,14 @@ contains
     ! ice
     msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, fice%on))
     if (fice%on) then
-      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff__Pa-3a-1', fhill%D)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff__Pa-3a-1', fice%c_b)
       msg = nf90_put_att(id_file, nf90_global, 'ice_north_bc__name', trim(fice%nbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_south_bc__name', trim(fice%sbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_west_bc__name', trim(fice%wbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_east_bc__name', trim(fice%ebcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_flow_method__name', trim(fice%flowName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_initial_thickness__name', trim(fice%h0Name))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_exact_solution__name', trim(fice%solnName))
     end if
     ! hill
     msg = nf90_put_att(id_file, nf90_global, 'hill_on__tf', merge(1, 0, fhill%on))
@@ -267,6 +269,13 @@ contains
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_ydir_high_res')
      	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
+    end if
+
+    if (fice%write_soln) then
+     	msg = nf90_def_var(id_file, 'fice_soln_h', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_exact_solution_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
     end if
 
     ! create hillslope variables
@@ -370,6 +379,10 @@ contains
       msg = nf90_put_var(id_file, id_var, real(fice%vdefm(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
+    if (fice%write_soln) then
+      msg = nf90_inq_varid(id_file, 'fice_soln_h', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fice%soln_h(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
 
     ! write hillslope data
     if (fhill%write_dzdt) then

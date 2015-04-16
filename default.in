@@ -117,27 +117,27 @@ $ -------------------
 $ On/off (.true. or .false)
 .true.
 
+$ Ice deformantion coefficient, [Pa^-3 a^-1]
+1.0
+
 $ Initial high-res ice thickness (string)
 $   options: zero, exact
 zero
 
-$ Ice deformantion coefficient, [Pa^-3 a^-1]
-1.0
-
 $ Ice flow computational method, [string]
-$ options: mahaffy
+$   options: mahaffy
 mahaffy
 
 $ n; s; e; w boundary conditions (string) 
-$ options: no_ice
+$   options: no_ice
 no_ice
 no_ice
 no_ice
 no_ice
 
 $ exact solution, [string]
-$ options: none
-none
+$   options: none. bueler_isothermal_a
+bueler_isothermal_a
 
 $ write ice thickness? (.true. or .false.)
 .true.

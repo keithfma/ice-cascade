@@ -95,28 +95,32 @@ contains
     class(ice_type), intent(inout) :: i ! ice obj to init
     type(grid_type), intent(in) :: g ! coord grid info
 
-    ! model is enabled, set all members
+    ! object is already initialized, exit with error
+    if (allocated(i%x)) then
+      print *, 'Attempted to initialize ice_type object twice, exiting.'
+      stop -1
+    end if
+
+    ! model is enabled, init all members
     if (i%on) then
+      allocate(i%x(g%nx));                
+      allocate(i%y(g%ny));                
+      allocate(i%h(g%nx+2, g%ny+2));      
+      allocate(i%dhdt(g%nx+2, g%ny+2));   
+      allocate(i%udefm(g%nx+2, g%ny+2));  
+      allocate(i%vdefm(g%nx+2, g%ny+2));  
+      allocate(i%soln_h(g%nx+2, g%ny+2)); 
       i%nx = g%nx
       i%ny = g%ny
       i%dx = g%dx
       i%dy = g%dy
-      if (allocated(i%x)) deallocate(i%x)
-      allocate(i%x(i%nx+2))
       i%x = g%x
-      if (allocated(i%y)) deallocate(i%y)
-      allocate(i%y(i%ny+2))
-      if (allocated(i%h)) deallocate(i%h)
       i%y = g%y
-      allocate(i%h(i%nx+2, i%ny+2))
-      if (allocated(i%dhdt)) deallocate(i%dhdt)
-      allocate(i%dhdt(i%nx+2, i%ny+2))
-      if (allocated(i%udefm)) deallocate(i%udefm)
-      allocate(i%udefm(i%nx+2, i%ny+2))
-      if (allocated(i%vdefm)) deallocate(i%vdefm)
-      allocate(i%vdefm(i%nx+2, i%ny+2))
-      if (allocated(i%soln_h)) deallocate(i%soln_h)
-      allocate(i%soln_h(i%nx+2, i%ny+2))
+      i%h = 0.0_dp
+      i%dhdt = 0.0_dp
+      i%udefm = 0.0_dp
+      i%vdefm = 0.0_dp
+      i%soln_h = 0.0_dp
 
       ! parse bc names, set procedures
       call set_bc_proc(i%nbcName, i%nbc)
@@ -126,13 +130,10 @@ contains
 
       ! parse ice flow model name, set procedure
       select case (i%flowName)
-      
         case ('none')
           i%flow => NULL() ! NOTE: this will cause the program to fail by design
-
         case ('mahaffy')
           i%flow => NULL()! PLACEHOLDER, TO BE UPDATED
-
         case default 
           print *, 'Invalid name for ice flow method: ', trim(i%flowName)
           stop -1
@@ -140,15 +141,12 @@ contains
 
       ! parse solution name, set procedures
       select case (i%solnName)
-      
         case ('none')
           i%soln => NULL()
           i%write_soln = .false.
-
         case ('bueler_isothermal_a')
           i%soln => NULL() ! PLACEHOLDER, TO BE UPDATED
-          i%write_soln = .false.
-
+          i%write_soln = .true.
         case default 
           print *, 'Invalid name for ice flow method: ', trim(i%solnName)
           stop -1
@@ -156,14 +154,11 @@ contains
 
       ! read initial ice thickness
       select case (i%h0Name)
-        
         case ('zero')
           i%h = 0.0_dp
-
         case ('exact')
           print *, 'Invalid name for initial ice thickness: ', trim(i%h0Name)
           print *, '(Note: setting from exact solution is planned, but not yet implemented.)'
-
         case default 
           print *, 'Invalid name for initial ice thickness: ', trim(i%h0Name)
           print *, '(Note: reading from file is planned, but not yet implemented.)'
@@ -172,6 +167,13 @@ contains
 
     ! model is disabled, unset all members
     else
+      allocate(i%x(1))
+      allocate(i%y(1))
+      allocate(i%h(1,1))
+      allocate(i%dhdt(1,1))
+      allocate(i%udefm(1,1))
+      allocate(i%vdefm(1,1))
+      allocate(i%soln_h(1,1))
       i%write_h = .false.
       i%write_uvdefm = .false.
       i%write_soln = .false.
@@ -180,26 +182,12 @@ contains
       i%dx = -1.0_dp
       i%dy = -1.0_dp
       i%c_b = -1.0_dp
-      if (allocated(i%x)) deallocate(i%x)
-      allocate(i%x(1))
       i%x = -1.0_dp
-      if (allocated(i%y)) deallocate(i%y)
-      allocate(i%y(1))
       i%y = -1.0_dp
-      if (allocated(i%h)) deallocate(i%h)
-      allocate(i%h(1,1))
       i%h = -1.0_dp
-      if (allocated(i%dhdt)) deallocate(i%dhdt)
-      allocate(i%dhdt(1,1))
       i%dhdt = -1.0_dp
-      if (allocated(i%udefm)) deallocate(i%udefm)
-      allocate(i%udefm(1,1))
       i%udefm = -1.0_dp
-      if (allocated(i%vdefm)) deallocate(i%vdefm)
-      allocate(i%vdefm(1,1))
       i%vdefm = -1.0_dp
-      if (allocated(i%soln_h)) deallocate(i%soln_h)
-      allocate(i%soln_h(1,1))
       i%soln_h = -1.0_dp
       i%h0Name = 'none'
       i%nbcName = 'none'
@@ -226,6 +214,34 @@ contains
 
 
   ! ---------------------------------------------------------------------------
+  ! SUB: init 1D real array
+  ! ---------------------------------------------------------------------------
+  subroutine init_var1(var, n)
+
+    real(dp), allocatable, intent(inout) :: var(:) ! var to init
+    integer, optional, intent(in)        :: n      ! allocated size
+
+    if (allocated(var)) deallocate(var)
+    allocate(var(n))
+    
+  end subroutine init_var1
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: clear 1D real array
+  ! ---------------------------------------------------------------------------
+  subroutine clear_var1(var)
+
+    real(dp), allocatable, intent(inout) :: var(:) ! var to clear
+
+    if (allocated(var)) deallocate(var)
+    allocate(var(1))
+    var = -1.0_dp
+    
+  end subroutine clear_var1
+
+
+  ! ---------------------------------------------------------------------------
   ! SUB: parse BC name and associate the BC procedure pointer
   ! ---------------------------------------------------------------------------
   subroutine set_bc_proc(str, ptr)
@@ -234,32 +250,28 @@ contains
     procedure (bc_tmpl), pointer, intent(out) :: ptr ! procedure pointer to be set
 
     select case (str)
-      
       case ('none')
         ptr => NULL() ! NOTE: this will cause the program to fail by design
-
       case ('no_ice')
         ptr => NULL()
-
       case default 
         print *, 'Invalid name for ice BC: ', trim(str)
         stop -1
-   
     end select
     
   end subroutine set_bc_proc
 
 
-  ! ---------------------------------------------------------------------------
-  ! SUB: parse flow method name and associate the flow procedure pointer
-  ! ---------------------------------------------------------------------------
-  subroutine set_flow_proc(str, ptr)
-
-    character(len=*), intent(in)              :: str ! method name
-    procedure (flow_tmpl), pointer, intent(out) :: ptr ! procedure pointer to be set
-
-    
-  end subroutine set_flow_proc
+!  ! ---------------------------------------------------------------------------
+!  ! SUB TEMPLATE: common form for the exact solution subroutines
+!  ! ---------------------------------------------------------------------------
+!  abstract interface 
+!    subroutine soln_tmpl(i, time)
+!      import                         :: dp, ice_type ! use special types
+!      class(ice_type), intent(inout) :: i
+!      real(dp), intent(in)           :: time
+!    end subroutine soln_tmpl 
+!  end interface
 
   
 end module ice_module
