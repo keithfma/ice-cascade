@@ -97,12 +97,14 @@ contains
     read(55, *) fclimate%write_p 
     read(55, *) fclimate%write_i 
     read(55, *) fice%on
+    read(55, *) fice%h0Name
     read(55, *) fice%c_b
     read(55, *) fice%flowName
     read(55, *) fice%nbcName
     read(55, *) fice%sbcName
     read(55, *) fice%ebcName
     read(55, *) fice%wbcName
+    read(55, *) fice%solnName
     read(55, *) fice%write_h
     read(55, *) fice%write_uvdefm
     read(55, *) fhill%on 

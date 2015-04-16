@@ -117,6 +117,10 @@ $ -------------------
 $ On/off (.true. or .false)
 .true.
 
+$ Initial high-res ice thickness (string)
+$   options: zero, exact
+zero
+
 $ Ice deformantion coefficient, [Pa^-3 a^-1]
 1.0
 
@@ -130,6 +134,10 @@ no_ice
 no_ice
 no_ice
 no_ice
+
+$ exact solution, [string]
+$ options: none
+none
 
 $ write ice thickness? (.true. or .false.)
 .true.
