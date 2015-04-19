@@ -42,10 +42,14 @@ public ice_type
     character(len=100) :: ebcName ! east BC name
     character(len=100) :: flowName ! ice flow method name
     character(len=100) :: solnName ! exact solution name
-    procedure(bc_tmpl), pointer, nopass :: nbc ! set north BC
-    procedure(bc_tmpl), pointer, nopass :: sbc ! set south BC
-    procedure(bc_tmpl), pointer, nopass :: wbc ! set west BC
-    procedure(bc_tmpl), pointer, nopass :: ebc ! set east BC
+    procedure(bc_tmpl), pointer, nopass :: nbc_h ! set ice north BC
+    procedure(bc_tmpl), pointer, nopass :: sbc_h ! set ice south BC
+    procedure(bc_tmpl), pointer, nopass :: wbc_h ! set ice west BC
+    procedure(bc_tmpl), pointer, nopass :: ebc_h ! set ice east BC
+    procedure(bc_tmpl), pointer, nopass :: nbc_b ! set bed north BC
+    procedure(bc_tmpl), pointer, nopass :: sbc_b ! set bed south BC
+    procedure(bc_tmpl), pointer, nopass :: wbc_b ! set bed west BC
+    procedure(bc_tmpl), pointer, nopass :: ebc_b ! set bed east BC
     procedure(flow_tmpl), pointer, pass :: flow ! ice flow  
     procedure(soln_tmpl), pointer, pass :: soln ! exact solution  
   contains
@@ -58,8 +62,12 @@ public ice_type
   ! FUNC TEMPLATE: common form for the bc functions
   ! ---------------------------------------------------------------------------
   abstract interface 
-    function bc_tmpl()
-      import :: dp ! use special types
+    function bc_tmpl(edge, intr, oppo) result(bnd)
+      import :: dp                    ! use special types
+      real(dp), intent(in) :: edge(:) ! domain edge 
+      real(dp), intent(in) :: intr(:) ! domain edge-1
+      real(dp), intent(in) :: oppo(:) ! opposite domain edge
+      real(dp) :: bnd(size(edge))     ! bc points
     end function bc_tmpl 
   end interface
 
@@ -214,64 +222,26 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: init 1D real array
-  ! ---------------------------------------------------------------------------
-  subroutine init_var1(var, n)
-
-    real(dp), allocatable, intent(inout) :: var(:) ! var to init
-    integer, optional, intent(in)        :: n      ! allocated size
-
-    if (allocated(var)) deallocate(var)
-    allocate(var(n))
-    
-  end subroutine init_var1
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: clear 1D real array
-  ! ---------------------------------------------------------------------------
-  subroutine clear_var1(var)
-
-    real(dp), allocatable, intent(inout) :: var(:) ! var to clear
-
-    if (allocated(var)) deallocate(var)
-    allocate(var(1))
-    var = -1.0_dp
-    
-  end subroutine clear_var1
-
-
-  ! ---------------------------------------------------------------------------
   ! SUB: parse BC name and associate the BC procedure pointer
   ! ---------------------------------------------------------------------------
-  subroutine set_bc_proc(str, ptr)
+  subroutine set_bc_proc(str, ptr_h, ptr_b)
 
-    character(len=*), intent(in)              :: str ! BC name
-    procedure (bc_tmpl), pointer, intent(out) :: ptr ! procedure pointer to be set
+    character(len=*), intent(in) :: str                ! BC name
+    procedure (bc_tmpl), pointer, intent(out) :: ptr_h ! proc ptr for ice
+    procedure (bc_tmpl), pointer, intent(out) :: ptr_h ! proc ptr for bed
 
     select case (str)
       case ('none')
-        ptr => NULL() ! NOTE: this will cause the program to fail by design
+        ptr_h => NULL() ! NOTE: this will cause the program to fail by design
+        ptr_b => NULL()
       case ('no_ice')
-        ptr => NULL()
+        ptr_h => NULL()
+        ptr_b => NULL()
       case default 
         print *, 'Invalid name for ice BC: ', trim(str)
         stop -1
     end select
     
   end subroutine set_bc_proc
-
-
-!  ! ---------------------------------------------------------------------------
-!  ! SUB TEMPLATE: common form for the exact solution subroutines
-!  ! ---------------------------------------------------------------------------
-!  abstract interface 
-!    subroutine soln_tmpl(i, time)
-!      import                         :: dp, ice_type ! use special types
-!      class(ice_type), intent(inout) :: i
-!      real(dp), intent(in)           :: time
-!    end subroutine soln_tmpl 
-!  end interface
-
   
 end module ice_module
