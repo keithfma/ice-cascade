@@ -50,8 +50,8 @@ public ice_type
     procedure(bc_tmpl), pointer, nopass :: sbc_b ! set bed south BC
     procedure(bc_tmpl), pointer, nopass :: wbc_b ! set bed west BC
     procedure(bc_tmpl), pointer, nopass :: ebc_b ! set bed east BC
-    procedure(flow_tmpl), pointer, pass :: flow ! ice flow  
-    procedure(soln_tmpl), pointer, pass :: soln ! exact solution  
+    procedure(flow_tmpl), pointer, pass :: flow  ! ice flow  
+    procedure(soln_tmpl), pointer, pass :: solve ! exact solution  
   contains
     procedure, pass :: init ! initialize all components
     procedure, pass :: run ! run model                   
@@ -117,7 +117,7 @@ contains
       allocate(i%dhdt(g%nx+2, g%ny+2));   
       allocate(i%udefm(g%nx+2, g%ny+2));  
       allocate(i%vdefm(g%nx+2, g%ny+2));  
-      allocate(i%soln_h(g%nx+2, g%ny+2)); 
+      allocate(i%soln_h(g%nx+4, g%ny+2)); 
       i%nx = g%nx
       i%ny = g%ny
       i%dx = g%dx
@@ -131,10 +131,10 @@ contains
       i%soln_h = 0.0_dp
 
       ! parse bc names, set procedures
-      call set_bc_proc(i%nbcName, i%nbc)
-      call set_bc_proc(i%sbcName, i%sbc)
-      call set_bc_proc(i%ebcName, i%ebc)
-      call set_bc_proc(i%wbcName, i%wbc)
+      call set_bc_proc(i%nbcName, i%nbc_h, i%nbc_b)
+      call set_bc_proc(i%sbcName, i%sbc_h, i%sbc_b)
+      call set_bc_proc(i%ebcName, i%ebc_h, i%ebc_b)
+      call set_bc_proc(i%wbcName, i%wbc_h, i%wbc_b)
 
       ! parse ice flow model name, set procedure
       select case (i%flowName)
@@ -150,10 +150,10 @@ contains
       ! parse solution name, set procedures
       select case (i%solnName)
         case ('none')
-          i%soln => NULL()
+          i%solve => NULL()
           i%write_soln = .false.
         case ('bueler_isothermal_a')
-          i%soln => NULL() ! PLACEHOLDER, TO BE UPDATED
+          i%solve => NULL() ! PLACEHOLDER, TO BE UPDATED
           i%write_soln = .true.
         case default 
           print *, 'Invalid name for ice flow method: ', trim(i%solnName)
@@ -203,11 +203,16 @@ contains
       i%ebcName = 'none'
       i%wbcName = 'none'
       i%flowName = 'none'
-      i%nbc => NULL()
-      i%sbc => NULL()
-      i%ebc => NULL()
-      i%wbc => NULL()
+      i%nbc_h => NULL()
+      i%sbc_h => NULL()
+      i%ebc_h => NULL()
+      i%wbc_h => NULL()
+      i%nbc_b => NULL()
+      i%sbc_b => NULL()
+      i%ebc_b => NULL()
+      i%wbc_b => NULL()
       i%flow => NULL()
+      i%solve => NULL()
     end if
 
   end subroutine init
@@ -228,20 +233,50 @@ contains
 
     character(len=*), intent(in) :: str                ! BC name
     procedure (bc_tmpl), pointer, intent(out) :: ptr_h ! proc ptr for ice
-    procedure (bc_tmpl), pointer, intent(out) :: ptr_h ! proc ptr for bed
+    procedure (bc_tmpl), pointer, intent(out) :: ptr_b ! proc ptr for bed
 
     select case (str)
       case ('none')
         ptr_h => NULL() ! NOTE: this will cause the program to fail by design
         ptr_b => NULL()
       case ('no_ice')
-        ptr_h => NULL()
-        ptr_b => NULL()
+        ptr_h => bc_h_bnd_eq_zero
+        ptr_b => bc_b_bnd_eq_adjacent
       case default 
         print *, 'Invalid name for ice BC: ', trim(str)
         stop -1
     end select
     
   end subroutine set_bc_proc
+
+
+  ! ---------------------------------------------------------------------------
+  ! FUNC: Boundary condition, ice thickness, set to zero
+  ! ---------------------------------------------------------------------------
+  function bc_h_bnd_eq_zero(edge, intr, oppo) result(bnd)
+
+    real(dp), intent(in) :: edge(:) ! (not used)
+    real(dp), intent(in) :: intr(:) ! (not used)
+    real(dp), intent(in) :: oppo(:) ! (not used)
+    real(dp) :: bnd(size(edge))     ! bc points
+
+    bnd = 0.0_dp
+
+  end function bc_h_bnd_eq_zero 
+  
+  
+  ! ---------------------------------------------------------------------------
+  ! FUNC: Boundary condition, bed topography, bnd same as domain edge 
+  ! ---------------------------------------------------------------------------
+  function bc_b_bnd_eq_adjacent(edge, intr, oppo) result(bnd)
+
+  real(dp), intent(in) :: edge(:)   ! domain edge
+    real(dp), intent(in) :: intr(:) ! (not used)
+    real(dp), intent(in) :: oppo(:) ! (not used)
+    real(dp) :: bnd(size(edge))     ! bc points
+
+    bnd = edge
+
+  end function bc_b_bnd_eq_adjacent 
   
 end module ice_module
