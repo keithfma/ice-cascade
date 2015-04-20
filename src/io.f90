@@ -97,7 +97,8 @@ contains
     read(55, *) fclimate%write_p 
     read(55, *) fclimate%write_i 
     read(55, *) fice%on
-    read(55, *) fice%c_b
+    read(55, *) fice%A0
+    fice%A0 = fice%A0*365.25_dp*24.0_dp*60.0_dp*60.0_dp ! s^-1 to a^1
     read(55, *) fice%h0Name
     read(55, *) fice%flowName
     read(55, *) fice%nbcName
@@ -119,6 +120,7 @@ contains
 
     ! assign shared values
     fclimate%rhoi = rhoi
+    fice%rhoi = rhoi
 
   end subroutine readParam
 
@@ -183,7 +185,7 @@ contains
     ! ice
     msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, fice%on))
     if (fice%on) then
-      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff__Pa-3a-1', fice%c_b)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff_prefactor__Pa-3a-1', fice%A0)
       msg = nf90_put_att(id_file, nf90_global, 'ice_north_bc__name', trim(fice%nbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_south_bc__name', trim(fice%sbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_west_bc__name', trim(fice%wbcName))

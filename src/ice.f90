@@ -27,9 +27,11 @@ public ice_type
     integer :: ny ! num grid pts in y-dir, [1]
     real(dp) :: dx ! grid spacing in x-dir, [m]
     real(dp) :: dy ! grid spacing in y-dir, [m]
-    real(dp) :: c_b ! ice defm coeff, [Pa-3 a-1]
+    real(dp) :: rhoi ! density of glacial ice, [kg/m3]
+    real(dp) :: A0 ! ice flow law coeff prefactor, [Pa-3 a-1]
     real(dp), allocatable :: x(:) ! x coord [m]
     real(dp), allocatable :: y(:) ! y coord [m]
+    real(dp), allocatable :: A(:,:) ! ice flow law coeff, [Pa-3 a-1]
     real(dp), allocatable :: h(:,:) ! ice thickness, [m]
     real(dp), allocatable :: dhdt(:,:) ! ice thick. rate-of-change, [m a-1]
     real(dp), allocatable :: udefm(:,:) ! ice deformation velocity, x-dir [m a-1]
@@ -92,11 +94,16 @@ public ice_type
     end subroutine soln_tmpl 
   end interface
 
+  ! ---------------------------------------------------------------------------
+  ! PARAMETERS
+  ! ---------------------------------------------------------------------------
+  real(dp), parameter :: grav = 9.8067
+
 contains
 
   ! --------------------------------------------------------------------------- 
   ! SUB: initialize an ice model object
-  !   Note: components on, write*, c_b,  *Name,  must be set before init
+  !   Note: some components must be set before init
   ! --------------------------------------------------------------------------- 
   subroutine init(i, g)
 
@@ -113,6 +120,7 @@ contains
     if (i%on) then
       allocate(i%x(g%nx));                
       allocate(i%y(g%ny));                
+      allocate(i%A(g%nx+2, g%ny+2));      
       allocate(i%h(g%nx+2, g%ny+2));      
       allocate(i%dhdt(g%nx+2, g%ny+2));   
       allocate(i%udefm(g%nx+2, g%ny+2));  
@@ -124,6 +132,7 @@ contains
       i%dy = g%dy
       i%x = g%x
       i%y = g%y
+      i%A = i%A0
       i%h = 0.0_dp
       i%dhdt = 0.0_dp
       i%udefm = 0.0_dp
@@ -177,6 +186,7 @@ contains
     else
       allocate(i%x(1))
       allocate(i%y(1))
+      allocate(i%A(1,1))
       allocate(i%h(1,1))
       allocate(i%dhdt(1,1))
       allocate(i%udefm(1,1))
@@ -189,9 +199,10 @@ contains
       i%ny = -1
       i%dx = -1.0_dp
       i%dy = -1.0_dp
-      i%c_b = -1.0_dp
+      i%A0 = -1.0_dp
       i%x = -1.0_dp
       i%y = -1.0_dp
+      i%A = -1.0_dp
       i%h = -1.0_dp
       i%dhdt = -1.0_dp
       i%udefm = -1.0_dp
@@ -278,5 +289,21 @@ contains
     bnd = edge
 
   end function bc_b_bnd_eq_adjacent 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Exact solution, Bueler 
+  ! ---------------------------------------------------------------------------
+  subroutine soln_bueler_isothermal_a(i, time)
+
+    class(ice_type), intent(inout) :: i
+    real(dp), intent(in)           :: time
+
+    real(dp) :: gam
+
+    gam = 2.0_dp/5.0_dp*(i%rhoi*grav)**3 
+
+ 
+  end subroutine soln_bueler_isothermal_a
   
 end module ice_module

@@ -117,8 +117,8 @@ $ -------------------
 $ On/off (.true. or .false)
 .true.
 
-$ Ice deformantion coefficient, [Pa^-3 a^-1]
-1.0
+$ Ice deformantion coefficient, [Pa^-3 s^-1]
+24e-25
 
 $ Initial high-res ice thickness (string)
 $   options: zero, exact

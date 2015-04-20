@@ -74,65 +74,58 @@ contains
     class(climate_type), intent(inout) :: c ! climate modekl object to init
     class(grid_type), intent(in)       :: g ! coordinate grid information
 
-
-    c%on = c%on_t .and. c%on_p .and. c%on_i
+    ! object is already initialized, exit with error
+    if (allocated(c%x)) then
+      print *, 'Attempted to initialize ice_type object twice, exiting.'
+      stop -1
+    end if
 
     ! climate model common components
-    if (c%on) then
+    if (c%on_t .or. c%on_p .or. c%on_i) then
+      allocate(c%x(g%nx+2))
+      allocate(c%y(g%ny+2))
       c%nx = g%nx
       c%ny = g%ny
-      if (allocated(c%x)) deallocate(c%x)
-      allocate(c%x(g%nx+2))
       c%x = g%x
-      if (allocated(c%y)) deallocate(c%y)
-      allocate(c%y(g%ny+2))
       c%y = g%y
     else
+      allocate(c%x(1))
+      allocate(c%y(1))
       c%nx = -1
       c%ny = -1
-      if (allocated(c%x)) deallocate(c%x)
-      allocate(c%x(1))
       c%x = -1.0_dp
-      if (allocated(c%y)) deallocate(c%y)
-      allocate(c%y(1))
       c%y = -1.0_dp
     end if
 
     ! surface temperature model components
     if (c%on_t) then
-      if (allocated(c%t)) deallocate(c%t)
       allocate(c%t(g%nx+2, g%ny+2))
     else
+      allocate(c%t(1,1))
       c%tName = 'none'
       c%tParam(:) = -1.0_dp
-      if (allocated(c%t)) deallocate(c%t)
-      allocate(c%t(1,1))
       c%t(1,1) = -1.0_dp
       c%write_t = .false.
     end if
     
     ! precipitation model componenets
     if (c%on_p) then
-      if (allocated(c%p)) deallocate(c%p)
       allocate(c%p(g%nx+2, g%ny+2))
     else
+      allocate(c%p(1,1))
       c%pName = 'none'
       c%pParam(:) = -1.0_dp
-      if (allocated(c%p)) deallocate(c%p)
-      allocate(c%p(1,1))
       c%p(1,1) = -1.0_dp
       c%write_p = .false.
     end if
 
     ! surface ice flux model components
     if (c%on_i) then
-      if (allocated(c%i)) deallocate(c%i)
       allocate(c%i(g%nx+2, g%ny+2))
     else
+      allocate(c%i(1,1))
       c%iName = 'none'
       c%iParam(:) = -1.0_dp
-      if (allocated(c%i)) deallocate(c%i)
-      allocate(c%i(1,1))
       c%i(1,1) = -1.0_dp
       c%write_i = .false.
     end if
