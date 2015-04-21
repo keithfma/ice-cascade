@@ -4,6 +4,10 @@
 ! Contains:
 !   type ice_type (public)
 !   NOTE: list is not yet complete
+!
+! References:
+! (1) Bueler et al 2005...
+!
 ! ============================================================================
 
 module ice_module
@@ -23,6 +27,7 @@ public ice_type
     logical :: write_h ! output flag
     logical :: write_uvdefm ! output flag 
     logical :: write_soln ! output flag
+    integer :: verbose ! output detail level
     integer :: nx ! num grid pts in x-dir, [1]
     integer :: ny ! num grid pts in y-dir, [1]
     real(dp) :: dx ! grid spacing in x-dir, [m]
@@ -97,7 +102,8 @@ public ice_type
   ! ---------------------------------------------------------------------------
   ! PARAMETERS
   ! ---------------------------------------------------------------------------
-  real(dp), parameter :: grav = 9.8067
+  real(dp), parameter :: grav = 9.8067_dp
+  real(dp), parameter :: bench_bueler_isothermal_a_m0 = 0.3_dp ! m/a
 
 contains
 
@@ -162,7 +168,7 @@ contains
           i%solve => NULL()
           i%write_soln = .false.
         case ('bueler_isothermal_a')
-          i%solve => NULL() ! PLACEHOLDER, TO BE UPDATED
+          i%solve => soln_bueler_isothermal_a
           i%write_soln = .true.
         case default 
           print *, 'Invalid name for ice flow method: ', trim(i%solnName)
@@ -292,16 +298,44 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Exact solution, Bueler 
+  ! SUB: Exact solution, Bueler et al 2005, isothermal, test A, NE quadrant 
+  !   Solution comes from reference (1), equation 17. 
   ! ---------------------------------------------------------------------------
   subroutine soln_bueler_isothermal_a(i, time)
 
     class(ice_type), intent(inout) :: i
     real(dp), intent(in)           :: time
 
-    real(dp) :: gam
+    integer :: p, q
+    real(dp) :: M0, L, gam, c1, c2, e1, e2, r
 
-    gam = 2.0_dp/5.0_dp*(i%rhoi*grav)**3 
+    ! print output 
+    if (i%verbose .eq. 2) then
+      print *, 'Exact solution: Bueler isothermal A'
+    end if
+
+    ! constants
+    M0 = bench_bueler_isothermal_a_m0
+    L = maxval(i%x)-i%dx 
+    gam = 2.0_dp/5.0_dp*i%A0*(i%rhoi*grav)**3 
+    c1 = (4.0_dp*M0/gam)**(1.0_dp/8.0_dp)
+    c2 = L**(4.0_dp/3.0_dp)
+    e1 = 4.0_dp/3.0_dp
+    e2 = 3.0_dp/8.0_dp 
+
+    ! ice thickness
+    do q = 1, i%ny+2
+      do p = 1, i%nx+2
+        r = sqrt(i%x(p)**2+i%y(q)**2)
+        if (r .le. L) then
+          i%soln_h(p,q) = c1*(c2-r**e1)**e2
+        else
+          i%soln_h(p,q) = 0.0_dp
+        end if
+      end do
+    end do
+
+
 
  
   end subroutine soln_bueler_isothermal_a

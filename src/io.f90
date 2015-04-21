@@ -97,6 +97,7 @@ contains
     read(55, *) fclimate%write_p 
     read(55, *) fclimate%write_i 
     read(55, *) fice%on
+    read(55, *) fice%verbose
     read(55, *) fice%A0
     fice%A0 = fice%A0*365.25_dp*24.0_dp*60.0_dp*60.0_dp ! s^-1 to a^1
     read(55, *) fice%h0Name
@@ -185,6 +186,7 @@ contains
     ! ice
     msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, fice%on))
     if (fice%on) then
+      msg = nf90_put_att(id_file, nf90_global, 'ice_verbosity__flag',fice%verbose)
       msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff_prefactor__Pa-3a-1', fice%A0)
       msg = nf90_put_att(id_file, nf90_global, 'ice_north_bc__name', trim(fice%nbcName))
       msg = nf90_put_att(id_file, nf90_global, 'ice_south_bc__name', trim(fice%sbcName))
@@ -382,6 +384,7 @@ contains
     end if
 
     if (fice%write_soln) then
+      call fice%solve(time%now)
       msg = nf90_inq_varid(id_file, 'fice_soln_h', id_var)
       msg = nf90_put_var(id_file, id_var, real(fice%soln_h(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if

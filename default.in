@@ -47,8 +47,8 @@ $ high-res grid dimensions, number of points in the x; y directions
 50
 
 $ high-res grid spacing in x; y directions, meters
-1. 
-1.
+15000.0 
+15000.0
 
 $ -------------------
 $ Topography 
@@ -116,6 +116,10 @@ $ -------------------
 
 $ On/off (.true. or .false)
 .true.
+
+$ Verbosity (integer flag)
+$   options: 0 = no output, 1 = normal output, 2 = detailed output
+2
 
 $ Ice deformantion coefficient, [Pa^-3 s^-1]
 24e-25
