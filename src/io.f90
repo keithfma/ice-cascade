@@ -13,6 +13,7 @@ use grid_module, only: grid_type
 use time_module, only: time_type
 use topo_module, only: topo_type
 use climate_module, only: climate_type
+use ice_module, only: ice_type
 use hill_module, only: hill_type
 use netcdf
 
@@ -33,13 +34,14 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: read from the input file specified on the command line
   ! ---------------------------------------------------------------------------
-  subroutine readParam (runname, fgrid, time, ftopo, fclimate, fhill)
+  subroutine readParam (runname, fgrid, time, ftopo, fclimate, fice, fhill)
     
     character(len=*), intent(out)   :: runname  ! name for run
     type(grid_type), intent(out)    :: fgrid    ! high-res grid
     type(time_type), intent(out)    :: time     ! model time vars
     type(topo_type), intent(out)    :: ftopo    ! high-res topography
     type(climate_type), intent(out) :: fclimate ! climate model
+    type(ice_type), intent(out)     :: fice     ! ice model
     type(hill_type), intent(out)    :: fhill    ! hilllslope model
 
     character(len=100) :: infile, line
@@ -70,42 +72,56 @@ contains
     rewind (55)
     
     ! Read in input parameters
-    read (55,*) runname	
-    read (55,*) time%start
-    read (55,*) time%finish
-    read (55,*) time%step
-    read (55,*) time%write_period
-    read (55,*) rhoi ! shared
-    read (55,*) fgrid%nx	
-    read (55,*) fgrid%ny
-    read (55,*) fgrid%dx
-    read (55,*) fgrid%dy	
-    read (55,*) ftopo%filename
-    read (55,*) ftopo%write_z
-    read (55,*) fclimate%on_t 
-    read (55,*) fclimate%tName 
-    read (55,*) fclimate%tParam(:) 
-    read (55,*) fclimate%on_p 
-    read (55,*) fclimate%pName
-    read (55,*) fclimate%pParam(:) 
-    read (55,*) fclimate%on_i 
-    read (55,*) fclimate%iName
-    read (55,*) fclimate%iParam(:) 
-    read (55,*) fclimate%write_t
-    read (55,*) fclimate%write_p 
-    read (55,*) fclimate%write_i 
-    read (55,*) fhill%on 
-    read (55,*) fhill%D	
-    read (55,*) fhill%nbcName
-    read (55,*) fhill%sbcName 
-    read (55,*) fhill%ebcName
-    read (55,*) fhill%wbcName 
-    read (55,*) fhill%solnName 	
-    read (55,*) fhill%write_dzdt
+    read(55, *) runname	
+    read(55, *) time%start
+    read(55, *) time%finish
+    read(55, *) time%step
+    read(55, *) time%write_period
+    read(55, *) rhoi ! shared
+    read(55, *) fgrid%nx	
+    read(55, *) fgrid%ny
+    read(55, *) fgrid%dx
+    read(55, *) fgrid%dy	
+    read(55, *) ftopo%filename
+    read(55, *) ftopo%write_z
+    read(55, *) fclimate%on_t 
+    read(55, *) fclimate%tName 
+    read(55, *) fclimate%tParam(:) 
+    read(55, *) fclimate%on_p 
+    read(55, *) fclimate%pName
+    read(55, *) fclimate%pParam(:) 
+    read(55, *) fclimate%on_i 
+    read(55, *) fclimate%iName
+    read(55, *) fclimate%iParam(:) 
+    read(55, *) fclimate%write_t
+    read(55, *) fclimate%write_p 
+    read(55, *) fclimate%write_i 
+    read(55, *) fice%on
+    read(55, *) fice%verbose
+    read(55, *) fice%A0
+    fice%A0 = fice%A0*365.25_dp*24.0_dp*60.0_dp*60.0_dp ! s^-1 to a^1
+    read(55, *) fice%h0Name
+    read(55, *) fice%flowName
+    read(55, *) fice%nbcName
+    read(55, *) fice%sbcName
+    read(55, *) fice%ebcName
+    read(55, *) fice%wbcName
+    read(55, *) fice%solnName
+    read(55, *) fice%write_h
+    read(55, *) fice%write_uvdefm
+    read(55, *) fhill%on 
+    read(55, *) fhill%D	
+    read(55, *) fhill%nbcName
+    read(55, *) fhill%sbcName 
+    read(55, *) fhill%ebcName
+    read(55, *) fhill%wbcName 
+    read(55, *) fhill%solnName 	
+    read(55, *) fhill%write_dzdt
     close(55)
 
     ! assign shared values
     fclimate%rhoi = rhoi
+    fice%rhoi = rhoi
 
   end subroutine readParam
 
@@ -113,13 +129,14 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create netcdf file and vars for output
   ! ---------------------------------------------------------------------------
-  subroutine createOutfile(runname, fgrid, time, ftopo, fclimate, fhill)
+  subroutine createOutfile(runname, fgrid, time, ftopo, fclimate, fice,  fhill)
 
     character(len=*), intent(in)   :: runname
     type(grid_type), intent(in)    :: fgrid
     type(time_type), intent(in)    :: time
     type(topo_type), intent(in)    :: ftopo
     type(climate_type), intent(in) :: fclimate
+    type(ice_type), intent(in)     :: fice
     type(hill_type), intent(in)    :: fhill
 
     logical :: shuf
@@ -136,31 +153,50 @@ contains
     msg = nf90_create(trim(runname)//'.out', nf90_netcdf4, id_file)
 
     ! write parameters as global attributes
+    ! model
     msg = nf90_put_att(id_file, nf90_global, 'model_start_time__a', time%start)
     msg = nf90_put_att(id_file, nf90_global, 'model_end_time__a', time%finish)
     msg = nf90_put_att(id_file, nf90_global, 'model_time_step__a', time%step)
     msg = nf90_put_att(id_file, nf90_global, 'model_output_interval__steps', time%write_period)
+    ! constants
     msg = nf90_put_att(id_file, nf90_global, 'const_density_ice__kg1m-3', fclimate%rhoi)
+    ! grids
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_nx__1', fgrid%nx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_ny__1', fgrid%ny)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dx__m', fgrid%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_high_res_dy__m', fgrid%dy)
+    ! topo
     msg = nf90_put_att(id_file, nf90_global, 'topo_high_res_name__file', ftopo%filename)
-    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_on__tf', merge(1, 0, fclimate%on_t))
+    ! climate
+    msg = nf90_put_att(id_file, nf90_global, 'climate_temp_on__tf', merge(1, 0, fclimate%on_t))
     if (fclimate%on_t) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp__name', fclimate%tName)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_temp_param__various', fclimate%tParam)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp__name', fclimate%tName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_param__various', fclimate%tParam)
     end if
-    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_on__tf', merge(1, 0, fclimate%on_p))
+    msg = nf90_put_att(id_file, nf90_global, 'climate_precip_on__tf', merge(1, 0, fclimate%on_p))
     if (fclimate%on_p) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip__name', fclimate%pName)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_precip_param__various', fclimate%pParam)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip__name', fclimate%pName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip_param__various', fclimate%pParam)
     end if
-    msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux_on__tf', merge(1, 0, fclimate%on_i))
+    msg = nf90_put_att(id_file, nf90_global, 'climate_iceflux_on__tf', merge(1, 0, fclimate%on_i))
     if (fclimate%on_i) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux__name', fclimate%iName)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_high_res_iceflux_param__various', fclimate%iParam)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_iceflux__name', fclimate%iName)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_iceflux_param__various', fclimate%iParam)
     end if
+    ! ice
+    msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, fice%on))
+    if (fice%on) then
+      msg = nf90_put_att(id_file, nf90_global, 'ice_verbosity__flag',fice%verbose)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_coeff_prefactor__Pa-3a-1', fice%A0)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_north_bc__name', trim(fice%nbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_south_bc__name', trim(fice%sbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_west_bc__name', trim(fice%wbcName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_east_bc__name', trim(fice%ebcName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_flow_method__name', trim(fice%flowName))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_initial_thickness__name', trim(fice%h0Name))
+      msg = nf90_put_att(id_file, nf90_global, 'ice_exact_solution__name', trim(fice%solnName))
+    end if
+    ! hill
     msg = nf90_put_att(id_file, nf90_global, 'hill_on__tf', merge(1, 0, fhill%on))
     if (fhill%on) then
       msg = nf90_put_att(id_file, nf90_global, 'hill_diffusivity__m2a-1', fhill%D)
@@ -219,6 +255,33 @@ contains
      	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
     end if
 
+    ! create ice variables
+    if (fice%write_h) then
+     	msg = nf90_def_var(id_file, 'fice_h', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
+    end if
+
+    if (fice%write_uvdefm) then
+     	msg = nf90_def_var(id_file, 'fice_udefm', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_xdir_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
+
+     	msg = nf90_def_var(id_file, 'fice_vdefm', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_ydir_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm a-1')
+    end if
+
+    if (fice%write_soln) then
+     	msg = nf90_def_var(id_file, 'fice_soln_h', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_exact_solution_high_res')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
+    end if
+
     ! create hillslope variables
     if (fhill%write_dzdt) then
      	msg = nf90_def_var(id_file, 'fhill_dzdt', p_nc, [id_dim_fx, id_dim_fy, id_dim_time],  &
@@ -253,12 +316,13 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: write data to output file for this step
   ! ---------------------------------------------------------------------------
-  subroutine writeStep(runname, time, ftopo, fclimate, fhill)
+  subroutine writeStep(runname, time, ftopo, fclimate, fice, fhill)
   
     character(len=*), intent(in)   :: runname
     type(time_type), intent(inout) :: time
     type(topo_type), intent(in)    :: ftopo
     type(climate_type), intent(in) :: fclimate
+    type(ice_type), intent(in)     :: fice
     type(hill_type), intent(in)    :: fhill
   
     real(dp) :: fsoln(ftopo%nx, ftopo%ny)
@@ -303,6 +367,26 @@ contains
     if (fclimate%write_i) then
       msg = nf90_inq_varid(id_file, 'fclim_i', id_var)
       msg = nf90_put_var(id_file, id_var, real(fclimate%i(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    ! write ice data
+    if (fice%write_h) then
+      msg = nf90_inq_varid(id_file, 'fice_h', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fice%h(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    if (fice%write_uvdefm) then
+      msg = nf90_inq_varid(id_file, 'fice_udefm', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fice%udefm(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+      
+      msg = nf90_inq_varid(id_file, 'fice_vdefm', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fice%vdefm(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
+    end if
+
+    if (fice%write_soln) then
+      call fice%solve(time%now)
+      msg = nf90_inq_varid(id_file, 'fice_soln_h', id_var)
+      msg = nf90_put_var(id_file, id_var, real(fice%soln_h(i0f:i1f, j0f:j1f), p), [1, 1, time%out_step] )
     end if
 
     ! write hillslope data

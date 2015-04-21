@@ -21,29 +21,29 @@ public hill_type
   ! TYPE: all variables and procedures for the hillslope model component
   ! ---------------------------------------------------------------------------
   type hill_type
-    logical                         :: on          ! enable/disable model
-    logical                         :: write_soln  ! output flag
-    logical                         :: write_dzdt  ! output flag
-    integer                         :: nx          ! num grid points in x-dir, [1]
-    integer                         :: ny          ! num grid points in y-dir, [1]
-    real(dp)                        :: dx          ! grid spacing in x-dir, [m]
-    real(dp)                        :: dy          ! grid spacing in y-dir, [m]
-    real(dp)                        :: D           ! diffusivity, [m**2/a]
-    real(dp)                        :: dtMax       ! max stable step CFL, [a]
-    real(dp), allocatable           :: dzdt(:,:)   ! topo rate of change, [m/a]
-    character(len=100)              :: nbcName     ! north BC name
-    character(len=100)              :: sbcName     ! south BC name
-    character(len=100)              :: wbcName     ! west BC name
-    character(len=100)              :: ebcName     ! east BC name
-    character(len=100)              :: solnName    ! topo soln name
-    procedure(bc), pointer, nopass :: nbc          ! set north BC
-    procedure(bc), pointer, nopass :: sbc          ! set south BC
-    procedure(bc), pointer, nopass :: wbc          ! set west BC
-    procedure(bc), pointer, nopass :: ebc          ! set east BC
-    procedure(soln), pointer, pass :: solve        ! compute topo soln
+    logical  :: on                               ! enable/disable model
+    logical  :: write_soln                       ! output flag
+    logical  :: write_dzdt                       ! output flag
+    integer  :: nx                               ! num grid points in x-dir, [1]
+    integer  :: ny                               ! num grid points in y-dir, [1]
+    real(dp)  :: dx                              ! grid spacing in x-dir, [m]
+    real(dp)  :: dy                              ! grid spacing in y-dir, [m]
+    real(dp)  :: D                               ! diffusivity, [m**2/a]
+    real(dp)  :: dtMax                           ! max stable step CFL, [a]
+    real(dp), allocatable :: dzdt(:,:)           ! topo rate of change, [m/a]
+    character(len=100) :: nbcName                ! north BC name
+    character(len=100) :: sbcName                ! south BC name
+    character(len=100) :: wbcName                ! west BC name
+    character(len=100) :: ebcName                ! east BC name
+    character(len=100) :: solnName               ! topo soln name
+    procedure(bc_tmpl), pointer, nopass :: nbc   ! set north BC
+    procedure(bc_tmpl), pointer, nopass :: sbc   ! set south BC
+    procedure(bc_tmpl), pointer, nopass :: wbc   ! set west BC
+    procedure(bc_tmpl), pointer, nopass :: ebc   ! set east BC
+    procedure(soln_tmpl), pointer, pass :: solve ! compute topo soln
   contains
-    procedure, pass                 :: init        ! initialize all components
-    procedure, pass                 :: run         ! run model                   
+    procedure, pass :: init                      ! initialize all components
+    procedure, pass :: run                       ! run model                   
   end type hill_type
 
 
@@ -51,12 +51,12 @@ public hill_type
   ! FUNC TEMPLATE: common form for the bc functions
   ! ---------------------------------------------------------------------------
   abstract interface
-    function bc(edge, intr) result(bnd)
-      import               :: dp              ! use special types
-      real(dp), intent(in) :: edge(:)         ! domain edge, elev [m]
-      real(dp), intent(in) :: intr(:)         ! (not used for this bc)
-      real(dp)             :: bnd(size(edge)) ! bc points, elev [m]
-    end function bc
+    function bc_tmpl(edge, intr) result(bnd)
+      import :: dp                    ! use special types
+      real(dp), intent(in) :: edge(:) ! domain edge, elev [m]
+      real(dp), intent(in) :: intr(:) ! (not used for this bc)
+      real(dp) :: bnd(size(edge))     ! bc points, elev [m]
+    end function bc_tmpl
   end interface
 
 
@@ -64,21 +64,21 @@ public hill_type
   ! FUNC TEMPLATE: common form for exact topography solutions
   ! ---------------------------------------------------------------------------
   abstract interface
-    function soln(h, t) result(z)
-      import                          :: dp, hill_type ! use special types
-      class(hill_type), intent(inout) :: h             ! model object
-      real(dp), intent(in)            :: t             ! model time
-      real(dp), dimension(h%nx, h%ny) :: z             ! soln for topo
-    end function soln
+    function soln_tmpl(h, t) result(z)
+      import :: dp, hill_type              ! use special types
+      class(hill_type), intent(inout) :: h ! model object
+      real(dp), intent(in) :: t            ! model time
+      real(dp), dimension(h%nx, h%ny) :: z ! soln for topo
+    end function soln_tmpl
   end interface
 
 
   ! ---------------------------------------------------------------------------
   ! PARAMETERS
   ! ---------------------------------------------------------------------------
-  real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp)
-  real(dp), parameter :: hill_ss_t1 = 0.0_dp ! benchmark, hill, steady state
-  real(dp), parameter :: hill_ss_tm = 10.0_dp ! benchmark, hill, steady state
+  real(dp), parameter :: pi = 4.0_dp*atan(1.0_dp) ! pi, duh
+  real(dp), parameter :: hill_ss_t1 = 0.0_dp      ! benchmark, hill, steady state
+  real(dp), parameter :: hill_ss_tm = 10.0_dp     ! benchmark, hill, steady state
 
 contains
 
@@ -90,10 +90,47 @@ contains
   subroutine init(h, g)
 
     class(hill_type), intent(inout) :: h ! object to initialize
-    class(grid_type), intent(in)    :: g ! coordinate grid info
+    class(grid_type), intent(in) :: g    ! coordinate grid info
     
-    if (h%on .eqv. .false.) then
-      ! model disabled, clear all object components
+    ! object is already initialized, exit with error
+    if (allocated(h%dzdt)) then
+      print *, 'Attempted to initialize ice_type object twice, exiting.'
+      stop -1
+    end if
+
+    ! model is enabled, init all members
+    if (h%on) then
+      allocate(h%dzdt(g%nx+2, g%ny+2))
+      h%nx = g%nx
+      h%ny = g%ny
+      h%dx = g%dx
+      h%dy = g%dy
+      h%dzdt = 0.0_dp
+      h%dtMax = 1.0_dp/(h%dx**-2.0_dp+h%dy**-2.0_dp)/(2.0_dp*h%D)
+
+      ! parse bc names, set procedures
+      call set_bc_proc(h%nbcName, h%nbc)
+      call set_bc_proc(h%sbcName, h%sbc)
+      call set_bc_proc(h%wbcName, h%wbc)
+      call set_bc_proc(h%ebcName, h%ebc)
+
+      ! parse solution name, set procedure
+      select case(h%solnName)
+        case ('none')
+          h%write_soln = .false.
+          h%solve => NULL()
+        case ('bench_hill_ss')
+          h%write_soln = .true.
+          h%solve => solve_bench_hill_ss
+        case default 
+          print *, 'Invalid name for hillslope solution: ', trim(h%solnName)
+          stop -1
+      end select
+    
+
+    ! model is disabled, unset all members
+    else
+      allocate(h%dzdt(1,1))
       h%write_soln = .false.
       h%write_dzdt = .false.
       h%nx = -1
@@ -102,33 +139,17 @@ contains
       h%dy = -1.0_dp
       h%D = -1.0_dp
       h%dtMax = -1.0_dp
-      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%dzdt(1,1))
       h%dzdt = -1.0_dp
-      h%nbcName = "none"
-      h%sbcName = "none"
-      h%ebcName = "none"
-      h%wbcName = "none"
-      h%solnName = "none"
+      h%nbcName = 'none'
+      h%sbcName = 'none'
+      h%ebcName = 'none'
+      h%wbcName = 'none'
+      h%solnName = 'none'
       h%nbc => NULL()
       h%sbc => NULL()
       h%wbc => NULL()
       h%ebc => NULL()
       h%solve => NULL()
-    else
-      ! model enabled, init components
-      h%nx = g%nx
-      h%ny = g%ny
-      h%dx = g%dx
-      h%dy = g%dy
-      if (allocated(h%dzdt) .eqv. .true.) deallocate(h%dzdt)
-      allocate(h%dzdt(h%nx+2, h%ny+2))
-      call set_bc_proc(h%nbcName, h%nbc)
-      call set_bc_proc(h%sbcName, h%sbc)
-      call set_bc_proc(h%wbcName, h%wbc)
-      call set_bc_proc(h%ebcName, h%ebc)
-      call set_soln_proc(h%solnName, h%write_soln, h%solve)
-      h%dtMax = 1.0_dp/(h%dx**-2.0_dp+h%dy**-2.0_dp)/(2.0_dp*h%D)
     end if
 
   end subroutine init
@@ -136,11 +157,11 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: run the hillslope model for a specified duration
   ! ---------------------------------------------------------------------------
-  subroutine run (h, z, duration)
+  subroutine run(h, z, duration)
 
-    class(hill_type), intent(inout) :: h        ! hill model def
-    real(dp), intent(inout)         :: z(:,:)   ! topography
-    real(dp), intent(in)            :: duration ! runtime
+    class(hill_type), intent(inout) :: h ! hill model def
+    real(dp), intent(inout) :: z(:,:)    ! topography
+    real(dp), intent(in) :: duration     ! runtime
     
     integer :: north, south, east, west, i, j
     real(dp) :: time, dt, dx2inv, dy2inv, cpt, laplace 
@@ -188,56 +209,25 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: parse topo solution name and associate the soln procedure pointer
-  ! ---------------------------------------------------------------------------
-  subroutine set_soln_proc(str, on, ptr)
-
-    character(len=*), intent(in)           :: str ! solution name
-    logical                                :: on  ! enable/disable soln
-    procedure (soln), pointer, intent(out) :: ptr ! procedure pointer to be set
-
-    select case (str)
-
-      case ("bench_hill_ss")
-        on = .true.
-        ptr => solve_bench_hill_ss
-
-      case ("none")
-        on = .false.
-        ptr => NULL()
-
-      case default 
-        print *, "Invalid name for hillslope solution: ", trim(str)
-        stop -1
-   
-      end select
-    
-  end subroutine set_soln_proc
-
-
-  ! ---------------------------------------------------------------------------
   ! SUB: parse BC name and associate the BC procedure pointer
   ! ---------------------------------------------------------------------------
   subroutine set_bc_proc(str, ptr)
 
-    character(len=*), intent(in)         :: str ! BC name
-    procedure (bc), pointer, intent(out) :: ptr ! procedure pointer to be set
+    character(len=*), intent(in) :: str              ! BC name
+    procedure (bc_tmpl), pointer, intent(out) :: ptr ! procedure pointer to be set
 
     select case (str)
-      
-      case ("zero_grad")
+      case ('none')
+        ptr => NULL() ! NOTE: this will cause the program to fail by design
+      case ('zero_grad')
         ptr => bc_zero_grad
-
-      case ("bench_hill_ss_sin")
+      case ('bench_hill_ss_sin')
         ptr => bc_bench_hill_ss_sin
-     
-      case ("bench_hill_ss_const")
+      case ('bench_hill_ss_const')
         ptr => bc_bench_hill_ss_const
-      
       case default 
-        print *, "Invalid name for hillslope BC: ", trim(str)
+        print *, 'Invalid name for hillslope BC: ', trim(str)
         stop -1
-   
     end select
     
   end subroutine set_bc_proc
