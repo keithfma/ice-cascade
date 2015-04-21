@@ -38,30 +38,28 @@ call writeStep(runname, time, ftopo, fclimate, fice, fhill)
 
 do while (time%now .lt. time%finish) ! main loop
 
-	! Trim last time step if needed
+  ! Truncate last timestep, if needed
 	if ((time%now+time%step) .gt. time%finish) time%step = time%finish-time%now	
 
-  ! Loop, climate time step, O(1a) 
   ! Climate model
   if (fclimate%on) call fclimate%run(time%now, ftopo%z)
 
   ! Ice model
-  ! End loop, climate time step
 
   ! Fluvial model
 
   ! Hillslope model
   if (fhill%on) call fhill%run(ftopo%z, time%step)
 
-  ! Apply erosion
+  ! Erosion
 
   ! Isostasy
 
-	! Step forward
+  ! Advance time
 	time%now = time%now+time%step
   time%now_step = time%now_step+1
 	
-	! Write output
+  ! Write output
   if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fice, fhill)
 
 end do ! exit main loop		

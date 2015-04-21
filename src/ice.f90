@@ -238,8 +238,30 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: run the ice  model for a specified duration
   ! ---------------------------------------------------------------------------
-  subroutine run(i)
-    class(ice_type) :: i
+  subroutine run(i, bed, surf_flux, surf_temp, duration)
+    
+    class(ice_type), intent(inout) :: i ! ice model object
+    real(dp), intent(in) :: bed(:,:) ! bed elevation, [m] 
+    real(dp), intent(in) :: surf_flux(:,:) ! surface ice flux, [m_ice/a]
+    real(dp), intent(in) :: surf_temp(:,:) ! surface temperature, [C]
+    real(dp), intent(in) :: duration ! run time, [a]
+
+    real(dp) :: dt 
+    real(dp) :: dhdt_flow(size(bed))
+
+    ! Loop, ice model time step
+
+      ! If polythermal, compute mean temperature, basal temperature,  ice
+      ! defomation coefficient, ice sliding coefficient
+
+      ! If calving, modify margin driving stress, compute calving ice flux
+
+      ! Run ice flow model (set dhdt flow and dt)
+
+      ! Update ice thickness
+
+    ! End loop
+
   end subroutine run
 
 
