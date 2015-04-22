@@ -1,15 +1,6 @@
 $ ===========================================================================
-$ Benchmark, Hill, Steady-state 
-$  
-$ Diffusion with sinusoidal BC at the north boundary, and constant BCs at
-$ other boundaries. Solution is derived at: 
-$
-$ http://www.mhhe.com/engcs/mech/holman/graphics/samplech_3.pdf
-$
-$ Holman, J. (2002). Steady-State Conduction - Multiple Dimensions. In Heat
-$ Transfer (9th ed.).
+$ Default input file for ICE-CASCADE
 $ ===========================================================================
-
 
 $ -------------------
 $  Run 
@@ -27,9 +18,9 @@ $ Model end time (real, yr)
 $ Model timestep (real, yr)
 1.
 
-$ Output period, (integer) 
-$ e.g. 10 = ouput every 10th timestep
-10
+$ Output period, (real, yr) 
+$   Note: must be a multiple of the model timestep
+10.
 
 $ -------------------
 $ Physical constants
@@ -42,134 +33,134 @@ $ -------------------
 $ Grids 
 $ -------------------
 
-$ high-res grid dimensions, number of points in the x; y directions
-50
+$ Grid dimensions, number of points in the x; y directions
+25
 50
 
-$ high-res grid spacing in x; y directions, meters
-15000.0 
-15000.0
+$ Grid spacing in x; y directions, meters
+1.
+1.
 
 $ -------------------
 $ Topography 
 $ -------------------
 
-$ initial high-res topography (string)
+$ initial topography (string)
 $$ options: netcdf filename, or "zero" for flat at 0.0 m
-zero
+peaks.nc
 
 $ write topography (.true. or .false)
 .true.
 
-$ -------------------
-$ Climate model
-$ -------------------
-
-$ Surface temperature model on/off (.true. or .false)
-.true.
-
-$ Temperature model name ( string )
-$   options: none, constant, sawtooth_lapse 
-$   see climate.f90 for details
-sawtooth_lapse
-
-$ Temperature model parameters ( double )
-$   parameter definitions depend on the model name, see climate.f90
-18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
-
-$ Precipitation model on/off (.true. or .false)
-.true.
-
-$ Precipitation rate model name ( string )
-$   options: none, constant 
-$   see climate.f90 for details
-constant
-
-$ Precipitation model parameters ( double )
-$   parameter definitions depend on the model name, see climate.f90 
-2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
-
-$ Surface ice flux model on/off (.true. or .false)
-.true.
-
-$ Surface ice flux model name ( string )
-$   options: none, constant, linear_temp_capped_max_min
-$   see climate.f90 for details
-linear_temp_capped_max_min
-
-$ Surface ice flux model parameters ( double )
-$   parameter definitions depend on the model name, see climate.f90 
-3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
-
-$ Write surface temperature (.true. or .false)
-.true.
-
-$ Write precipitation rate (.true. or .false)
-.true.
-
-$ Write surface ice flux (.true. or .false)
-.false.
-
-$ -------------------
-$ Glacier model
-$ -------------------
-
-$ On/off (.true. or .false)
-.true.
-
-$ Verbosity (integer flag)
-$   options: 0 = no output, 1 = normal output, 2 = detailed output
-2
-
-$ Ice deformantion coefficient, [Pa^-3 s^-1]
-24e-25
-
-$ Initial high-res ice thickness (string)
-$   options: zero, exact
-zero
-
-$ Ice flow computational method, [string]
-$   options: mahaffy
-mahaffy
-
-$ n; s; e; w boundary conditions (string) 
-$   options: no_ice
-no_ice
-no_ice
-no_ice
-no_ice
-
-$ exact solution, [string]
-$   options: none. bueler_isothermal_a
-bueler_isothermal_a
-
-$ write ice thickness? (.true. or .false.)
-.true.
-
-$ write ice deformation velocity? (.true. or .false.)
-.true.
-
-$ -------------------
-$ Hillslope model
-$ -------------------
-
-$ On/off (.true. or .false)
-.false.
-
-$ Diffusivity (real, m^2/yr)
-0.5
-
-$ n; s; e; w boundary conditions (string) 
-$ options: none, zero_grad, bench_hill_ss_sin, bench_hill_ss_const
-none
-none
-none
-none
-
-$ exact solution for topography ( string )
-$ options: none, bench_hill_ss
-none
-
-$ write hillslope dz/dt? (.true. or .false.)
-.false.
+$$ -------------------
+$$ Climate model
+$$ -------------------
+$
+$$ Surface temperature model on/off (.true. or .false)
+$.true.
+$
+$$ Temperature model name ( string )
+$$   options: none, constant, sawtooth_lapse 
+$$   see climate.f90 for details
+$sawtooth_lapse
+$
+$$ Temperature model parameters ( double )
+$$   parameter definitions depend on the model name, see climate.f90
+$18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
+$
+$$ Precipitation model on/off (.true. or .false)
+$.true.
+$
+$$ Precipitation rate model name ( string )
+$$   options: none, constant 
+$$   see climate.f90 for details
+$constant
+$
+$$ Precipitation model parameters ( double )
+$$   parameter definitions depend on the model name, see climate.f90 
+$2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$
+$$ Surface ice flux model on/off (.true. or .false)
+$.true.
+$
+$$ Surface ice flux model name ( string )
+$$   options: none, constant, linear_temp_capped_max_min
+$$   see climate.f90 for details
+$linear_temp_capped_max_min
+$
+$$ Surface ice flux model parameters ( double )
+$$   parameter definitions depend on the model name, see climate.f90 
+$3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+$
+$$ Write surface temperature (.true. or .false)
+$.true.
+$
+$$ Write precipitation rate (.true. or .false)
+$.true.
+$
+$$ Write surface ice flux (.true. or .false)
+$.false.
+$
+$$ -------------------
+$$ Glacier model
+$$ -------------------
+$
+$$ On/off (.true. or .false)
+$.true.
+$
+$$ Verbosity (integer flag)
+$$   options: 0 = no output, 1 = normal output, 2 = detailed output
+$2
+$
+$$ Ice deformantion coefficient, [Pa^-3 s^-1]
+$24e-25
+$
+$$ Initial high-res ice thickness (string)
+$$   options: zero, exact
+$zero
+$
+$$ Ice flow computational method, [string]
+$$   options: mahaffy
+$mahaffy
+$
+$$ n; s; e; w boundary conditions (string) 
+$$   options: no_ice
+$no_ice
+$no_ice
+$no_ice
+$no_ice
+$
+$$ exact solution, [string]
+$$   options: none. bueler_isothermal_a
+$bueler_isothermal_a
+$
+$$ write ice thickness? (.true. or .false.)
+$.true.
+$
+$$ write ice deformation velocity? (.true. or .false.)
+$.true.
+$
+$$ -------------------
+$$ Hillslope model
+$$ -------------------
+$
+$$ On/off (.true. or .false)
+$.false.
+$
+$$ Diffusivity (real, m^2/yr)
+$0.5
+$
+$$ n; s; e; w boundary conditions (string) 
+$$ options: none, zero_grad, bench_hill_ss_sin, bench_hill_ss_const
+$none
+$none
+$none
+$none
+$
+$$ exact solution for topography ( string )
+$$ options: none, bench_hill_ss
+$none
+$
+$$ write hillslope dz/dt? (.true. or .false.)
+$.false.
 

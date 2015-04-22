@@ -6,4 +6,4 @@ src/*.mod
 *.swp
 .nfs*
 old.in
-NEXT_STEPS
+*.bak

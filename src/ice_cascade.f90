@@ -1,67 +1,40 @@
 program ice_cascade
 
-use types, only: dp 
-use grid_module, only: grid_type
-use time_module, only: time_type
-use topo_module, only: topo_type
-use climate_module, only: climate_type
-use ice_module, only: ice_type
-use hill_module, only: hill_type
-use io_module, only: readParam, createOutfile, writeStep
+use kinds_mod, only: rp
+use common_mod, only: common_type
+use time_mod, only: time_type
+use io_mod, only: io_type
+
 implicit none
 
-character(len=100) :: runname
-type(grid_type)    :: fgrid
-type(time_type)    :: time
-type(topo_type)    :: ftopo
-type(climate_type) :: fclimate
-type(ice_type)     :: fice
-type(hill_type)    :: fhill
+type(io_type) :: w ! output flags
+type(time_type) :: t ! time vars
+type(common_type) :: c ! common vars
 
-! Read model parameters
-call readParam(runname, fgrid, time, ftopo, fclimate, fice, fhill)
+! Initialize
+call w%read_param(t, c)
+call t%init()
+call c%init()
+call w%read_initial_vals(c)
 
-! Initialize objects
-call fgrid%init()
-call time%init()
-call ftopo%init(fgrid)
-call fclimate%init(fgrid)
-call fice%init(fgrid)
-call fhill%init(fgrid)
 
-! Populate variables at time = start
-if (fclimate%on) call fclimate%run(time%now, ftopo%z)
+! Get model state at time = start
 
 ! Create output file and write initial values
-call createOutfile(runname, fgrid, time, ftopo, fclimate, fice, fhill)
-call writeStep(runname, time, ftopo, fclimate, fice, fhill)
 
-do while (time%now .lt. time%finish) ! main loop
+! Start loop
 
   ! Truncate last timestep, if needed
-	if ((time%now+time%step) .gt. time%finish) time%step = time%finish-time%now	
 
-  ! Climate model
-  if (fclimate%on) call fclimate%run(time%now, ftopo%z)
+  ! Update model state (climate, ice, time, other)
 
-  ! Ice model
+  ! Compute erosion/deposition/isostasy
 
-  ! Fluvial model
+  ! Apply erosion/deposition/isostasy
 
-  ! Hillslope model
-  if (fhill%on) call fhill%run(ftopo%z, time%step)
+  ! Write timestep
 
-  ! Erosion
 
-  ! Isostasy
-
-  ! Advance time
-	time%now = time%now+time%step
-  time%now_step = time%now_step+1
-	
-  ! Write output
-  if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fice, fhill)
-
-end do ! exit main loop		
+! End loop
 
 end program ice_cascade
