@@ -30,6 +30,7 @@ public :: common_type
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
+    real(rp), allocatable :: topo_dot_ice ! topography rate-of-change due to glaciers, [m/a]
     real(rp), allocatable :: temp_surf(:,:) ! temp at ice/bedrock surface, [C]
     real(rp), allocatable :: temp_ice(:,:) ! mean ice temperature, [C]
     real(rp), allocatable :: temp_base(:,:) ! temp at bedrock surface, [C]
@@ -38,6 +39,12 @@ public :: common_type
     real(rp), allocatable :: ice_q_surf(:,:) ! surface ice flux, [m_ice/a]
     real(rp), allocatable :: ice_h(:,:) ! ice thickness, [m]
     real(rp), allocatable :: ice_h_dot(:,:) ! ice thickness rate-of-change, [m/a]
+    real(rp), allocatable :: ice_ud(:,:) ! ice deformation velocity, x-dir, [m/a]
+    real(rp), allocatable :: ice_vd(:,:) ! ice deformation velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
+    real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_A(:,:)
+    real(rp), allocatable :: ice_As(:,:)
   contains
     procedure, pass :: init ! initialize object
   end type common_type

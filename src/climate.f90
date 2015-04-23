@@ -114,6 +114,9 @@ contains
     type(common_type), intent(inout) :: c
 
     if (cl%on_temp_surf) call cl%get_temp_surf(c)
+    if (cl%on_precip) call cl%get_precip(c)
+    if (cl%on_ice_q_surf) call cl%get_ice_q_surf(c)
+    if (cl%on_runoff) call cl%get_runoff(c)
 
   end subroutine update
 
