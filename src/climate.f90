@@ -72,7 +72,38 @@ contains
         stop -1
     end select
 
+    ! Set precipitation procedure
+    select case (cl%name_precip)
+      case ("constant")
+        cl%get_precip => temp_constant
+      case default
+        print *, "Invalid name for precipitation model name: ", &
+                 trim(cl%name_precip)
+        stop -1
+    end select
+
+    ! Set surface ice flux procedure
+    select case (cl%name_ice_q_surf)
+      case ("constant")
+        cl%get_ice_q_surf => temp_constant
+      case default
+        print *, "Invalid name for surface ice flux model name: ", &
+                 trim(cl%name_ice_q_surf)
+        stop -1
+    end select
+
+    ! Set runoff procedure
+    select case (cl%name_runoff)
+      case ("constant")
+        cl%get_runoff => temp_constant
+      case default
+        print *, "Invalid name for runoff model name: ", &
+                 trim(cl%name_runoff)
+        stop -1
+    end select
+
   end subroutine init
+
 
   ! ---------------------------------------------------------------------------
   ! SUB: Update climate mode state
@@ -85,6 +116,7 @@ contains
     if (cl%on_temp_surf) call cl%get_temp_surf(c)
 
   end subroutine update
+
 
   ! ---------------------------------------------------------------------------
   ! SUB: Surface temperature model, constant in space and time
@@ -100,5 +132,53 @@ contains
     c%temp_surf = cl%param_temp_surf(1)    
 
   end subroutine temp_constant 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Precipitation model, constant in space and time
+  !   Parameters:
+  !     cl%param_precip(1) = precip rate, [m_water/a]
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine precip_constant(cl, c) 
+
+    class(climate_type), intent(in) :: cl 
+    type(common_type), intent(inout) :: c
+  
+    c%precip = cl%param_precip(1)    
+
+  end subroutine precip_constant 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Surface ice flux model, constant in space and time
+  !   Parameters:
+  !     cl%param_ice_q_surf(1) = flux, [m_ice/a] 
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine ice_q_surf_constant(cl, c) 
+
+    class(climate_type), intent(in) :: cl 
+    type(common_type), intent(inout) :: c
+  
+    c%ice_q_surf = cl%param_ice_q_surf(1)    
+
+  end subroutine ice_q_surf_constant 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Runoff model, constant in space and time
+  !   Parameters:
+  !     cl%param_runoff(1) = runoff rate, [m_water/a]
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine runoff_constant(cl, c) 
+
+    class(climate_type), intent(in) :: cl 
+    type(common_type), intent(inout) :: c
+  
+    c%runoff = cl%param_runoff(1)    
+
+  end subroutine runoff_constant 
 
 end module climate_mod

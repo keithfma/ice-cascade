@@ -25,6 +25,7 @@ public :: io_type
   type io_type
     character(len=100) :: name_out ! output file name
     character(len=100) :: name_topo ! initial topography name
+    character(len=100) :: name_ice_h ! initial topography name
     integer :: n_step_out ! counter for current output step
     logical :: write_topo 
     logical :: write_temp_surf 
@@ -89,6 +90,7 @@ contains
     read(55, *) c%dx
     read(55, *) c%dy	
     read(55, *) io%name_topo 
+    read(55, *) io%name_ice_h
     read(55, *) cl%on_temp_surf 
     read(55, *) cl%name_temp_surf 
     read(55, *) cl%param_temp_surf(:) 
@@ -127,6 +129,14 @@ contains
       c%topo = 0.0_rp
     case default
       call read_array_nc(io%name_topo, c%nx, c%ny, c%topo)
+    end select
+
+    ! initial ice thickness
+    select case(io%name_ice_h)
+    case('zero')
+      c%ice_h = 0.0_rp
+    case default
+      call read_array_nc(io%name_ice_h, c%nx, c%ny, c%ice_h)
     end select
 
   end subroutine read_initial_vals
@@ -217,6 +227,7 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', c%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', c%dy)
     msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', io%name_topo)
+    msg = nf90_put_att(id_file, nf90_global, 'ice_h_initial__name', io%name_ice_h)
     msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf_on__tf', merge(1, 0, cl%on_temp_surf))
     if (cl%on_temp_surf) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf__name', cl%name_temp_surf)

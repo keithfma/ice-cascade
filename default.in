@@ -42,8 +42,12 @@ $ Grid spacing in x; y directions, meters
 1.
 
 $ initial topography (string)
-$$ options: netcdf filename, or "zero" for flat at 0.0 m
+$   options: netcdf filename, or "zero" for constant 0 m
 peaks.nc
+
+$ initial ice thickness (string)
+$   options: netcdf filename, or "zero" for constant 0 m
+zero
 
 $ -------------------
 $ Climate model
@@ -79,7 +83,7 @@ $ Surface ice flux model on/off (.true. or .false)
 $ Surface ice flux model name ( string )
 $   options: none, constant, linear_temp_capped_max_min
 $   see climate.f90 for details
-linear_temp_capped_max_min
+constant
 
 $ Surface ice flux model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
@@ -91,7 +95,7 @@ $ Runoff model on/off (.true. or .false)
 $ Runoff model name ( string )
 $   options: none
 $   see climate.f90 for details
-none
+constant
 
 $ Runoff model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
