@@ -89,9 +89,9 @@ contains
     read(55, *) c%dx
     read(55, *) c%dy	
     read(55, *) io%name_topo 
-    read(55, *) cl%on_temp 
-    read(55, *) cl%name_temp 
-    read(55, *) cl%param_temp(:) 
+    read(55, *) cl%on_temp_surf 
+    read(55, *) cl%name_temp_surf 
+    read(55, *) cl%param_temp_surf(:) 
     read(55, *) cl%on_precip 
     read(55, *) cl%name_precip
     read(55, *) cl%param_precip(:) 
@@ -108,20 +108,6 @@ contains
     read(55, *) io%write_precip
     read(55, *) io%write_ice_q_surf
     read(55, *) io%write_runoff
-
-
-    !logical :: on_temp ! enable/disable temperature
-    !logical :: on_precip ! enable/disable precipitation
-    !logical :: on_ice_qsurf ! enable/disable surface ice flux
-    !logical :: on_runoff ! enable/disable runoff
-    !character(len=100) :: name_temp ! temperature model name
-    !character(len=100) :: name_precip ! precipitation model name
-    !character(len=100) :: name_ice_qsurf ! surface ice flux model name
-    !character(len=100) :: name_runoff ! runoff model name
-    !real(rp), dimension(10) :: param_temp ! temperature model param, [various]
-    !real(rp), dimension(10) :: param_precip !  model param, [various]
-    !real(rp), dimension(10) :: param_ice_qsurf !  model param, [various]
-    !real(rp), dimension(10) :: param_runoff !  model param, [various]
 
   end subroutine read_param
 
