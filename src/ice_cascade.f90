@@ -9,38 +9,36 @@ use io_mod, only: io_type
 implicit none
 
 type(io_type) :: io 
-type(time_type) :: t 
 type(common_type) :: c 
 type(climate_type) :: cl
 
 ! Initialize
-call io%read_param(t, c, cl)
-call t%check()
-call c%check(); call c%init()
+call io%read_param(c, cl)
+call c%init()
 call cl%init()
 call io%read_initial_vals(c)
 
 ! Get model state at time = start
 
 ! Create output file and write initial values
-call io%create_output(t, c, cl)
+call io%create_output(c, cl)
 
 ! Start loop
-do while (t%now .le. t%finish-t%step)
+do while (c%time_now .le. c%time_finish-c%time_step)
 
   ! Truncate last timestep, if needed
 
   ! Update model state (climate, ice, time, other)
-  t%now = t%now+t%step
+  c%time_now = c%time_now+c%time_step
   call cl%update(c)
 
 
   ! Apply erosion/deposition/isostasy
 
   ! Write timestep
-  if (mod(t%now-t%start, t%step_out) .eq. 0.0_rp) then
-    call io%write_status(t, c)
-    call io%write_output_step(t, c)
+  if (mod(c%time_now-c%time_start, io%time_step) .eq. 0.0_rp) then
+    call io%write_status(c)
+    call io%write_output_step(c)
   end if
 
 end do
