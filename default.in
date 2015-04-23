@@ -134,10 +134,6 @@ $
 $$ On/off (.true. or .false)
 $.true.
 $
-$$ Verbosity (integer flag)
-$$   options: 0 = no output, 1 = normal output, 2 = detailed output
-$2
-$
 $$ Ice deformantion coefficient, [Pa^-3 s^-1]
 $24e-25
 $

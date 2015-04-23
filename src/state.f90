@@ -1,23 +1,23 @@
 ! =============================================================================
-! Common variables for ice-cascade model. 
+! Shared model state variables for ice-cascade. 
 !
 ! Contains:
-!   type common_type (public)
+!   type state_type (public)
 !
 ! ============================================================================
 
-module common_mod
+module state_mod
 
 use kinds_mod, only: rp
 
 implicit none
 private
-public :: common_type
+public :: state_type
 
   ! --------------------------------------------------------------------------- 
   ! TYPE: model state variables
   ! ---------------------------------------------------------------------------
-  type common_type
+  type state_type
     integer :: nx ! num grid points in x-dir, [1]
     integer :: ny ! num grid points in y-dir, [1]
     real(rp) :: dx ! grid spacing in x-dir, [m]
@@ -47,7 +47,7 @@ public :: common_type
     real(rp), allocatable :: ice_As(:,:)
   contains
     procedure, pass :: init ! initialize object
-  end type common_type
+  end type state_type
 
 contains
 
@@ -55,33 +55,33 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: initialize object
   ! ---------------------------------------------------------------------------
-  subroutine init(c)
+  subroutine init(s)
 
-    class(common_type), intent(inout) :: c
+    class(state_type), intent(inout) :: s
 
     integer :: i
 
     ! Allocate arrays
-    allocate(c%x(c%nx+2))
-    allocate(c%y(c%ny+2))
-    allocate(c%topo(c%nx+2, c%ny+2))
-    allocate(c%temp_surf(c%nx+2, c%ny+2))
-    allocate(c%temp_ice(c%nx+2, c%ny+2))
-    allocate(c%temp_base(c%nx+2, c%ny+2))
-    allocate(c%precip(c%nx+2, c%ny+2))
-    allocate(c%runoff(c%nx+2, c%ny+2))
-    allocate(c%ice_q_surf(c%nx+2, c%ny+2))
-    allocate(c%ice_h(c%nx+2, c%ny+2))
-    allocate(c%ice_h_dot(c%nx+2, c%ny+2))
+    allocate(s%x(s%nx+2))
+    allocate(s%y(s%ny+2))
+    allocate(s%topo(s%nx+2, s%ny+2))
+    allocate(s%temp_surf(s%nx+2, s%ny+2))
+    allocate(s%temp_ice(s%nx+2, s%ny+2))
+    allocate(s%temp_base(s%nx+2, s%ny+2))
+    allocate(s%precip(s%nx+2, s%ny+2))
+    allocate(s%runoff(s%nx+2, s%ny+2))
+    allocate(s%ice_q_surf(s%nx+2, s%ny+2))
+    allocate(s%ice_h(s%nx+2, s%ny+2))
+    allocate(s%ice_h_dot(s%nx+2, s%ny+2))
 
     ! Populate arrays
-    do i = 1, c%nx+2
-      c%x(i) = real(i-2, rp)*c%dx
+    do i = 1, s%nx+2
+      s%x(i) = real(i-2, rp)*s%dx
     enddo
-    do i = 1, c%ny+2
-      c%y(i) = real(i-2, rp)*c%dy
+    do i = 1, s%ny+2
+      s%y(i) = real(i-2, rp)*s%dy
     enddo
 
   end subroutine init
 
-end module common_mod
+end module state_mod

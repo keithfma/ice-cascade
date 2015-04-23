@@ -9,7 +9,7 @@
 module io_mod
 
 use kinds_mod, only: rp, rp_nc
-use common_mod, only: common_type
+use state_mod, only: state_type
 use climate_mod, only: climate_type
 use netcdf
 
@@ -47,11 +47,11 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Read input parameters from file
   ! ---------------------------------------------------------------------------
-  subroutine read_param(io, c, cl)
+  subroutine read_param(io, s, c)
 
     class(io_type), intent(out) :: io
-    type(common_type), intent(out) :: c
-    type(climate_type), intent(out) :: cl
+    type(state_type), intent(out) :: s
+    type(climate_type), intent(out) :: c
 
     character(len=100) :: infile, line
     integer :: msg
@@ -80,28 +80,28 @@ contains
     rewind (55)
     
     ! Read input parameters
-    read(55, *) c%time_start
-    read(55, *) c%time_finish
-    read(55, *) c%time_step
-    read(55, *) c%rhoi
-    read(55, *) c%nx	
-    read(55, *) c%ny
-    read(55, *) c%dx
-    read(55, *) c%dy	
+    read(55, *) s%time_start
+    read(55, *) s%time_finish
+    read(55, *) s%time_step
+    read(55, *) s%rhoi
+    read(55, *) s%nx	
+    read(55, *) s%ny
+    read(55, *) s%dx
+    read(55, *) s%dy	
     read(55, *) io%name_topo 
     read(55, *) io%name_ice_h
-    read(55, *) cl%on_temp_surf 
-    read(55, *) cl%name_temp_surf 
-    read(55, *) cl%param_temp_surf(:) 
-    read(55, *) cl%on_precip 
-    read(55, *) cl%name_precip
-    read(55, *) cl%param_precip(:) 
-    read(55, *) cl%on_ice_q_surf 
-    read(55, *) cl%name_ice_q_surf 
-    read(55, *) cl%param_ice_q_surf(:) 
-    read(55, *) cl%on_runoff 
-    read(55, *) cl%name_runoff 
-    read(55, *) cl%param_runoff(:) 
+    read(55, *) c%on_temp_surf 
+    read(55, *) c%name_temp_surf 
+    read(55, *) c%param_temp_surf(:) 
+    read(55, *) c%on_precip 
+    read(55, *) c%name_precip
+    read(55, *) c%param_precip(:) 
+    read(55, *) c%on_ice_q_surf 
+    read(55, *) c%name_ice_q_surf 
+    read(55, *) c%param_ice_q_surf(:) 
+    read(55, *) c%on_runoff 
+    read(55, *) c%name_runoff 
+    read(55, *) c%param_runoff(:) 
     read(55, *) io%name_out	
     read(55, *) io%time_step
     read(55, *) io%write_topo
@@ -112,45 +112,45 @@ contains
 
     ! Check for sane values
     ! positive grid dimensions 
-    if ((c%nx .le. 0) .or. (c%ny .le. 0)) then
+    if ((s%nx .le. 0) .or. (s%ny .le. 0)) then
       print *, 'Invalid grid description: grid dimensions must be positive integers.'
       stop -1
     end if
 
     ! positive grid spacing
-    if ((c%dx .le. 0.0_rp) .or. (c%dy .le. 0.0_rp)) then
+    if ((s%dx .le. 0.0_rp) .or. (s%dy .le. 0.0_rp)) then
       print *, 'Invalid grid description: grid spacings must be positive.'
       stop -1
     end if
 
     ! positive densities
-    if (c%rhoi .le. 0.0_rp) then
+    if (s%rhoi .le. 0.0_rp) then
       print *, 'Invalid physical constant: density must be positive.'
       stop -1
     end if
 
     ! non-zero timestep 
-    if (c%time_step .eq. 0.0_rp) then
+    if (s%time_step .eq. 0.0_rp) then
       print *, 'Invalid time parameters: time step cannot be zero.'
       stop -1
     end if
 
     ! forward model, start before finish
-    if ((c%time_step .gt. 0.0_rp) .and. (c%time_start .ge. c%time_finish))  then
+    if ((s%time_step .gt. 0.0_rp) .and. (s%time_start .ge. s%time_finish))  then
       print *, 'Invalid time parameters: start must be before finish for & 
                &forward models.'
       stop -1
     end if
 
     ! reverse model, finish before start
-    if ((c%time_step .lt. 0.0_rp) .and. (c%time_start .le. c%time_finish)) then
+    if ((s%time_step .lt. 0.0_rp) .and. (s%time_start .le. s%time_finish)) then
       print *, 'Invalid time parameters: start must be after finish for &
                &reverse models.'
       stop -1
     end if
 
     ! output interval matches time step
-    if (mod(io%time_step, c%time_step) .ne. 0.0_rp) then
+    if (mod(io%time_step, s%time_step) .ne. 0.0_rp) then
       print *, 'Invalid time parameters: output interval must be a multiple &
                &of the time step.'
       stop -1
@@ -164,25 +164,25 @@ contains
   ! SUB: read the initial values for state variables
   ! TO-DO: add initial ice thickness
   ! ---------------------------------------------------------------------------
-  subroutine read_initial_vals(io, c)
+  subroutine read_initial_vals(io, s)
 
     class(io_type), intent(in) :: io 
-    type(common_type), intent(inout) :: c
+    type(state_type), intent(inout) :: s
 
     ! initial topography
     select case(io%name_topo)
     case('zero')
-      c%topo = 0.0_rp
+      s%topo = 0.0_rp
     case default
-      call read_array_nc(io%name_topo, c%nx, c%ny, c%topo)
+      call read_array_nc(io%name_topo, s%nx, s%ny, s%topo)
     end select
 
     ! initial ice thickness
     select case(io%name_ice_h)
     case('zero')
-      c%ice_h = 0.0_rp
+      s%ice_h = 0.0_rp
     case default
-      call read_array_nc(io%name_ice_h, c%nx, c%ny, c%ice_h)
+      call read_array_nc(io%name_ice_h, s%nx, s%ny, s%ice_h)
     end select
 
   end subroutine read_initial_vals
@@ -243,11 +243,11 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create output netcdf file
   ! ---------------------------------------------------------------------------
-  subroutine create_output(io, c, cl)
+  subroutine create_output(io, s, c)
 
     class(io_type), intent(in) :: io
-    type(common_type), intent(in) :: c
-    type(climate_type), intent(in) :: cl
+    type(state_type), intent(in) :: s
+    type(climate_type), intent(in) :: c
 
     logical :: shuf
     integer :: fchunk(3), i, j, defLvl, msg, id_file, id_dim_x, id_dim_y, &
@@ -255,48 +255,48 @@ contains
 
     ! define compression and chunking parameters 
     defLvl = 1 ! compression, 0 = none, 9 = max, best value is 1
-    fchunk = [c%nx, c%ny, 1]
+    fchunk = [s%nx, s%ny, 1]
     shuf = .true.
 
     ! create new file
     msg = nf90_create(io%name_out, nf90_netcdf4, id_file)
 
     ! write parameters as global attributes
-    msg = nf90_put_att(id_file, nf90_global, 'time_start_time__a', c%time_start)
-    msg = nf90_put_att(id_file, nf90_global, 'time_finish_time__a', c%time_finish)
-    msg = nf90_put_att(id_file, nf90_global, 'time_step__a', c%time_step)
+    msg = nf90_put_att(id_file, nf90_global, 'time_start_time__a', s%time_start)
+    msg = nf90_put_att(id_file, nf90_global, 'time_finish_time__a', s%time_finish)
+    msg = nf90_put_att(id_file, nf90_global, 'time_step__a', s%time_step)
     msg = nf90_put_att(id_file, nf90_global, 'time_step_output__a', io%time_step)
-    msg = nf90_put_att(id_file, nf90_global, 'density_ice__kg1m-3', c%rhoi)
-    msg = nf90_put_att(id_file, nf90_global, 'grid_nx__1', c%nx)
-    msg = nf90_put_att(id_file, nf90_global, 'grid_ny__1', c%ny)
-    msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', c%dx)
-    msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', c%dy)
+    msg = nf90_put_att(id_file, nf90_global, 'density_ice__kg1m-3', s%rhoi)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_nx__1', s%nx)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_ny__1', s%ny)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', s%dx)
+    msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', s%dy)
     msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', io%name_topo)
     msg = nf90_put_att(id_file, nf90_global, 'ice_h_initial__name', io%name_ice_h)
-    msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf_on__tf', merge(1, 0, cl%on_temp_surf))
-    if (cl%on_temp_surf) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf__name', cl%name_temp_surf)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_param__various', cl%param_temp_surf)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf_on__tf', merge(1, 0, c%on_temp_surf))
+    if (c%on_temp_surf) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf__name', c%name_temp_surf)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_param__various', c%param_temp_surf)
     end if
-    msg = nf90_put_att(id_file, nf90_global, 'climate_precip_on__tf', merge(1, 0, cl%on_precip))
-    if (cl%on_precip) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_precip__name', cl%name_precip)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_precip_param__various', cl%param_precip)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_precip_on__tf', merge(1, 0, c%on_precip))
+    if (c%on_precip) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip__name', c%name_precip)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip_param__various', c%param_precip)
     end if
-    msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_on__tf', merge(1, 0, cl%on_ice_q_surf))
-    if (cl%on_ice_q_surf) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf__name', cl%name_ice_q_surf)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_param__various', cl%param_ice_q_surf)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_on__tf', merge(1, 0, c%on_ice_q_surf))
+    if (c%on_ice_q_surf) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf__name', c%name_ice_q_surf)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_param__various', c%param_ice_q_surf)
     end if
-    msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_on__tf', merge(1, 0, cl%on_runoff))
-    if (cl%on_runoff) then
-      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff__name', cl%name_runoff)
-      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_param__various', cl%param_runoff)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_on__tf', merge(1, 0, c%on_runoff))
+    if (c%on_runoff) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff__name', c%name_runoff)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_param__various', c%param_runoff)
     end if
 
     ! define dimensions
-    msg = nf90_def_dim(id_file, 'x', c%nx, id_dim_x) 
-    msg = nf90_def_dim(id_file, 'y', c%ny, id_dim_y) 
+    msg = nf90_def_dim(id_file, 'x', s%nx, id_dim_x) 
+    msg = nf90_def_dim(id_file, 'y', s%ny, id_dim_y) 
     msg = nf90_def_dim(id_file, 't', nf90_unlimited, id_dim_t)
 
     ! create coordinate variables
@@ -349,10 +349,10 @@ contains
 
     ! populate dimension variables
     msg = nf90_inq_varid(id_file, 'x', id_var)
-    msg = nf90_put_var(id_file, id_var, c%x(2:c%nx+1))
+    msg = nf90_put_var(id_file, id_var, s%x(2:s%nx+1))
 
     msg = nf90_inq_varid(id_file, 'y', id_var)
-    msg = nf90_put_var(id_file, id_var, c%y(2:c%ny+1))
+    msg = nf90_put_var(id_file, id_var, s%y(2:s%ny+1))
 
     ! close file
     msg = nf90_close(id_file)
@@ -363,13 +363,13 @@ contains
   ! --------------------------------------------------------------------------
   ! SUB: print model status update to stdout
   ! --------------------------------------------------------------------------
-  subroutine write_status(c)
+  subroutine write_status(s)
     
-    type(common_type), intent(in) :: c
+    type(state_type), intent(in) :: s
 
-    print "('MODEL TIME [a]           : ', EN11.3)", c%time_now 
+    print "('MODEL TIME [a]           : ', EN11.3)", s%time_now 
     print "('TOPO (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-          maxval(c%topo), sum(c%topo)/size(c%topo), minval(c%topo)
+          maxval(s%topo), sum(s%topo)/size(s%topo), minval(s%topo)
     print *, ''
 
   end subroutine
@@ -378,10 +378,10 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Write output step
   ! ---------------------------------------------------------------------------
-  subroutine write_output_step(io, c)
+  subroutine write_output_step(io, s)
     
     class(io_type), intent(inout) :: io
-    type(common_type), intent(in) :: c
+    type(state_type), intent(in) :: s
 
     integer :: i0, i1, j0, j1, msg, id_file, id_var
 
@@ -389,36 +389,36 @@ contains
     io%n_step = io%n_step+1
 
     ! define limits of interior points, for convenience
-    i0 = 2; i1 = c%nx+1
-    j0 = 2; j1 = c%ny+1
+    i0 = 2; i1 = s%nx+1
+    j0 = 2; j1 = s%ny+1
 
     ! open file
     msg = nf90_open(io%name_out, nf90_write, id_file)
 
     ! write time data
     msg = nf90_inq_varid(id_file, 't', id_var)
-    msg = nf90_put_var(id_file, id_var, real(c%time_now, rp), [io%n_step] )
+    msg = nf90_put_var(id_file, id_var, real(s%time_now, rp), [io%n_step] )
 
     ! write arrays 
     if (io%write_topo) then
       msg = nf90_inq_varid(id_file, 'topo', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_put_var(id_file, id_var, real(s%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
     if (io%write_temp_surf) then
       msg = nf90_inq_varid(id_file, 'temp_surf', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%temp_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_put_var(id_file, id_var, real(s%temp_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
     if (io%write_precip) then
       msg = nf90_inq_varid(id_file, 'precip', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%precip(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_put_var(id_file, id_var, real(s%precip(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
     if (io%write_ice_q_surf) then
       msg = nf90_inq_varid(id_file, 'ice_q_surf', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_put_var(id_file, id_var, real(s%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
     if (io%write_runoff) then
       msg = nf90_inq_varid(id_file, 'runoff', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%runoff(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_put_var(id_file, id_var, real(s%runoff(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
 
     ! close file
