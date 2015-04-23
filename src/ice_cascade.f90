@@ -18,24 +18,30 @@ call t%check()
 call c%check(); call c%init()
 call w%read_initial_vals(c)
 
-
 ! Get model state at time = start
 
 ! Create output file and write initial values
+call w%create_output(t, c)
 
 ! Start loop
+do while (t%now .le. t%finish)
 
   ! Truncate last timestep, if needed
 
   ! Update model state (climate, ice, time, other)
+  t%now = t%now+t%step
 
   ! Compute erosion/deposition/isostasy
 
   ! Apply erosion/deposition/isostasy
 
   ! Write timestep
+  if (mod(t%now-t%start, t%step_out) .eq. 0.0_rp) then
+    call w%write_status(t, c)
+    call w%write_output_step(t, c)
+  end if
 
-
+end do
 ! End loop
 
 end program ice_cascade
