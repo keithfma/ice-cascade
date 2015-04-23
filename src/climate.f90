@@ -37,6 +37,7 @@ public climate_type
     procedure(tpir), pointer, pass :: get_runoff ! compute 
   contains
     procedure, pass :: init
+    procedure, pass :: update
   end type climate_type
 
 
@@ -62,7 +63,42 @@ contains
     class(climate_type), intent(inout) :: cl
 
     ! Set surface temperature procedure
+    select case (cl%name_temp_surf)
+      case ("constant")
+        cl%get_temp_surf => temp_constant
+      case default
+        print *, "Invalid name for surface temperature model name: ", &
+                 trim(cl%name_temp_surf)
+        stop -1
+    end select
 
   end subroutine init
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Update climate mode state
+  ! ---------------------------------------------------------------------------
+  subroutine update(cl, c)
+
+    class(climate_type), intent(in) :: cl
+    type(common_type), intent(inout) :: c
+
+    if (cl%on_temp_surf) call cl%get_temp_surf(c)
+
+  end subroutine update
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Surface temperature model, constant in space and time
+  !   Parameters:
+  !     cl%param_temp_surf(1) = temperature, [C]
+  !     all others unused.
+  ! ---------------------------------------------------------------------------
+  subroutine temp_constant(cl, c) 
+
+    class(climate_type), intent(in) :: cl 
+    type(common_type), intent(inout) :: c
+  
+    c%temp_surf = cl%param_temp_surf(1)    
+
+  end subroutine temp_constant 
 
 end module climate_mod

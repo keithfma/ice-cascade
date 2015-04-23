@@ -17,6 +17,7 @@ type(climate_type) :: cl
 call io%read_param(t, c, cl)
 call t%check()
 call c%check(); call c%init()
+call cl%init()
 call io%read_initial_vals(c)
 
 ! Get model state at time = start
@@ -31,8 +32,8 @@ do while (t%now .le. t%finish-t%step)
 
   ! Update model state (climate, ice, time, other)
   t%now = t%now+t%step
+  call cl%update(c)
 
-  ! Compute erosion/deposition/isostasy
 
   ! Apply erosion/deposition/isostasy
 
