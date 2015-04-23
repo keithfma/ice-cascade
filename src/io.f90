@@ -187,11 +187,12 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create output netcdf file
   ! ---------------------------------------------------------------------------
-  subroutine create_output(io, t, c)
+  subroutine create_output(io, t, c, cl)
 
     class(io_type), intent(in) :: io
     type(time_type), intent(in) :: t
     type(common_type), intent(in) :: c
+    type(climate_type), intent(in) :: cl
 
     logical :: shuf
     integer :: fchunk(3), i, j, defLvl, msg, id_file, id_dim_x, id_dim_y, &
@@ -216,6 +217,26 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', c%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', c%dy)
     msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', io%name_topo)
+    msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf_on__tf', merge(1, 0, cl%on_temp_surf))
+    if (cl%on_temp_surf) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf__name', cl%name_temp_surf)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_param__various', cl%param_temp_surf)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'climate_precip_on__tf', merge(1, 0, cl%on_precip))
+    if (cl%on_precip) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip__name', cl%name_precip)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_precip_param__various', cl%param_precip)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_on__tf', merge(1, 0, cl%on_ice_q_surf))
+    if (cl%on_ice_q_surf) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf__name', cl%name_ice_q_surf)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_param__various', cl%param_ice_q_surf)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_on__tf', merge(1, 0, cl%on_runoff))
+    if (cl%on_runoff) then
+      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff__name', cl%name_runoff)
+      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_param__various', cl%param_runoff)
+    end if
 
     ! define dimensions
     msg = nf90_def_dim(id_file, 'x', c%nx, id_dim_x) 
@@ -235,12 +256,36 @@ contains
     msg = nf90_put_att(id_file, id_var, 'long_name', 'y_coord')
     msg = nf90_put_att(id_file, id_var, 'units', 'm')
     
-    ! topography
+    ! create variables
     if (io%write_topo) then
      	msg = nf90_def_var(id_file, 'topo', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'topography')
      	msg = nf90_put_att(id_file, id_var, 'units', 'm')
+    end if
+    if (io%write_temp_surf) then
+     	msg = nf90_def_var(id_file, 'temp_surf', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_temperature')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
+    end if
+    if (io%write_precip) then
+     	msg = nf90_def_var(id_file, 'precip', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'precipitation_rate')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm_water/a')
+    end if
+    if (io%write_ice_q_surf) then
+     	msg = nf90_def_var(id_file, 'ice_q_surf', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_ice_flux')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm_ice/a')
+    end if
+    if (io%write_runoff) then
+     	msg = nf90_def_var(id_file, 'runoff', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'runoff rate')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm_water/a')
     end if
 
     ! exit definition mode
@@ -268,8 +313,8 @@ contains
     type(common_type), intent(in) :: c
 
     print "('MODEL TIME [a]           : ', EN11.3)", t%now 
-    print "('TOPO (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", maxval(c%topo), &
-          sum(c%topo)/size(c%topo), minval(c%topo)
+    print "('TOPO (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+          maxval(c%topo), sum(c%topo)/size(c%topo), minval(c%topo)
     print *, ''
 
   end subroutine
@@ -300,10 +345,26 @@ contains
     msg = nf90_inq_varid(id_file, 't', id_var)
     msg = nf90_put_var(id_file, id_var, real(t%now, rp), [io%n_step_out] )
 
-    ! write topography data
+    ! write arrays 
     if (io%write_topo) then
       msg = nf90_inq_varid(id_file, 'topo', id_var)
       msg = nf90_put_var(id_file, id_var, real(c%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
+    end if
+    if (io%write_temp_surf) then
+      msg = nf90_inq_varid(id_file, 'temp_surf', id_var)
+      msg = nf90_put_var(id_file, id_var, real(c%temp_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
+    end if
+    if (io%write_precip) then
+      msg = nf90_inq_varid(id_file, 'precip', id_var)
+      msg = nf90_put_var(id_file, id_var, real(c%precip(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
+    end if
+    if (io%write_ice_q_surf) then
+      msg = nf90_inq_varid(id_file, 'ice_q_surf', id_var)
+      msg = nf90_put_var(id_file, id_var, real(c%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
+    end if
+    if (io%write_runoff) then
+      msg = nf90_inq_varid(id_file, 'runoff', id_var)
+      msg = nf90_put_var(id_file, id_var, real(c%runoff(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
     end if
 
     ! close file

@@ -23,7 +23,7 @@ call io%read_initial_vals(c)
 ! Get model state at time = start
 
 ! Create output file and write initial values
-call io%create_output(t, c)
+call io%create_output(t, c, cl)
 
 ! Start loop
 do while (t%now .le. t%finish-t%step)
