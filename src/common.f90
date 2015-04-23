@@ -25,24 +25,29 @@ public :: common_type
     real(rp) :: rhoi ! density of glacial ice, [kg/m3]
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
-    real(rp), allocatable :: T(:,:) ! bedrock elevation, [m above sea level]
+    real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
+    real(rp), allocatable :: temp_surf(:,:) ! temp at ice/bedrock surface, [C]
+    real(rp), allocatable :: temp_ice(:,:) ! mean ice temperature, [C]
+    real(rp), allocatable :: temp_base(:,:) ! temp at bedrock surface, [C]
+    real(rp), allocatable :: precip(:,:) ! precipitation rate, [m_water/a]
+    real(rp), allocatable :: runoff(:,:) ! runoff rate, [m_water/a]
+    real(rp), allocatable :: ice_h(:,:) ! ice thickness, [m]
+    real(rp), allocatable :: ice_qsurf(:,:) ! surface ice flux, [m_ice/a]
   contains
+    procedure, pass :: check ! check for sane values
     procedure, pass :: init ! initialize object
   end type common_type
 
 contains
 
+
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize object
+  ! SUB: check for sane values
   ! ---------------------------------------------------------------------------
-  subroutine init(c)
-
-    class(common_type), intent(inout) :: c
-
-    integer :: i
-
-    ! Check for sane inputs
+  subroutine check(c)
     
+    class(common_type), intent(in) :: c
+
     ! positive grid dimensions 
     if ((c%nx .le. 0) .or. (c%ny .le. 0)) then
       print *, 'Invalid grid description: grid dimensions must be positive integers.'
@@ -61,8 +66,17 @@ contains
       stop -1
     end if
 
+  end subroutine check
 
-    ! Init variables
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: initialize object
+  ! ---------------------------------------------------------------------------
+  subroutine init(c)
+
+    class(common_type), intent(inout) :: c
+
+    integer :: i
 
     ! coordinate vectors
     allocate(c%x(c%nx+2))
@@ -75,7 +89,14 @@ contains
     enddo
 
     ! variable arrays
-    allocate(c%T(c%nx+2, c%ny+2))
+    allocate(c%topo(c%nx+2, c%ny+2))
+    allocate(c%temp_surf(c%nx+2, c%ny+2))
+    allocate(c%temp_ice(c%nx+2, c%ny+2))
+    allocate(c%temp_base(c%nx+2, c%ny+2))
+    allocate(c%precip(c%nx+2, c%ny+2))
+    allocate(c%runoff(c%nx+2, c%ny+2))
+    allocate(c%ice_h(c%nx+2, c%ny+2))
+    allocate(c%ice_qsurf(c%nx+2, c%ny+2))
 
   end subroutine init
 

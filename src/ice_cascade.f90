@@ -13,8 +13,9 @@ type(common_type) :: c ! common vars
 
 ! Initialize
 call w%read_param(t, c)
-call t%init()
-call c%init()
+call w%init()
+call t%check()
+call c%check(); call c%init()
 call w%read_initial_vals(c)
 
 

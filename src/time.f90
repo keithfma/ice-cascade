@@ -25,7 +25,7 @@ public :: time_type
     real(rp) :: step ! time step [a]
     real(rp) :: step_out ! interval btw outputs, [a]
   contains
-    procedure, pass :: init ! check for sane values
+    procedure, pass :: check ! check for sane values
   end type time_type
 
 
@@ -35,7 +35,7 @@ contains
   ! --------------------------------------------------------------------------- 
   ! SUB: check for sane values
   ! ---------------------------------------------------------------------------
-  subroutine init(time)
+  subroutine check(time)
 
     class(time_type), intent(inout) :: time
 
@@ -66,7 +66,7 @@ contains
       stop -1
     end if
 
-  end subroutine init
+  end subroutine check
 
 
 end module time_mod
