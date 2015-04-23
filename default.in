@@ -3,11 +3,13 @@ $ Default input file for ICE-CASCADE
 $ ===========================================================================
 
 $ -------------------
-$  Run 
+$ Description
+$   Note: TO-DO 
 $ -------------------
 
-$ Name (string)
-default
+$ -------------------
+$  Time 
+$ -------------------
 
 $ Model start time (real, yr)
 0.
@@ -18,9 +20,7 @@ $ Model end time (real, yr)
 $ Model timestep (real, yr)
 1.
 
-$ Output period, (real, yr) 
-$   Note: must be a multiple of the model timestep
-10.
+
 
 $ -------------------
 $ Physical constants
@@ -30,7 +30,7 @@ $ Density, glacial ice [kg/m^3]
 910.0
 
 $ -------------------
-$ Grids 
+$ Domain 
 $ -------------------
 
 $ Grid dimensions, number of points in the x; y directions
@@ -41,66 +41,88 @@ $ Grid spacing in x; y directions, meters
 1.
 1.
 
-$ -------------------
-$ Topography 
-$ -------------------
-
 $ initial topography (string)
 $$ options: netcdf filename, or "zero" for flat at 0.0 m
 peaks.nc
 
+$ -------------------
+$ Climate model
+$ -------------------
+
+$ Surface temperature model on/off (.true. or .false)
+.true.
+
+$ Surface temperature model name ( string )
+$   options: none, constant, sawtooth_lapse 
+$   see climate.f90 for details
+sawtooth_lapse
+
+$ Surface temperature model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90
+18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
+
+$ Precipitation model on/off (.true. or .false)
+.true.
+
+$ Precipitation rate model name ( string )
+$   options: none, constant 
+$   see climate.f90 for details
+constant
+
+$ Precipitation model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90 
+2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Surface ice flux model on/off (.true. or .false)
+.true.
+
+$ Surface ice flux model name ( string )
+$   options: none, constant, linear_temp_capped_max_min
+$   see climate.f90 for details
+linear_temp_capped_max_min
+
+$ Surface ice flux model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90 
+3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ Runoff model on/off (.true. or .false)
+.true.
+
+$ Runoff model name ( string )
+$   options: none
+$   see climate.f90 for details
+none
+
+$ Runoff model parameters ( double )
+$   parameter definitions depend on the model name, see climate.f90 
+0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+
+$ -------------------
+$ Output 
+$ -------------------
+
+$ Output file name
+default.out
+
+$ Output period, (real, yr) 
+$   Note: must be a multiple of the model timestep
+10.
+
 $ write topography (.true. or .false)
 .true.
 
-$$ -------------------
-$$ Climate model
-$$ -------------------
-$
-$$ Surface temperature model on/off (.true. or .false)
-$.true.
-$
-$$ Temperature model name ( string )
-$$   options: none, constant, sawtooth_lapse 
-$$   see climate.f90 for details
-$sawtooth_lapse
-$
-$$ Temperature model parameters ( double )
-$$   parameter definitions depend on the model name, see climate.f90
-$18.0 9.0 40 10 0.006 0. 0. 0. 0. 0.
-$
-$$ Precipitation model on/off (.true. or .false)
-$.true.
-$
-$$ Precipitation rate model name ( string )
-$$   options: none, constant 
-$$   see climate.f90 for details
-$constant
-$
-$$ Precipitation model parameters ( double )
-$$   parameter definitions depend on the model name, see climate.f90 
-$2. 0. 0. 0. 0. 0. 0. 0. 0. 0.
-$
-$$ Surface ice flux model on/off (.true. or .false)
-$.true.
-$
-$$ Surface ice flux model name ( string )
-$$   options: none, constant, linear_temp_capped_max_min
-$$   see climate.f90 for details
-$linear_temp_capped_max_min
-$
-$$ Surface ice flux model parameters ( double )
-$$   parameter definitions depend on the model name, see climate.f90 
-$3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
-$
-$$ Write surface temperature (.true. or .false)
-$.true.
-$
-$$ Write precipitation rate (.true. or .false)
-$.true.
-$
-$$ Write surface ice flux (.true. or .false)
-$.false.
-$
+$ write surface temperature (.true. or .false)
+.true.
+
+$ write precipitation rate (.true. or .false)
+.true.
+
+$ write surface ice flux (.true. or .false)
+.true.
+
+$ write runoff rate (.true. or .false.)
+.true.
+
 $$ -------------------
 $$ Glacier model
 $$ -------------------

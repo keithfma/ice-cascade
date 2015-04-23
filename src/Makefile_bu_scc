@@ -25,6 +25,7 @@ SRC = \
 kinds.f90 \
 common.f90 \
 time.f90 \
+climate.f90 \
 io.f90 \
 ice_cascade.f90
 

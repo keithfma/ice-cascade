@@ -31,8 +31,9 @@ public :: common_type
     real(rp), allocatable :: temp_base(:,:) ! temp at bedrock surface, [C]
     real(rp), allocatable :: precip(:,:) ! precipitation rate, [m_water/a]
     real(rp), allocatable :: runoff(:,:) ! runoff rate, [m_water/a]
+    real(rp), allocatable :: ice_q_surf(:,:) ! surface ice flux, [m_ice/a]
     real(rp), allocatable :: ice_h(:,:) ! ice thickness, [m]
-    real(rp), allocatable :: ice_qsurf(:,:) ! surface ice flux, [m_ice/a]
+    real(rp), allocatable :: ice_h_dot(:,:) ! ice thickness rate-of-change, [m/a]
   contains
     procedure, pass :: check ! check for sane values
     procedure, pass :: init ! initialize object
@@ -95,8 +96,9 @@ contains
     allocate(c%temp_base(c%nx+2, c%ny+2))
     allocate(c%precip(c%nx+2, c%ny+2))
     allocate(c%runoff(c%nx+2, c%ny+2))
+    allocate(c%ice_q_surf(c%nx+2, c%ny+2))
     allocate(c%ice_h(c%nx+2, c%ny+2))
-    allocate(c%ice_qsurf(c%nx+2, c%ny+2))
+    allocate(c%ice_h_dot(c%nx+2, c%ny+2))
 
   end subroutine init
 

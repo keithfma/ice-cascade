@@ -11,6 +11,7 @@ module io_mod
 use kinds_mod, only: rp, rp_nc
 use common_mod, only: common_type
 use time_mod, only: time_type
+use climate_mod, only: climate_type
 use netcdf
 
 implicit none
@@ -22,17 +23,19 @@ public :: io_type
   ! TYPE: input/output vars and procedures
   ! ---------------------------------------------------------------------------
   type io_type
-    character(len=100) :: name_run ! user defined run name
     character(len=100) :: name_out ! output file name
     character(len=100) :: name_topo ! initial topography name
     integer :: n_step_out ! counter for current output step
-    logical :: write_topo ! flag 
+    logical :: write_topo 
+    logical :: write_temp_surf 
+    logical :: write_precip 
+    logical :: write_ice_q_surf 
+    logical :: write_runoff 
   contains
     procedure, pass :: read_param ! read parameters from the input file
-    procedure, pass :: init ! initialize object
     procedure, pass :: read_initial_vals ! read initial values 
     procedure, pass :: create_output ! create output file
-    procedure, pass :: write_status ! print model status to screen
+    procedure, nopass :: write_status ! print model status to screen
     procedure, pass :: write_output_step ! write step
   end type io_type
 
@@ -43,11 +46,12 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Read input parameters from file
   ! ---------------------------------------------------------------------------
-  subroutine read_param(w, t, c)
+  subroutine read_param(io, t, c, cl)
 
-    class(io_type), intent(out) :: w
+    class(io_type), intent(out) :: io
     type(time_type), intent(out) :: t
     type(common_type), intent(out) :: c
+    type(climate_type), intent(out) :: cl
 
     character(len=100) :: infile, line
     integer :: msg
@@ -76,51 +80,67 @@ contains
     rewind (55)
     
     ! Read input parameters
-    read(55, *) w%name_run	
     read(55, *) t%start
     read(55, *) t%finish
     read(55, *) t%step
-    read(55, *) t%step_out
     read(55, *) c%rhoi
     read(55, *) c%nx	
     read(55, *) c%ny
     read(55, *) c%dx
     read(55, *) c%dy	
-    read(55, *) w%name_topo 
-    read(55, *) w%write_topo
+    read(55, *) io%name_topo 
+    read(55, *) cl%on_temp 
+    read(55, *) cl%name_temp 
+    read(55, *) cl%param_temp(:) 
+    read(55, *) cl%on_precip 
+    read(55, *) cl%name_precip
+    read(55, *) cl%param_precip(:) 
+    read(55, *) cl%on_ice_q_surf 
+    read(55, *) cl%name_ice_q_surf 
+    read(55, *) cl%param_ice_q_surf(:) 
+    read(55, *) cl%on_runoff 
+    read(55, *) cl%name_runoff 
+    read(55, *) cl%param_runoff(:) 
+    read(55, *) io%name_out	
+    read(55, *) t%step_out
+    read(55, *) io%write_topo
+    read(55, *) io%write_temp_surf
+    read(55, *) io%write_precip
+    read(55, *) io%write_ice_q_surf
+    read(55, *) io%write_runoff
+
+
+    !logical :: on_temp ! enable/disable temperature
+    !logical :: on_precip ! enable/disable precipitation
+    !logical :: on_ice_qsurf ! enable/disable surface ice flux
+    !logical :: on_runoff ! enable/disable runoff
+    !character(len=100) :: name_temp ! temperature model name
+    !character(len=100) :: name_precip ! precipitation model name
+    !character(len=100) :: name_ice_qsurf ! surface ice flux model name
+    !character(len=100) :: name_runoff ! runoff model name
+    !real(rp), dimension(10) :: param_temp ! temperature model param, [various]
+    !real(rp), dimension(10) :: param_precip !  model param, [various]
+    !real(rp), dimension(10) :: param_ice_qsurf !  model param, [various]
+    !real(rp), dimension(10) :: param_runoff !  model param, [various]
 
   end subroutine read_param
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: initialize object
-  ! ---------------------------------------------------------------------------
-  subroutine init(w)
-    
-    class(io_type), intent(inout) :: w
-
-    w%name_out = trim(w%name_run)//'.out'
-    
-    ! disable writing for diabled components
-
-  end subroutine init
 
 
   ! ---------------------------------------------------------------------------
   ! SUB: read the initial values for state variables
   ! TO-DO: add initial ice thickness
   ! ---------------------------------------------------------------------------
-  subroutine read_initial_vals(w, c)
+  subroutine read_initial_vals(io, c)
 
-    class(io_type), intent(in) :: w
+    class(io_type), intent(in) :: io 
     type(common_type), intent(inout) :: c
 
     ! initial topography
-    select case(w%name_topo)
+    select case(io%name_topo)
     case('zero')
       c%topo = 0.0_rp
     case default
-      call read_array_nc(w%name_topo, c%nx, c%ny, c%topo)
+      call read_array_nc(io%name_topo, c%nx, c%ny, c%topo)
     end select
 
   end subroutine read_initial_vals
@@ -181,9 +201,9 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create output netcdf file
   ! ---------------------------------------------------------------------------
-  subroutine create_output(w, t, c)
+  subroutine create_output(io, t, c)
 
-    class(io_type), intent(in) :: w
+    class(io_type), intent(in) :: io
     type(time_type), intent(in) :: t
     type(common_type), intent(in) :: c
 
@@ -197,7 +217,7 @@ contains
     shuf = .true.
 
     ! create new file
-    msg = nf90_create(w%name_out, nf90_netcdf4, id_file)
+    msg = nf90_create(io%name_out, nf90_netcdf4, id_file)
 
     ! write parameters as global attributes
     msg = nf90_put_att(id_file, nf90_global, 'time_start_time__a', t%start)
@@ -209,7 +229,7 @@ contains
     msg = nf90_put_att(id_file, nf90_global, 'grid_ny__1', c%ny)
     msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', c%dx)
     msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', c%dy)
-    msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', w%name_topo)
+    msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', io%name_topo)
 
     ! define dimensions
     msg = nf90_def_dim(id_file, 'x', c%nx, id_dim_x) 
@@ -230,7 +250,7 @@ contains
     msg = nf90_put_att(id_file, id_var, 'units', 'm')
     
     ! topography
-    if (w%write_topo) then
+    if (io%write_topo) then
      	msg = nf90_def_var(id_file, 'topo', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'topography')
@@ -256,9 +276,8 @@ contains
   ! --------------------------------------------------------------------------
   ! SUB: print model status update to stdout
   ! --------------------------------------------------------------------------
-  subroutine write_status(w, t, c)
+  subroutine write_status(t, c)
     
-    class(io_type), intent(in) :: w
     type(time_type), intent(in) :: t
     type(common_type), intent(in) :: c
 
@@ -273,32 +292,32 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Write output step
   ! ---------------------------------------------------------------------------
-  subroutine write_output_step(w, t, c)
+  subroutine write_output_step(io, t, c)
     
-    class(io_type), intent(inout) :: w
+    class(io_type), intent(inout) :: io
     type(time_type), intent(in) :: t
     type(common_type), intent(in) :: c
 
     integer :: i0, i1, j0, j1, msg, id_file, id_var
 
     ! increment step counter
-    w%n_step_out = w%n_step_out+1
+    io%n_step_out = io%n_step_out+1
 
     ! define limits of interior points, for convenience
     i0 = 2; i1 = c%nx+1
     j0 = 2; j1 = c%ny+1
 
     ! open file
-    msg = nf90_open(w%name_out, nf90_write, id_file)
+    msg = nf90_open(io%name_out, nf90_write, id_file)
 
     ! write time data
     msg = nf90_inq_varid(id_file, 't', id_var)
-    msg = nf90_put_var(id_file, id_var, real(t%now, rp), [w%n_step_out] )
+    msg = nf90_put_var(id_file, id_var, real(t%now, rp), [io%n_step_out] )
 
     ! write topography data
-    if (w%write_topo) then
+    if (io%write_topo) then
       msg = nf90_inq_varid(id_file, 'topo', id_var)
-      msg = nf90_put_var(id_file, id_var, real(c%topo(i0:i1, j0:j1), rp), [1, 1, w%n_step_out])
+      msg = nf90_put_var(id_file, id_var, real(c%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step_out])
     end if
 
     ! close file

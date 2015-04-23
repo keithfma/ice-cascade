@@ -3,28 +3,29 @@ program ice_cascade
 use kinds_mod, only: rp
 use common_mod, only: common_type
 use time_mod, only: time_type
+use climate_mod, only: climate_type
 use io_mod, only: io_type
 
 implicit none
 
-type(io_type) :: w ! output flags
-type(time_type) :: t ! time vars
-type(common_type) :: c ! common vars
+type(io_type) :: io 
+type(time_type) :: t 
+type(common_type) :: c 
+type(climate_type) :: cl
 
 ! Initialize
-call w%read_param(t, c)
-call w%init()
+call io%read_param(t, c, cl)
 call t%check()
 call c%check(); call c%init()
-call w%read_initial_vals(c)
+call io%read_initial_vals(c)
 
 ! Get model state at time = start
 
 ! Create output file and write initial values
-call w%create_output(t, c)
+call io%create_output(t, c)
 
 ! Start loop
-do while (t%now .le. t%finish)
+do while (t%now .le. t%finish-t%step)
 
   ! Truncate last timestep, if needed
 
@@ -37,8 +38,8 @@ do while (t%now .le. t%finish)
 
   ! Write timestep
   if (mod(t%now-t%start, t%step_out) .eq. 0.0_rp) then
-    call w%write_status(t, c)
-    call w%write_output_step(t, c)
+    call io%write_status(t, c)
+    call io%write_output_step(t, c)
   end if
 
 end do
