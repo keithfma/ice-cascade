@@ -30,7 +30,7 @@ public :: state_type
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
-    real(rp), allocatable :: topo_dot_ice ! topography rate-of-change due to glaciers, [m/a]
+    real(rp), allocatable :: topo_dot_ice(:,:) ! topography rate-of-change due to glaciers, [m/a]
     real(rp), allocatable :: temp_surf(:,:) ! temp at ice/bedrock surface, [C]
     real(rp), allocatable :: temp_ice(:,:) ! mean ice temperature, [C]
     real(rp), allocatable :: temp_base(:,:) ! temp at bedrock surface, [C]
@@ -39,12 +39,11 @@ public :: state_type
     real(rp), allocatable :: ice_q_surf(:,:) ! surface ice flux, [m_ice/a]
     real(rp), allocatable :: ice_h(:,:) ! ice thickness, [m]
     real(rp), allocatable :: ice_h_dot(:,:) ! ice thickness rate-of-change, [m/a]
+    real(rp), allocatable :: ice_h_soln(:,:) ! exact solution for ice thickness, [m]
     real(rp), allocatable :: ice_ud(:,:) ! ice deformation velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vd(:,:) ! ice deformation velocity, y-dir, [m/a]
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
-    real(rp), allocatable :: ice_A(:,:)
-    real(rp), allocatable :: ice_As(:,:)
   contains
     procedure, pass :: init ! initialize object
   end type state_type
@@ -65,6 +64,7 @@ contains
     allocate(s%x(s%nx+2))
     allocate(s%y(s%ny+2))
     allocate(s%topo(s%nx+2, s%ny+2))
+    allocate(s%topo_dot_ice(s%nx+2, s%ny+2))
     allocate(s%temp_surf(s%nx+2, s%ny+2))
     allocate(s%temp_ice(s%nx+2, s%ny+2))
     allocate(s%temp_base(s%nx+2, s%ny+2))
@@ -73,6 +73,11 @@ contains
     allocate(s%ice_q_surf(s%nx+2, s%ny+2))
     allocate(s%ice_h(s%nx+2, s%ny+2))
     allocate(s%ice_h_dot(s%nx+2, s%ny+2))
+    allocate(s%ice_h_soln(s%nx+2, s%ny+2))
+    allocate(s%ice_ud(s%nx+2, s%ny+2))
+    allocate(s%ice_vd(s%nx+2, s%ny+2))
+    allocate(s%ice_us(s%nx+2, s%ny+2))
+    allocate(s%ice_vs(s%nx+2, s%ny+2))
 
     ! Populate arrays
     do i = 1, s%nx+2
@@ -81,6 +86,21 @@ contains
     do i = 1, s%ny+2
       s%y(i) = real(i-2, rp)*s%dy
     enddo
+    s%topo = 0.0_rp
+    s%topo_dot_ice = 0.0_rp
+    s%temp_surf = 0.0_rp
+    s%temp_ice = 0.0_rp
+    s%temp_base = 0.0_rp
+    s%precip = 0.0_rp
+    s%runoff = 0.0_rp
+    s%ice_q_surf = 0.0_rp
+    s%ice_h = 0.0_rp
+    s%ice_h_dot = 0.0_rp
+    s%ice_h_soln = 0.0_rp
+    s%ice_ud = 0.0_rp
+    s%ice_vd = 0.0_rp
+    s%ice_us = 0.0_rp
+    s%ice_vs = 0.0_rp
 
   end subroutine init
 

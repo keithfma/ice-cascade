@@ -7,6 +7,7 @@ $ Description
 $   Note: TO-DO 
 $ -------------------
 
+
 $ -------------------
 $  Time 
 $ -------------------
@@ -21,13 +22,13 @@ $ Model timestep (real, yr)
 1.
 
 
-
 $ -------------------
 $ Physical constants
 $ -------------------
 
 $ Density, glacial ice [kg/m^3]
 910.0
+
 
 $ -------------------
 $ Domain 
@@ -48,6 +49,7 @@ peaks.nc
 $ initial ice thickness (string)
 $   options: netcdf filename, or "zero" for constant 0 m
 zero
+
 
 $ -------------------
 $ Climate model
@@ -101,6 +103,36 @@ $ Runoff model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
+
+$ -------------------
+$ Glacier model
+$ -------------------
+
+$ On/off (.true. or .false)
+.true.
+
+$ Ice deformantion coeff prefactor, [Pa^-3 s^-1]
+24e-25
+
+$ Ice sliding coeff, [?]
+0.
+
+$ Ice flow computational method, [string]
+$   options: mahaffy
+mahaffy
+
+$ n; s; e; w boundary conditions (string) 
+$   options: no_ice
+no_ice
+no_ice
+no_ice
+no_ice
+
+$ exact solution, [string]
+$   options: none. bueler_isothermal_a
+none
+
+
 $ -------------------
 $ Output 
 $ -------------------
@@ -121,47 +153,36 @@ $ write surface temperature (.true. or .false)
 $ write precipitation rate (.true. or .false)
 .true.
 
-$ write surface ice flux (.true. or .false)
-.true.
-
 $ write runoff rate (.true. or .false.)
 .true.
 
-$$ -------------------
-$$ Glacier model
-$$ -------------------
-$
-$$ On/off (.true. or .false)
-$.true.
-$
-$$ Ice deformantion coefficient, [Pa^-3 s^-1]
-$24e-25
-$
-$$ Initial high-res ice thickness (string)
-$$   options: zero, exact
-$zero
-$
-$$ Ice flow computational method, [string]
-$$   options: mahaffy
-$mahaffy
-$
-$$ n; s; e; w boundary conditions (string) 
-$$   options: no_ice
-$no_ice
-$no_ice
-$no_ice
-$no_ice
-$
-$$ exact solution, [string]
-$$   options: none. bueler_isothermal_a
-$bueler_isothermal_a
-$
-$$ write ice thickness? (.true. or .false.)
-$.true.
-$
-$$ write ice deformation velocity? (.true. or .false.)
-$.true.
-$
+$ write surface ice flux (.true. or .false)
+.true.
+
+$ write ice thickness (.true. or .false.)
+.true.
+
+$ write ice thickness rate-of-change (.true. or .false.)
+.true.
+
+$ write ice deformation velocity (.true. or .false.)
+.true.
+
+$ write ice sliding velocity (.true. or .false.)
+.true.
+
+$ write ice basal temperature (.true. or .false.)
+.true.
+
+$ write ice mean temperature (.true. or .false.)
+.true.
+
+$ write topography rate-of-change due to glacial erosion/deposition (.true. or .false.)
+.true.
+
+$ write ice thickness exact solution (.true. or .false.)
+.true.
+
 $$ -------------------
 $$ Hillslope model
 $$ -------------------

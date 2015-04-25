@@ -11,6 +11,7 @@ module io_mod
 use kinds_mod, only: rp, rp_nc
 use state_mod, only: state_type
 use climate_mod, only: climate_type
+use ice_mod, only: ice_type
 use netcdf
 
 implicit none
@@ -28,10 +29,18 @@ public :: io_type
     integer :: n_step ! counter for current output step
     real(rp) :: time_step ! interval btw outputs, [a]
     logical :: write_topo 
+    logical :: write_topo_dot_ice
     logical :: write_temp_surf 
+    logical :: write_temp_base 
+    logical :: write_temp_ice 
     logical :: write_precip 
-    logical :: write_ice_q_surf 
     logical :: write_runoff 
+    logical :: write_ice_q_surf 
+    logical :: write_ice_h 
+    logical :: write_ice_h_dot
+    logical :: write_ice_uvd 
+    logical :: write_ice_uvs 
+    logical :: write_ice_h_soln
   contains
     procedure, pass :: read_param ! read parameters from the input file
     procedure, pass :: read_initial_vals ! read initial values 
@@ -47,11 +56,12 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Read input parameters from file
   ! ---------------------------------------------------------------------------
-  subroutine read_param(io, s, c)
+  subroutine read_param(io, s, c, g)
 
     class(io_type), intent(out) :: io
     type(state_type), intent(out) :: s
     type(climate_type), intent(out) :: c
+    type(ice_type), intent(out) :: g
 
     character(len=100) :: infile, line
     integer :: msg
@@ -102,13 +112,30 @@ contains
     read(55, *) c%on_runoff 
     read(55, *) c%name_runoff 
     read(55, *) c%param_runoff(:) 
+    read(55, *) g%on
+    read(55, *) g%A0
+    read(55, *) g%As0
+    read(55, *) g%name_flow
+    read(55, *) g%name_nbc
+    read(55, *) g%name_sbc
+    read(55, *) g%name_ebc
+    read(55, *) g%name_wbc
+    read(55, *) g%name_soln
     read(55, *) io%name_out	
     read(55, *) io%time_step
     read(55, *) io%write_topo
     read(55, *) io%write_temp_surf
     read(55, *) io%write_precip
-    read(55, *) io%write_ice_q_surf
     read(55, *) io%write_runoff
+    read(55, *) io%write_ice_q_surf
+    read(55, *) io%write_ice_h
+    read(55, *) io%write_ice_h_dot
+    read(55, *) io%write_ice_uvd
+    read(55, *) io%write_ice_uvs
+    read(55, *) io%write_temp_base
+    read(55, *) io%write_temp_ice
+    read(55, *) io%write_topo_dot_ice
+    read(55, *) io%write_ice_h_soln
 
     ! Check for sane values
     ! positive grid dimensions 
@@ -156,6 +183,20 @@ contains
       stop -1
     end if
 
+    ! positive ice deformation parameters
+    if (g%A0 .lt. 0.0_rp) then
+      print *, 'Invalid ice model parameters: ice deformation prefactor must &
+               &be positive'
+      stop -1
+    end if
+    ! TO-DO: add ice defm exponent when polythermal is implemented
+
+    ! positive ice sliding parameter
+    if (g%As0 .lt. 0.0_rp) then
+      print *, 'Invalid ice model parameters: ice sliding coefficient must &
+               &be positive'
+      stop -1
+    end if
 
   end subroutine read_param
 
@@ -243,11 +284,12 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: create output netcdf file
   ! ---------------------------------------------------------------------------
-  subroutine create_output(io, s, c)
+  subroutine create_output(io, s, c, g)
 
     class(io_type), intent(in) :: io
     type(state_type), intent(in) :: s
     type(climate_type), intent(in) :: c
+    type(ice_type), intent(in) :: g
 
     logical :: shuf
     integer :: fchunk(3), i, j, defLvl, msg, id_file, id_dim_x, id_dim_y, &
@@ -292,6 +334,20 @@ contains
     if (c%on_runoff) then
       msg = nf90_put_att(id_file, nf90_global, 'climate_runoff__name', c%name_runoff)
       msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_param__various', c%param_runoff)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, g%on))
+    if (g%on) then
+      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_prefactor__Pa-3_a-1', g%A0)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_sliding_coeff__TBD', g%As0) ! TO-DO: add units once I know them 
+      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_north__name', g%name_nbc)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_south__name', g%name_sbc)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_east__name', g%name_ebc)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_west__name', g%name_wbc)
+      msg = nf90_put_att(id_file, nf90_global, 'ice_flow_method__name', g%name_flow)
+    end if
+    msg = nf90_put_att(id_file, nf90_global, 'ice_on_soln__tf', merge(1, 0, g%on_soln))
+    if(g%on_soln) then
+      msg = nf90_put_att(id_file, nf90_global, 'ice_soln__name', g%name_soln)
     end if
 
     ! define dimensions
@@ -343,6 +399,70 @@ contains
      	msg = nf90_put_att(id_file, id_var, 'long_name', 'runoff rate')
      	msg = nf90_put_att(id_file, id_var, 'units', 'm_water/a')
     end if
+    if (io%write_topo_dot_ice) then
+     	msg = nf90_def_var(id_file, 'topo_dot_ice', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'topo_rate_of_change_from_ice')
+     	msg = nf90_put_att(id_file, id_var, 'units', '')
+    end if
+    if (io%write_temp_base) then
+     	msg = nf90_def_var(id_file, 'temp_base', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_basal_temperature')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
+    end if
+    if (io%write_temp_ice) then
+     	msg = nf90_def_var(id_file, 'temp_ice', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_mean_temperature')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
+    end if
+    if (io%write_ice_h) then
+     	msg = nf90_def_var(id_file, 'ice_h', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
+    end if
+    if (io%write_ice_h_dot) then
+     	msg = nf90_def_var(id_file, '', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thinkness_rate_of_change')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
+    end if
+    if (io%write_ice_uvd) then
+     	msg = nf90_def_var(id_file, 'ice_ud', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_x')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
+
+     	msg = nf90_def_var(id_file, 'ice_vd', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_y')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
+    end if
+    if (io%write_ice_uvs) then
+     	msg = nf90_def_var(id_file, 'ice_us', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_sliding_velocity_x')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
+
+     	msg = nf90_def_var(id_file, 'ice_vs', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_sliding_velocity_y')
+     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
+    end if
+    if (io%write_ice_h_soln) then
+     	msg = nf90_def_var(id_file, 'ice_h_soln', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_solution')
+     	msg = nf90_put_att(id_file, id_var, 'units', '')
+    end if
+    !if (io%write_) then
+    ! 	msg = nf90_def_var(id_file, '', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+    !    id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
+    ! 	msg = nf90_put_att(id_file, id_var, 'long_name', '')
+    ! 	msg = nf90_put_att(id_file, id_var, 'units', '')
+    !end if
 
     ! exit definition mode
     msg = nf90_enddef(id_file) 
@@ -404,22 +524,62 @@ contains
       msg = nf90_inq_varid(id_file, 'topo', id_var)
       msg = nf90_put_var(id_file, id_var, real(s%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
+    if (io%write_topo_dot_ice) then
+      msg = nf90_inq_varid(id_file, 'topo_dot_ice', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%topo_dot_ice(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
     if (io%write_temp_surf) then
       msg = nf90_inq_varid(id_file, 'temp_surf', id_var)
       msg = nf90_put_var(id_file, id_var, real(s%temp_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_temp_ice) then
+      msg = nf90_inq_varid(id_file, 'temp_ice', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%temp_ice(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_temp_base) then
+      msg = nf90_inq_varid(id_file, 'temp_base', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%temp_base(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
     if (io%write_precip) then
       msg = nf90_inq_varid(id_file, 'precip', id_var)
       msg = nf90_put_var(id_file, id_var, real(s%precip(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
-    if (io%write_ice_q_surf) then
-      msg = nf90_inq_varid(id_file, 'ice_q_surf', id_var)
-      msg = nf90_put_var(id_file, id_var, real(s%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-    end if
     if (io%write_runoff) then
       msg = nf90_inq_varid(id_file, 'runoff', id_var)
       msg = nf90_put_var(id_file, id_var, real(s%runoff(i0:i1, j0:j1), rp), [1, 1, io%n_step])
     end if
+    if (io%write_ice_q_surf) then
+      msg = nf90_inq_varid(id_file, 'ice_q_surf', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_ice_h) then
+      msg = nf90_inq_varid(id_file, 'ice_h', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_h(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_ice_h_dot) then
+      msg = nf90_inq_varid(id_file, 'ice_h_dot', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_h_dot(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_ice_h_soln) then
+      msg = nf90_inq_varid(id_file, 'ice_h_soln', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_h_soln(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_ice_uvd) then
+      msg = nf90_inq_varid(id_file, 'ice_ud', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_ud(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_inq_varid(id_file, 'ice_vd', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_vd(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    if (io%write_ice_uvs) then
+      msg = nf90_inq_varid(id_file, 'ice_us', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_us(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+      msg = nf90_inq_varid(id_file, 'ice_vs', id_var)
+      msg = nf90_put_var(id_file, id_var, real(s%ice_vs(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    end if
+    !if (io%write_) then
+    !  msg = nf90_inq_varid(id_file, '', id_var)
+    !  msg = nf90_put_var(id_file, id_var, real(s%(i0:i1, j0:j1), rp), [1, 1, io%n_step])
+    !end if
 
     ! close file
     msg = nf90_close(id_file)

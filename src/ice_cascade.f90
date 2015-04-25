@@ -3,6 +3,7 @@ program ice_cascade
 use kinds_mod, only: rp
 use state_mod, only: state_type
 use climate_mod, only: climate_type
+use ice_mod, only: ice_type
 use io_mod, only: io_type
 
 implicit none
@@ -10,9 +11,10 @@ implicit none
 type(io_type) :: io 
 type(state_type) :: s 
 type(climate_type) :: c
+type(ice_type) :: g
 
 ! Initialize
-call io%read_param(s, c)
+call io%read_param(s, c, g)
 call s%init()
 call c%init()
 call io%read_initial_vals(s)
@@ -20,7 +22,7 @@ call io%read_initial_vals(s)
 ! Get model state at time = start
 
 ! Create output file and write initial values
-call io%create_output(s, c)
+call io%create_output(s, c, g)
 
 ! Start loop
 do while (s%time_now .le. s%time_finish-s%time_step)
