@@ -17,6 +17,7 @@ type(ice_type) :: g
 call io%read_param(s, c, g)
 call s%init()
 call c%init()
+call g%init(s)
 call io%read_initial_vals(s)
 
 ! Get model state at time = start
@@ -32,12 +33,13 @@ do while (s%time_now .le. s%time_finish-s%time_step)
   ! Update model state (climate, ice, time, other)
   s%time_now = s%time_now+s%time_step
   call c%update(s)
-
+  call g%update(s)
 
   ! Apply erosion/deposition/isostasy
 
   ! Write timestep
   if (mod(s%time_now-s%time_start, io%time_step) .eq. 0.0_rp) then
+    if (g%on_soln) call g%solve(s)
     call io%write_status(s)
     call io%write_output_step(s)
   end if

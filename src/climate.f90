@@ -75,7 +75,7 @@ contains
     ! Set precipitation procedure
     select case (c%name_precip)
       case ("constant")
-        c%get_precip => temp_constant
+        c%get_precip => precip_constant
       case default
         print *, "Invalid name for precipitation model name: ", &
                  trim(c%name_precip)
@@ -85,7 +85,7 @@ contains
     ! Set surface ice flux procedure
     select case (c%name_ice_q_surf)
       case ("constant")
-        c%get_ice_q_surf => temp_constant
+        c%get_ice_q_surf => ice_q_surf_constant
       case default
         print *, "Invalid name for surface ice flux model name: ", &
                  trim(c%name_ice_q_surf)
@@ -95,7 +95,7 @@ contains
     ! Set runoff procedure
     select case (c%name_runoff)
       case ("constant")
-        c%get_runoff => temp_constant
+        c%get_runoff => runoff_constant
       case default
         print *, "Invalid name for runoff model name: ", &
                  trim(c%name_runoff)

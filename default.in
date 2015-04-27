@@ -35,16 +35,17 @@ $ Domain
 $ -------------------
 
 $ Grid dimensions, number of points in the x; y directions
-25
-50
+
+51
+51
 
 $ Grid spacing in x; y directions, meters
-1.
-1.
+15000
+15000
 
 $ initial topography (string)
 $   options: netcdf filename, or "zero" for constant 0 m
-peaks.nc
+zero
 
 $ initial ice thickness (string)
 $   options: netcdf filename, or "zero" for constant 0 m
@@ -83,13 +84,13 @@ $ Surface ice flux model on/off (.true. or .false)
 .true.
 
 $ Surface ice flux model name ( string )
-$   options: none, constant, linear_temp_capped_max_min
+$   options: none, constant
 $   see climate.f90 for details
 constant
 
 $ Surface ice flux model parameters ( double )
 $   parameter definitions depend on the model name, see climate.f90 
-3. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+0.3 0. 0. 0. 0. 0. 0. 0. 0. 0.
 
 $ Runoff model on/off (.true. or .false)
 .true.
@@ -111,8 +112,8 @@ $ -------------------
 $ On/off (.true. or .false)
 .true.
 
-$ Ice deformantion coeff prefactor, [Pa^-3 s^-1]
-24e-25
+$ Ice deformantion coeff prefactor, [Pa^-3 a^-1]
+10e-16
 
 $ Ice sliding coeff, [?]
 0.
@@ -130,7 +131,7 @@ no_ice
 
 $ exact solution, [string]
 $   options: none. bueler_isothermal_a
-none
+bueler_isothermal_a
 
 
 $ -------------------

@@ -501,7 +501,7 @@ contains
   subroutine write_output_step(io, s)
     
     class(io_type), intent(inout) :: io
-    type(state_type), intent(in) :: s
+    type(state_type), intent(inout) :: s
 
     integer :: i0, i1, j0, j1, msg, id_file, id_var
 

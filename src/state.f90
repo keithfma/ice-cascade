@@ -23,6 +23,7 @@ public :: state_type
     real(rp) :: dx ! grid spacing in x-dir, [m]
     real(rp) :: dy ! grid spacing in y-dir, [m]
     real(rp) :: rhoi ! density of glacial ice, [kg/m3]
+    real(rp) :: grav ! acceleration of gravity, [m/s2]
     real(rp) :: time_now ! current time [a]
     real(rp) :: time_start ! start time [a]
     real(rp) :: time_finish ! finish time [a]
@@ -59,6 +60,9 @@ contains
     class(state_type), intent(inout) :: s
 
     integer :: i
+
+    ! Define constants
+    s%grav = 9.80665_rp
 
     ! Allocate arrays
     allocate(s%x(s%nx+2))
