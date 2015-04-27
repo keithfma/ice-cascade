@@ -13,12 +13,12 @@ type(state_type) :: s
 type(climate_type) :: c
 type(ice_type) :: g
 
-! Initialize
+! Initialize objects
 call io%read_param(s, c, g)
 call s%init()
 call c%init()
 call g%init(s)
-call io%read_initial_vals(s)
+call io%read_initial_vals(s, g)
 
 ! Get model state at time = start
 

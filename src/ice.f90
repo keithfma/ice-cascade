@@ -35,6 +35,7 @@ public ice_type
     character(len=100) :: name_ebc ! east BC name
     character(len=100) :: name_flow ! ice flow method name
     character(len=100) :: name_soln ! exact solution name
+    real(rp), dimension(10) :: param_soln !  solution param, [various]
     procedure(bc_tmpl), pointer, nopass :: apply_nbc ! set north BC
     procedure(bc_tmpl), pointer, nopass :: apply_sbc ! set south BC
     procedure(bc_tmpl), pointer, nopass :: apply_wbc ! set west BC
@@ -174,10 +175,10 @@ contains
 
   ! ---------------------------------------------------------------------------
   ! SUB: Benchmark solution, Bueler isothermal A
-  !   Assumptions:
-  !     square model domain (parameter L)
-  !     constant, positive surface ice flux (parameter M0)
-  !     isothermal (constant A = A0)
+  !   Parameters
+  !   L: fixed ice cap radius [m] =  g%param_soln(1)
+  !   M0: constant positive surface ice flux [m_ice/a] =  g%param_soln(2)
+  !   A: isothermal ice deformation parameter [Pa-3 a-1]  = g%A0
   ! ---------------------------------------------------------------------------
   subroutine solve_bueler_isothermal_a(g, s)
 
@@ -185,12 +186,15 @@ contains
     type(state_type), intent(inout) :: s
 
     integer :: i, j
-    real(rp) :: c1, c2, gam, L, M0, r
+    real(rp) :: A, c1, c2, gam, L, M0, r
+
+    ! rename parameters for local use
+    L = g%param_soln(1)     
+    M0 = g%param_soln(2)
+    A = g%A0
 
     ! pre-compute constants
-    L = s%x(s%nx+1)-s%x(2)
-    M0 = s%ice_q_surf(1,1)
-    gam = 2.0_rp/5.0_rp*g%A0*(s%rhoi*s%grav)**3.0_rp
+    gam = 2.0_rp/5.0_rp*A*(s%rhoi*s%grav)**3.0_rp
     c1 = (4.0_rp*M0/gam)**(1.0_rp/8.0_rp)
     c2 = L**(4.0_rp/3.0_rp)
 

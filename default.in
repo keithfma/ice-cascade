@@ -48,8 +48,8 @@ $   options: netcdf filename, or "zero" for constant 0 m
 zero
 
 $ initial ice thickness (string)
-$   options: netcdf filename, or "zero" for constant 0 m
-zero
+$   options: filename, zero, exact
+exact
 
 
 $ -------------------
@@ -130,8 +130,12 @@ no_ice
 no_ice
 
 $ exact solution, [string]
-$   options: none. bueler_isothermal_a
+$   options: none, bueler_isothermal_a
 bueler_isothermal_a
+
+$ exact solution parameters ( double )
+$   parameter definitions depend on the solution name, see ice.f90 
+750.0e3 0.3 0. 0. 0. 0. 0. 0. 0. 0.
 
 
 $ -------------------

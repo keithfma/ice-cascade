@@ -121,6 +121,7 @@ contains
     read(55, *) g%name_ebc
     read(55, *) g%name_wbc
     read(55, *) g%name_soln
+    read(55, *) g%param_soln(:)
     read(55, *) io%name_out	
     read(55, *) io%time_step
     read(55, *) io%write_topo
@@ -203,10 +204,11 @@ contains
   ! SUB: read the initial values for state variables
   ! TO-DO: add initial ice thickness
   ! ---------------------------------------------------------------------------
-  subroutine read_initial_vals(io, s)
+  subroutine read_initial_vals(io, s, g)
 
     class(io_type), intent(in) :: io 
     type(state_type), intent(inout) :: s
+    type(ice_type), intent(in) :: g
 
     ! initial topography
     select case(io%name_topo)
@@ -220,6 +222,14 @@ contains
     select case(io%name_ice_h)
     case('zero')
       s%ice_h = 0.0_rp
+    case('exact')
+      if (g%on_soln) then
+        call g%solve(s)
+        s%ice_h = s%ice_h_soln
+      else
+        print *, 'Invalid initial ice thickness: exact solution is not set'
+        stop -1
+      end if
     case default
       call read_array_nc(io%name_ice_h, s%nx, s%ny, s%ice_h)
     end select
@@ -422,9 +432,9 @@ contains
      	msg = nf90_put_att(id_file, id_var, 'units', 'm')
     end if
     if (io%write_ice_h_dot) then
-     	msg = nf90_def_var(id_file, '', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
+     	msg = nf90_def_var(id_file, 'ice_h_dot', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
         id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thinkness_rate_of_change')
+     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_rate_of_change')
      	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
     end if
     if (io%write_ice_uvd) then
