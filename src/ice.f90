@@ -208,4 +208,9 @@ contains
 
   end subroutine solve_bueler_isothermal_a
 
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: Benchmark solution, Bueler isothermal B
+  ! ---------------------------------------------------------------------------
+
 end module ice_mod

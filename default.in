@@ -34,14 +34,14 @@ $ -------------------
 $ Domain 
 $ -------------------
 
-$ Grid dimensions, number of points in the x; y directions
+$ Grid dimensions, number of points in the x, y directions
 
 51
 51
 
-$ Grid spacing in x; y directions, meters
-15000
-15000
+$ Grid dimensions, distance in the x, y directions
+800e3
+800e3
 
 $ initial topography (string)
 $   options: netcdf filename, or "zero" for constant 0 m

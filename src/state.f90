@@ -20,6 +20,8 @@ public :: state_type
   type state_type
     integer :: nx ! num grid points in x-dir, [1]
     integer :: ny ! num grid points in y-dir, [1]
+    real(rp) :: lx ! grid dim in x-dir, [m]
+    real(rp) :: ly ! grid dim in y-dir, [m]
     real(rp) :: dx ! grid spacing in x-dir, [m]
     real(rp) :: dy ! grid spacing in y-dir, [m]
     real(rp) :: rhoi ! density of glacial ice, [kg/m3]
@@ -61,8 +63,10 @@ contains
 
     integer :: i
 
-    ! Define constants
-    s%grav = 9.80665_rp
+    ! Populate scalars
+    s%grav = 9.81_rp
+    s%dx = s%lx/real(s%nx-1, rp)
+    s%dy = s%ly/real(s%ny-1, rp)
 
     ! Allocate arrays
     allocate(s%x(s%nx+2))

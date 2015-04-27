@@ -96,8 +96,8 @@ contains
     read(55, *) s%rhoi
     read(55, *) s%nx	
     read(55, *) s%ny
-    read(55, *) s%dx
-    read(55, *) s%dy	
+    read(55, *) s%lx
+    read(55, *) s%ly	
     read(55, *) io%name_topo 
     read(55, *) io%name_ice_h
     read(55, *) c%on_temp_surf 
@@ -140,13 +140,11 @@ contains
     ! Check for sane values
     ! positive grid dimensions 
     if ((s%nx .le. 0) .or. (s%ny .le. 0)) then
-      print *, 'Invalid grid description: grid dimensions must be positive integers.'
+      print *, 'Invalid grid description: num grid points must be positive integers.'
       stop -1
     end if
-
-    ! positive grid spacing
-    if ((s%dx .le. 0.0_rp) .or. (s%dy .le. 0.0_rp)) then
-      print *, 'Invalid grid description: grid spacings must be positive.'
+    if ((s%lx .le. 0.0_rp) .or. (s%ly .le. 0.0_rp)) then
+      print *, 'Invalid grid description: grid dimensions must be positive.'
       stop -1
     end if
 
