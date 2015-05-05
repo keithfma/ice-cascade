@@ -27,8 +27,8 @@ public :: io_type
     procedure, nopass :: read_param ! read parameters from the input file
     procedure, nopass :: read_var ! read initial values 
     procedure, nopass :: write_file ! create output file
+    procedure, nopass :: write_step ! append model state to ouput
     !procedure, nopass :: write_status ! print model status to screen
-    !procedure, pass :: write_output_step ! write step
   end type io_type
 
 
@@ -321,12 +321,6 @@ contains
     e = nf90_get_var(ncid, varid, sta%ice_vs(2:prm%nx+1, 2:prm%ny+1))
     call err_opt('read_vars: ice_vs: ', e)
 
-    !! template for additional vars
-    !e = nf90_inq_varid(ncid, 'NAME', varid)
-    !call err_opt('read_vars: NAME: ', e)
-    !e = nf90_get_var(ncid, varid, sta%NAME(2:prm%nx+1, 2:prm%ny+1))
-    !call err_opt('read_vars: NAME: ', e)
-
     ! Close file
     e = nf90_close(ncid)
     call err_req('read_param: close file: ', e)
@@ -337,10 +331,9 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Create output netcdf file
   ! ---------------------------------------------------------------------------
-  subroutine write_file(p ,s)
+  subroutine write_file(p)
 
     type(param_type), intent(in) :: p
-    type(state_type), intent(in) :: s
 
     logical :: shuf
     integer :: chunk(3), deflate, e, ncid, tf, tid, vid, xid, yid
@@ -356,113 +349,81 @@ contains
 
 !    ! write parameters as global attributes
     e = nf90_put_att(ncid, nf90_global, 'nx__1', p%nx)
-    call err_req('write_file: nx__1: ', e)
 
     e = nf90_put_att(ncid, nf90_global, 'ny__1', p%ny)
-    call err_req('write_file: ny__1: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'lx__m', p%lx)
-    call err_req('write_file: lx__m: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ly__m', p%ly)
-    call err_req('write_file: ly__m: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'dx__m', p%dx)
-    call err_req('write_file: dx__m: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'dy__m', p%dy)
-    call err_req('write_file: dy__m: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'rhoi__kg_m3', p%rhoi)
-    call err_req('write_file: rhoi__kg_m3: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'grav__m_s2', p%grav)
-    call err_req('write_file: grav__m_s2: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'time_start__a', p%time_start )
-    call err_req('write_file: time_start__a: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'time_finish__a', p%time_finish)
-    call err_req('write_file: time_finish__a: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'time_step__a', p%time_step)
-    call err_req('write_file: time_step__a: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
-    call err_req('write_file: time_step_write__a: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'climate_name', p%climate_name)
-    call err_req('write_file: climate_name: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'climate_param__var', p%climate_param)
-    call err_req('write_file: climate_param__var: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_name', p%ice_name)
-    call err_req('write_file: ice_name: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
-    call err_req('write_file: ice_param__var: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_name_bc', p%ice_bc_name)
-    call err_req('write_file: ice_name_bc: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_name_soln', p%ice_soln_name)
-    call err_req('write_file: ice_name_soln: ', e)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_param_soln__var', p%ice_soln_param)
-    call err_req('write_file: ice_param_soln__var: ', e)
 
     tf = merge(1, 0, p%write_topo)
     e = nf90_put_att(ncid, nf90_global, 'write_topo', tf)
-    call err_req('write_file: write_topo: ', e)
 
     tf = merge(1, 0, p%write_topo_dot_ice)
     e = nf90_put_att(ncid, nf90_global, 'write_topo_dot_ice', tf)
-    call err_req('write_file: write_topo_dot_ice: ', e)
 
     tf = merge(1, 0, p%write_temp_surf)
     e = nf90_put_att(ncid, nf90_global, 'write_temp_surf', tf)
-    call err_req('write_file: write_temp_surf: ', e)
 
     tf = merge(1, 0, p%write_temp_ice)
     e = nf90_put_att(ncid, nf90_global, 'write_temp_ice', tf)
-    call err_req('write_file: write_temp_ice: ', e)
 
     tf = merge(1, 0, p%write_temp_base)
     e = nf90_put_att(ncid, nf90_global, 'write_temp_base', tf)
-    call err_req('write_file: write_temp_base: ', e)
 
     tf = merge(1, 0, p%write_precip)
     e = nf90_put_att(ncid, nf90_global, 'write_precip', tf)
-    call err_req('write_file: write_precip: ', e)
 
     tf = merge(1, 0, p%write_runoff)
     e = nf90_put_att(ncid, nf90_global, 'write_runoff', tf)
-    call err_req('write_file: write_runoff: ', e)
 
     tf = merge(1, 0, p%write_ice_q_surf)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_q_surf', tf)
-    call err_req('write_file: write_ice_q_surf: ', e)
 
     tf = merge(1, 0, p%write_ice_h)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_h', tf)
-    call err_req('write_file: write_ice_h: ', e)
 
     tf = merge(1, 0, p%write_ice_h_dot)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_h_dot', tf)
-    call err_req('write_file: write_ice_h_dot: ', e)
 
     tf = merge(1, 0, p%write_ice_uvd)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_uvd', tf)
-    call err_req('write_file: write_ice_uvd: ', e)
 
     tf = merge(1, 0, p%write_ice_uvs)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_uvs', tf)
-    call err_req('write_file: write_ice_uvs: ', e)
 
     tf = merge(1, 0, p%write_ice_h_soln)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', tf)
-    call err_req('write_file: write_ice_h_soln: ', e)
 
     ! define dimensions
     e = nf90_def_dim(ncid, 'x', p%nx, xid) 
@@ -583,221 +544,115 @@ contains
      	e = nf90_put_att(ncid, vid, 'units', 'm')
     end if
 
-    ! create variables
-
-    ! exit definition mode
-    e = nf90_enddef(ncid)
-    call err_req('write_file: end definition mode: ', e)
-
-    ! populate variables
-
     ! close file
     e = nf90_close(ncid)
     call err_req('write_file: close file: ', e)
 
   end subroutine write_file
 
+  ! ---------------------------------------------------------------------------
+  ! SUB: Append model state to output netcdf
+  ! ---------------------------------------------------------------------------
+  subroutine write_step(p, s)
+    
+    type(param_type), intent(inout) :: p
+    type(state_type), intent(inout) :: s
 
-!
-!  ! ---------------------------------------------------------------------------
-!  ! SUB: create output netcdf file
-!  ! ---------------------------------------------------------------------------
-!  subroutine create_output(io, s, c, g)
-!
-!    class(io_type), intent(in) :: io
-!    type(state_type), intent(in) :: s
-!    type(climate_type), intent(in) :: c
-!    type(ice_type), intent(in) :: g
-!
-!    logical :: shuf
-!    integer :: fchunk(3), i, j, defLvl, msg, id_file, id_dim_x, id_dim_y, &
-!               id_dim_t, id_var
-!
-!    ! define compression and chunking parameters 
-!    defLvl = 1 ! compression, 0 = none, 9 = max, best value is 1
-!    fchunk = [s%nx, s%ny, 1]
-!    shuf = .true.
-!
-!    ! create new file
-!    msg = nf90_create(io%name_out, nf90_netcdf4, id_file)
-!
-!    ! write parameters as global attributes
-!    msg = nf90_put_att(id_file, nf90_global, 'time_start_time__a', s%time_start)
-!    msg = nf90_put_att(id_file, nf90_global, 'time_finish_time__a', s%time_finish)
-!    msg = nf90_put_att(id_file, nf90_global, 'time_step__a', s%time_step)
-!    msg = nf90_put_att(id_file, nf90_global, 'time_step_output__a', io%time_step)
-!    msg = nf90_put_att(id_file, nf90_global, 'density_ice__kg1m-3', s%rhoi)
-!    msg = nf90_put_att(id_file, nf90_global, 'grid_nx__1', s%nx)
-!    msg = nf90_put_att(id_file, nf90_global, 'grid_ny__1', s%ny)
-!    msg = nf90_put_att(id_file, nf90_global, 'grid_dx__m', s%dx)
-!    msg = nf90_put_att(id_file, nf90_global, 'grid_dy__m', s%dy)
-!    msg = nf90_put_att(id_file, nf90_global, 'topo_initial__name', io%name_topo)
-!    msg = nf90_put_att(id_file, nf90_global, 'ice_h_initial__name', io%name_ice_h)
-!    msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf_on__tf', merge(1, 0, c%on_temp_surf))
-!    if (c%on_temp_surf) then
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_surf__name', c%name_temp_surf)
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_temp_param__various', c%param_temp_surf)
-!    end if
-!    msg = nf90_put_att(id_file, nf90_global, 'climate_precip_on__tf', merge(1, 0, c%on_precip))
-!    if (c%on_precip) then
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_precip__name', c%name_precip)
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_precip_param__various', c%param_precip)
-!    end if
-!    msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_on__tf', merge(1, 0, c%on_ice_q_surf))
-!    if (c%on_ice_q_surf) then
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf__name', c%name_ice_q_surf)
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_ice_q_surf_param__various', c%param_ice_q_surf)
-!    end if
-!    msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_on__tf', merge(1, 0, c%on_runoff))
-!    if (c%on_runoff) then
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff__name', c%name_runoff)
-!      msg = nf90_put_att(id_file, nf90_global, 'climate_runoff_param__various', c%param_runoff)
-!    end if
-!    msg = nf90_put_att(id_file, nf90_global, 'ice_on__tf', merge(1, 0, g%on))
-!    if (g%on) then
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_defm_prefactor__Pa-3_a-1', g%A0)
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_sliding_coeff__TBD', g%As0) ! TO-DO: add units once I know them 
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_north__name', g%name_nbc)
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_south__name', g%name_sbc)
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_east__name', g%name_ebc)
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_bc_west__name', g%name_wbc)
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_flow_method__name', g%name_flow)
-!    end if
-!    msg = nf90_put_att(id_file, nf90_global, 'ice_on_soln__tf', merge(1, 0, g%on_soln))
-!    if(g%on_soln) then
-!      msg = nf90_put_att(id_file, nf90_global, 'ice_soln__name', g%name_soln)
-!    end if
-!
-!    ! define dimensions
-!    msg = nf90_def_dim(id_file, 'x', s%nx, id_dim_x) 
-!    msg = nf90_def_dim(id_file, 'y', s%ny, id_dim_y) 
-!    msg = nf90_def_dim(id_file, 't', nf90_unlimited, id_dim_t)
-!
-!    ! create coordinate variables
-!    msg = nf90_def_var(id_file, 't', rp_nc, id_dim_t, id_var)
-!    msg = nf90_put_att(id_file, id_var, 'long_name', 'model_time')
-!    msg = nf90_put_att(id_file, id_var, 'units', 'a')
-!
-!    msg = nf90_def_var(id_file, 'x', rp_nc, id_dim_x, id_var)
-!    msg = nf90_put_att(id_file, id_var, 'long_name', 'x_coord')
-!    msg = nf90_put_att(id_file, id_var, 'units', 'm')
-!    
-!    msg = nf90_def_var(id_file, 'y', rp_nc, id_dim_y, id_var)
-!    msg = nf90_put_att(id_file, id_var, 'long_name', 'y_coord')
-!    msg = nf90_put_att(id_file, id_var, 'units', 'm')
-!    
-!    ! create variables
-!    if (io%write_topo) then
-!     	msg = nf90_def_var(id_file, 'topo', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'topography')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
-!    end if
-!    if (io%write_temp_surf) then
-!     	msg = nf90_def_var(id_file, 'temp_surf', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_temperature')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
-!    end if
-!    if (io%write_precip) then
-!     	msg = nf90_def_var(id_file, 'precip', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'precipitation_rate')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm_water/a')
-!    end if
-!    if (io%write_ice_q_surf) then
-!     	msg = nf90_def_var(id_file, 'ice_q_surf', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'surface_ice_flux')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm_ice/a')
-!    end if
-!    if (io%write_runoff) then
-!     	msg = nf90_def_var(id_file, 'runoff', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'runoff rate')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm_water/a')
-!    end if
-!    if (io%write_topo_dot_ice) then
-!     	msg = nf90_def_var(id_file, 'topo_dot_ice', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'topo_rate_of_change_from_ice')
-!     	msg = nf90_put_att(id_file, id_var, 'units', '')
-!    end if
-!    if (io%write_temp_base) then
-!     	msg = nf90_def_var(id_file, 'temp_base', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_basal_temperature')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
-!    end if
-!    if (io%write_temp_ice) then
-!     	msg = nf90_def_var(id_file, 'temp_ice', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_mean_temperature')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'C')
-!    end if
-!    if (io%write_ice_h) then
-!     	msg = nf90_def_var(id_file, 'ice_h', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm')
-!    end if
-!    if (io%write_ice_h_dot) then
-!     	msg = nf90_def_var(id_file, 'ice_h_dot', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_rate_of_change')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
-!    end if
-!    if (io%write_ice_uvd) then
-!     	msg = nf90_def_var(id_file, 'ice_ud', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_x')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
-!
-!     	msg = nf90_def_var(id_file, 'ice_vd', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_deformation_velocity_y')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
-!    end if
-!    if (io%write_ice_uvs) then
-!     	msg = nf90_def_var(id_file, 'ice_us', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_sliding_velocity_x')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
-!
-!     	msg = nf90_def_var(id_file, 'ice_vs', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_sliding_velocity_y')
-!     	msg = nf90_put_att(id_file, id_var, 'units', 'm/a')
-!    end if
-!    if (io%write_ice_h_soln) then
-!     	msg = nf90_def_var(id_file, 'ice_h_soln', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!        id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!     	msg = nf90_put_att(id_file, id_var, 'long_name', 'ice_thickness_solution')
-!     	msg = nf90_put_att(id_file, id_var, 'units', '')
-!    end if
-!    !if (io%write_) then
-!    ! 	msg = nf90_def_var(id_file, '', rp_nc, [id_dim_x, id_dim_y, id_dim_t],  &
-!    !    id_var, chunksizes = fchunk, shuffle = shuf, deflate_level = defLvl )
-!    ! 	msg = nf90_put_att(id_file, id_var, 'long_name', '')
-!    ! 	msg = nf90_put_att(id_file, id_var, 'units', '')
-!    !end if
-!
-!    ! exit definition mode
-!    msg = nf90_enddef(id_file) 
-!
-!    ! populate dimension variables
-!    msg = nf90_inq_varid(id_file, 'x', id_var)
-!    msg = nf90_put_var(id_file, id_var, s%x(2:s%nx+1))
-!
-!    msg = nf90_inq_varid(id_file, 'y', id_var)
-!    msg = nf90_put_var(id_file, id_var, s%y(2:s%ny+1))
-!
-!    ! close file
-!    msg = nf90_close(id_file)
-!
-!  end subroutine create_output
-!
-!
+    integer :: e, i0, i1, j0, j1, n, ncid, tid, vid
+
+    ! define limits of interior points, for convenience
+    i0 = 2; i1 = p%nx+1
+    j0 = 2; j1 = p%ny+1
+
+    ! open file
+    e = nf90_open(p%output_file, nf90_write, ncid)
+
+    ! get current step
+    e = nf90_inq_dimid(ncid, 't', tid)
+    e = nf90_inquire_dimension(ncid, tid, len = n)
+    n = n+1
+
+    ! write data
+    e = nf90_inq_varid(ncid, 't', vid)
+    e = nf90_put_var(ncid, vid, s%time_now, [n] )
+
+    if (p%write_topo) then
+      e = nf90_inq_varid(ncid, 'topo', vid)
+      e = nf90_put_var(ncid, vid, s%topo(i0:i1, j0:j1), [1, 1, n])
+    end if
+
+    if (p%write_topo_dot_ice) then
+      e = nf90_inq_varid(ncid, 'topo_dot_ice', vid)
+      e = nf90_put_var(ncid, vid, s%topo_dot_ice(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_temp_surf) then
+      e = nf90_inq_varid(ncid, 'temp_surf', vid)
+      e = nf90_put_var(ncid, vid, s%temp_surf(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_temp_ice) then
+      e = nf90_inq_varid(ncid, 'temp_ice', vid)
+      e = nf90_put_var(ncid, vid, s%temp_ice(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_temp_base) then
+      e = nf90_inq_varid(ncid, 'temp_base', vid)
+      e = nf90_put_var(ncid, vid, s%temp_base(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_precip) then
+      e = nf90_inq_varid(ncid, 'precip', vid)
+      e = nf90_put_var(ncid, vid, s%precip(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_runoff) then
+      e = nf90_inq_varid(ncid, 'runoff', vid)
+      e = nf90_put_var(ncid, vid, s%runoff(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_q_surf) then
+      e = nf90_inq_varid(ncid, 'ice_q_surf', vid)
+      e = nf90_put_var(ncid, vid, s%ice_q_surf(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_h) then
+      e = nf90_inq_varid(ncid, 'ice_h', vid)
+      e = nf90_put_var(ncid, vid, s%ice_h(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_h_dot) then
+      e = nf90_inq_varid(ncid, 'ice_h_dot', vid)
+      e = nf90_put_var(ncid, vid, s%ice_h_dot(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_h_soln) then
+      e = nf90_inq_varid(ncid, 'ice_h_soln', vid)
+      e = nf90_put_var(ncid, vid, s%ice_h_soln(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_uvd) then
+      e = nf90_inq_varid(ncid, 'ice_ud', vid)
+      e = nf90_put_var(ncid, vid, s%ice_ud(i0:i1, j0:j1), [1, 1, n])
+      
+      e = nf90_inq_varid(ncid, 'ice_vd', vid)
+      e = nf90_put_var(ncid, vid, s%ice_vd(i0:i1, j0:j1), [1, 1, n])
+    end if
+    
+    if (p%write_ice_uvs) then
+      e = nf90_inq_varid(ncid, 'ice_us', vid)
+      e = nf90_put_var(ncid, vid, s%ice_us(i0:i1, j0:j1), [1, 1, n])
+    
+      e = nf90_inq_varid(ncid, 'ice_vs', vid)
+      e = nf90_put_var(ncid, vid, s%ice_vs(i0:i1, j0:j1), [1, 1, n])
+    end if
+
+    ! close file
+    e = nf90_close(ncid)
+
+  end subroutine write_step
+
+
 !  ! --------------------------------------------------------------------------
 !  ! SUB: print model status update to stdout
 !  ! --------------------------------------------------------------------------
@@ -813,95 +668,5 @@ contains
 !  end subroutine
 !
 !
-!  ! ---------------------------------------------------------------------------
-!  ! SUB: Write output step
-!  ! ---------------------------------------------------------------------------
-!  subroutine write_output_step(io, s)
-!    
-!    class(io_type), intent(inout) :: io
-!    type(state_type), intent(inout) :: s
-!
-!    integer :: i0, i1, j0, j1, msg, id_file, id_var
-!
-!    ! increment step counter
-!    io%n_step = io%n_step+1
-!
-!    ! define limits of interior points, for convenience
-!    i0 = 2; i1 = s%nx+1
-!    j0 = 2; j1 = s%ny+1
-!
-!    ! open file
-!    msg = nf90_open(io%name_out, nf90_write, id_file)
-!
-!    ! write time data
-!    msg = nf90_inq_varid(id_file, 't', id_var)
-!    msg = nf90_put_var(id_file, id_var, real(s%time_now, rp), [io%n_step] )
-!
-!    ! write arrays 
-!    if (io%write_topo) then
-!      msg = nf90_inq_varid(id_file, 'topo', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%topo(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_topo_dot_ice) then
-!      msg = nf90_inq_varid(id_file, 'topo_dot_ice', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%topo_dot_ice(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_temp_surf) then
-!      msg = nf90_inq_varid(id_file, 'temp_surf', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%temp_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_temp_ice) then
-!      msg = nf90_inq_varid(id_file, 'temp_ice', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%temp_ice(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_temp_base) then
-!      msg = nf90_inq_varid(id_file, 'temp_base', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%temp_base(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_precip) then
-!      msg = nf90_inq_varid(id_file, 'precip', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%precip(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_runoff) then
-!      msg = nf90_inq_varid(id_file, 'runoff', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%runoff(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_q_surf) then
-!      msg = nf90_inq_varid(id_file, 'ice_q_surf', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_q_surf(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_h) then
-!      msg = nf90_inq_varid(id_file, 'ice_h', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_h(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_h_dot) then
-!      msg = nf90_inq_varid(id_file, 'ice_h_dot', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_h_dot(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_h_soln) then
-!      msg = nf90_inq_varid(id_file, 'ice_h_soln', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_h_soln(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_uvd) then
-!      msg = nf90_inq_varid(id_file, 'ice_ud', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_ud(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!      msg = nf90_inq_varid(id_file, 'ice_vd', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_vd(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    if (io%write_ice_uvs) then
-!      msg = nf90_inq_varid(id_file, 'ice_us', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_us(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!      msg = nf90_inq_varid(id_file, 'ice_vs', id_var)
-!      msg = nf90_put_var(id_file, id_var, real(s%ice_vs(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    end if
-!    !if (io%write_) then
-!    !  msg = nf90_inq_varid(id_file, '', id_var)
-!    !  msg = nf90_put_var(id_file, id_var, real(s%(i0:i1, j0:j1), rp), [1, 1, io%n_step])
-!    !end if
-!
-!    ! close file
-!    msg = nf90_close(id_file)
-!
-!  end subroutine write_output_step
 
 end module io_mod

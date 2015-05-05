@@ -21,10 +21,12 @@ call prm%check()
 call sta%alloc(prm%nx+2, prm%ny+2)
 call io%read_var(prm, sta)
 
-! Get model state at time = start
+! Update model at time = start
+sta%time_now = prm%time_start
 
 ! Create output file and write initial values
-call io%write_file(prm, sta)
+call io%write_file(prm)
+call io%write_step(prm, sta)
 !
 !! Start loop
 !do while (s%time_now .le. s%time_finish-s%time_step)

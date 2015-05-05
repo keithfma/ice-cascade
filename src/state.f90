@@ -18,6 +18,7 @@ public :: state_type
   ! TYPE: shared state variables
   ! ---------------------------------------------------------------------------
   type state_type
+    real(rp) :: time_now ! current model time, [a]
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
@@ -51,7 +52,7 @@ contains
     integer, intent(in) :: nx
     integer, intent(in) :: ny
 
-    ! Allocate arrays
+    ! allocate arrays
     allocate(s%x(nx))
     allocate(s%y(ny))
     allocate(s%topo(nx, ny))
@@ -70,7 +71,7 @@ contains
     allocate(s%ice_us(nx, ny))
     allocate(s%ice_vs(nx, ny))
 
-    ! Set initial value to zero (just to be sure)
+    ! initialize to zero (just to be sure)
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp
