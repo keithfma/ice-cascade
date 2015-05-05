@@ -26,7 +26,7 @@ public :: io_type
   contains
     procedure, nopass :: read_param ! read parameters from the input file
     procedure, nopass :: read_var ! read initial values 
-    !procedure, pass :: create_output ! create output file
+    procedure, nopass :: write_file ! create output file
     !procedure, nopass :: write_status ! print model status to screen
     !procedure, pass :: write_output_step ! write step
   end type io_type
@@ -334,249 +334,270 @@ contains
   end subroutine read_var
 
 
+  ! ---------------------------------------------------------------------------
+  ! SUB: Create output netcdf file
+  ! ---------------------------------------------------------------------------
+  subroutine write_file(p ,s)
 
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
 
+    logical :: shuf
+    integer :: chunk(3), deflate, e, ncid, tf, tid, vid, xid, yid
+
+    ! define compression and chunking parameters 
+    chunk = [p%nx, p%ny, 1] ! x, y, t
+    deflate = 1 ! compression, 0 = none, 9 = max, best value is 1
+    shuf = .true.
+
+    ! create new file
+    e = nf90_create(p%output_file, nf90_netcdf4, ncid)
+    call err_req('write_file: create file: ', e)
+
+!    ! write parameters as global attributes
+    e = nf90_put_att(ncid, nf90_global, 'nx__1', p%nx)
+    call err_req('write_file: nx__1: ', e)
+
+    e = nf90_put_att(ncid, nf90_global, 'ny__1', p%ny)
+    call err_req('write_file: ny__1: ', e)
     
+    e = nf90_put_att(ncid, nf90_global, 'lx__m', p%lx)
+    call err_req('write_file: lx__m: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ly__m', p%ly)
+    call err_req('write_file: ly__m: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'dx__m', p%dx)
+    call err_req('write_file: dx__m: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'dy__m', p%dy)
+    call err_req('write_file: dy__m: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'rhoi__kg_m3', p%rhoi)
+    call err_req('write_file: rhoi__kg_m3: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'grav__m_s2', p%grav)
+    call err_req('write_file: grav__m_s2: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'time_start__a', p%time_start )
+    call err_req('write_file: time_start__a: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'time_finish__a', p%time_finish)
+    call err_req('write_file: time_finish__a: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'time_step__a', p%time_step)
+    call err_req('write_file: time_step__a: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
+    call err_req('write_file: time_step_write__a: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'climate_name', p%climate_name)
+    call err_req('write_file: climate_name: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'climate_param__var', p%climate_param)
+    call err_req('write_file: climate_param__var: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ice_name', p%ice_name)
+    call err_req('write_file: ice_name: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
+    call err_req('write_file: ice_param__var: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ice_name_bc', p%ice_bc_name)
+    call err_req('write_file: ice_name_bc: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ice_name_soln', p%ice_soln_name)
+    call err_req('write_file: ice_name_soln: ', e)
+    
+    e = nf90_put_att(ncid, nf90_global, 'ice_param_soln__var', p%ice_soln_param)
+    call err_req('write_file: ice_param_soln__var: ', e)
+
+    tf = merge(1, 0, p%write_topo)
+    e = nf90_put_att(ncid, nf90_global, 'write_topo', tf)
+    call err_req('write_file: write_topo: ', e)
+
+    tf = merge(1, 0, p%write_topo_dot_ice)
+    e = nf90_put_att(ncid, nf90_global, 'write_topo_dot_ice', tf)
+    call err_req('write_file: write_topo_dot_ice: ', e)
+
+    tf = merge(1, 0, p%write_temp_surf)
+    e = nf90_put_att(ncid, nf90_global, 'write_temp_surf', tf)
+    call err_req('write_file: write_temp_surf: ', e)
+
+    tf = merge(1, 0, p%write_temp_ice)
+    e = nf90_put_att(ncid, nf90_global, 'write_temp_ice', tf)
+    call err_req('write_file: write_temp_ice: ', e)
+
+    tf = merge(1, 0, p%write_temp_base)
+    e = nf90_put_att(ncid, nf90_global, 'write_temp_base', tf)
+    call err_req('write_file: write_temp_base: ', e)
+
+    tf = merge(1, 0, p%write_precip)
+    e = nf90_put_att(ncid, nf90_global, 'write_precip', tf)
+    call err_req('write_file: write_precip: ', e)
+
+    tf = merge(1, 0, p%write_runoff)
+    e = nf90_put_att(ncid, nf90_global, 'write_runoff', tf)
+    call err_req('write_file: write_runoff: ', e)
+
+    tf = merge(1, 0, p%write_ice_q_surf)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_q_surf', tf)
+    call err_req('write_file: write_ice_q_surf: ', e)
+
+    tf = merge(1, 0, p%write_ice_h)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_h', tf)
+    call err_req('write_file: write_ice_h: ', e)
+
+    tf = merge(1, 0, p%write_ice_h_dot)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_h_dot', tf)
+    call err_req('write_file: write_ice_h_dot: ', e)
+
+    tf = merge(1, 0, p%write_ice_uvd)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_uvd', tf)
+    call err_req('write_file: write_ice_uvd: ', e)
+
+    tf = merge(1, 0, p%write_ice_uvs)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_uvs', tf)
+    call err_req('write_file: write_ice_uvs: ', e)
+
+    tf = merge(1, 0, p%write_ice_h_soln)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', tf)
+    call err_req('write_file: write_ice_h_soln: ', e)
+
+    ! define dimensions
+    e = nf90_def_dim(ncid, 'x', p%nx, xid) 
+    e = nf90_def_dim(ncid, 'y', p%ny, yid) 
+    e = nf90_def_dim(ncid, 't', nf90_unlimited, tid)
+
+    ! define variables
+    e = nf90_def_var(ncid, 'x', rp_nc, xid, vid)
+    e = nf90_put_att(ncid, vid, 'long_name', 'x_coord')
+    e = nf90_put_att(ncid, vid, 'units', 'm')
+    
+    e = nf90_def_var(ncid, 'y', rp_nc, yid, vid)
+    e = nf90_put_att(ncid, vid, 'long_name', 'y_coord')
+    e = nf90_put_att(ncid, vid, 'units', 'm')
+
+    e = nf90_def_var(ncid, 't', rp_nc, tid, vid)
+    e = nf90_put_att(ncid, vid, 'long_name', 'model_time')
+    e = nf90_put_att(ncid, vid, 'units', 'a')
+    
+    if (p%write_topo) then
+     	e = nf90_def_var(ncid, 'topo', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate)
+     	e = nf90_put_att(ncid, vid, 'long_name', 'topography')
+     	e = nf90_put_att(ncid, vid, 'units', 'm')
+    end if
+
+    if (p%write_topo_dot_ice) then
+     	e = nf90_def_var(ncid, 'topo_dot_ice', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'topo_rate_of_change_from_ice')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+    end if
+
+    if (p%write_temp_surf) then
+     	e = nf90_def_var(ncid, 'temp_surf', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'surface_temperature')
+     	e = nf90_put_att(ncid, vid, 'units', 'C')
+    end if
+
+    if (p%write_temp_base) then
+     	e = nf90_def_var(ncid, 'temp_base', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_basal_temperature')
+     	e = nf90_put_att(ncid, vid, 'units', 'C')
+    end if
+
+    if (p%write_temp_ice) then
+     	e = nf90_def_var(ncid, 'temp_ice', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_mean_temperature')
+     	e = nf90_put_att(ncid, vid, 'units', 'C')
+    end if
+
+    if (p%write_precip) then
+     	e = nf90_def_var(ncid, 'precip', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'precipitation_rate')
+     	e = nf90_put_att(ncid, vid, 'units', 'mwater_a')
+    end if
+
+    if (p%write_runoff) then
+     	e = nf90_def_var(ncid, 'runoff', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'runoff rate')
+     	e = nf90_put_att(ncid, vid, 'units', 'mwater_a')
+    end if
+
+    if (p%write_ice_q_surf) then
+     	e = nf90_def_var(ncid, 'ice_q_surf', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'surface_ice_flux')
+     	e = nf90_put_att(ncid, vid, 'units', 'mice_a')
+    end if
+
+    if (p%write_ice_h) then
+     	e = nf90_def_var(ncid, 'ice_h', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_thickness')
+     	e = nf90_put_att(ncid, vid, 'units', 'm')
+    end if
+
+    if (p%write_ice_h_dot) then
+     	e = nf90_def_var(ncid, 'ice_h_dot', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_thickness_rate_of_change')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+    end if
+
+    if (p%write_ice_uvd) then
+     	e = nf90_def_var(ncid, 'ice_ud', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_velocity_x')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+
+     	e = nf90_def_var(ncid, 'ice_vd', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_velocity_y')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+    end if
+
+    if (p%write_ice_uvs) then
+     	e = nf90_def_var(ncid, 'ice_us', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_velocity_x')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+
+     	e = nf90_def_var(ncid, 'ice_vs', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_velocity_y')
+     	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+    end if
+
+    if (p%write_ice_h_soln) then
+     	e = nf90_def_var(ncid, 'ice_h_soln', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
+     	e = nf90_put_att(ncid, vid, 'long_name', 'ice_thickness_solution')
+     	e = nf90_put_att(ncid, vid, 'units', 'm')
+    end if
+
+    ! create variables
+
+    ! exit definition mode
+    e = nf90_enddef(ncid)
+    call err_req('write_file: end definition mode: ', e)
+
+    ! populate variables
+
+    ! close file
+    e = nf90_close(ncid)
+    call err_req('write_file: close file: ', e)
+
+  end subroutine write_file
 
 
-
-
-!  ! ---------------------------------------------------------------------------
-!  ! OLD: Read input parameters from file
-!  ! ---------------------------------------------------------------------------
-!  subroutine read_param(io, s, c, g)
-!
-!    class(io_type), intent(out) :: io
-!    type(state_type), intent(out) :: s
-!    type(climate_type), intent(out) :: c
-!    type(ice_type), intent(out) :: g
-!
-!    character(len=100) :: infile, line
-!    integer :: msg
-!
-!    ! Get input file name from command line
-!    select case (command_argument_count())
-!      case (1)
-!      	call get_command_argument(1,infile) 
-!      case default
-!      	print*,'ICE-CASCADE expects exactly 1 input argument'
-!      	stop -1
-!    end select
-!    
-!    ! Sanitize input file (drop comments and empty lines)
-!    open(54, file = trim(infile), status = 'old', iostat = msg)
-!    if (msg .ne. 0) then
-!    	print*, 'The input file ', trim(infile), ' does not exist, exiting.'
-!    	stop
-!    end if	
-!    open (55, status = 'scratch')
-!    do while (msg .ge. 0)
-!    	read (54, '(a)', iostat = msg) line
-!    	if ((line(1:1) .ne. '$') .and. (line(1:1) .ne. ' ')) write (55, '(a)') line		
-!    enddo 
-!    close (54)
-!    rewind (55)
-!    
-!    ! Read input parameters
-!    read(55, *) s%time_start
-!    read(55, *) s%time_finish
-!    read(55, *) s%time_step
-!    read(55, *) s%rhoi
-!    read(55, *) s%nx	
-!    read(55, *) s%ny
-!    read(55, *) s%lx
-!    read(55, *) s%ly	
-!    read(55, *) io%name_topo 
-!    read(55, *) io%name_ice_h
-!    read(55, *) c%on_temp_surf 
-!    read(55, *) c%name_temp_surf 
-!    read(55, *) c%param_temp_surf(:) 
-!    read(55, *) c%on_precip 
-!    read(55, *) c%name_precip
-!    read(55, *) c%param_precip(:) 
-!    read(55, *) c%on_ice_q_surf 
-!    read(55, *) c%name_ice_q_surf 
-!    read(55, *) c%param_ice_q_surf(:) 
-!    read(55, *) c%on_runoff 
-!    read(55, *) c%name_runoff 
-!    read(55, *) c%param_runoff(:) 
-!    read(55, *) g%on
-!    read(55, *) g%A0
-!    read(55, *) g%As0
-!    read(55, *) g%name_flow
-!    read(55, *) g%name_nbc
-!    read(55, *) g%name_sbc
-!    read(55, *) g%name_ebc
-!    read(55, *) g%name_wbc
-!    read(55, *) g%name_soln
-!    read(55, *) g%param_soln(:)
-!    read(55, *) io%name_out	
-!    read(55, *) io%time_step
-!    read(55, *) io%write_topo
-!    read(55, *) io%write_temp_surf
-!    read(55, *) io%write_precip
-!    read(55, *) io%write_runoff
-!    read(55, *) io%write_ice_q_surf
-!    read(55, *) io%write_ice_h
-!    read(55, *) io%write_ice_h_dot
-!    read(55, *) io%write_ice_uvd
-!    read(55, *) io%write_ice_uvs
-!    read(55, *) io%write_temp_base
-!    read(55, *) io%write_temp_ice
-!    read(55, *) io%write_topo_dot_ice
-!    read(55, *) io%write_ice_h_soln
-!
-!    ! Check for sane values
-!    ! positive grid dimensions 
-!    if ((s%nx .le. 0) .or. (s%ny .le. 0)) then
-!      print *, 'Invalid grid description: num grid points must be positive integers.'
-!      stop -1
-!    end if
-!    if ((s%lx .le. 0.0_rp) .or. (s%ly .le. 0.0_rp)) then
-!      print *, 'Invalid grid description: grid dimensions must be positive.'
-!      stop -1
-!    end if
-!
-!    ! positive densities
-!    if (s%rhoi .le. 0.0_rp) then
-!      print *, 'Invalid physical constant: density must be positive.'
-!      stop -1
-!    end if
-!
-!    ! non-zero timestep 
-!    if (s%time_step .eq. 0.0_rp) then
-!      print *, 'Invalid time parameters: time step cannot be zero.'
-!      stop -1
-!    end if
-!
-!    ! forward model, start before finish
-!    if ((s%time_step .gt. 0.0_rp) .and. (s%time_start .ge. s%time_finish))  then
-!      print *, 'Invalid time parameters: start must be before finish for & 
-!               &forward models.'
-!      stop -1
-!    end if
-!
-!    ! reverse model, finish before start
-!    if ((s%time_step .lt. 0.0_rp) .and. (s%time_start .le. s%time_finish)) then
-!      print *, 'Invalid time parameters: start must be after finish for &
-!               &reverse models.'
-!      stop -1
-!    end if
-!
-!    ! output interval matches time step
-!    if (mod(io%time_step, s%time_step) .ne. 0.0_rp) then
-!      print *, 'Invalid time parameters: output interval must be a multiple &
-!               &of the time step.'
-!      stop -1
-!    end if
-!/filename
-!
-!    ! positive ice deformation parameters
-!    if (g%A0 .lt. 0.0_rp) then
-!      print *, 'Invalid ice model parameters: ice deformation prefactor must &
-!               &be positive'
-!      stop -1
-!    end if
-!    ! TO-DO: add ice defm exponent when polythermal is implemented
-!
-!    ! positive ice sliding parameter
-!    if (g%As0 .lt. 0.0_rp) then
-!      print *, 'Invalid ice model parameters: ice sliding coefficient must &
-!               &be positive'
-!      stop -1
-!    end if
-!
-!  end subroutine read_param
-!
-!
-!  ! ---------------------------------------------------------------------------
-!  ! SUB: read the initial values for state variables
-!  ! TO-DO: add initial ice thickness
-!  ! ---------------------------------------------------------------------------
-!  subroutine read_initial_vals(io, s, g)
-!
-!    class(io_type), intent(in) :: io 
-!    type(state_type), intent(inout) :: s
-!    type(ice_type), intent(in) :: g
-!
-!    ! initial topography
-!    select case(io%name_topo)
-!    case('zero')
-!      s%topo = 0.0_rp
-!    case default
-!      call read_array_nc(io%name_topo, s%nx, s%ny, s%topo)
-!    end select
-!
-!    ! initial ice thickness
-!    select case(io%name_ice_h)
-!    case('zero')
-!      s%ice_h = 0.0_rp
-!    case('exact')
-!      if (g%on_soln) then
-!        call g%solve(s)
-!        s%ice_h = s%ice_h_soln
-!      else
-!        print *, 'Invalid initial ice thickness: exact solution is not set'
-!        stop -1
-!      end if
-!    case default
-!      call read_array_nc(io%name_ice_h, s%nx, s%ny, s%ice_h)
-!    end select
-!
-!  end subroutine read_initial_vals
-!
-!
-!  ! --------------------------------------------------------------------------- 
-!  ! SUB: read 2D array from GMT grd format netcdf
-!  ! --------------------------------------------------------------------------- 
-!  subroutine read_array_nc(filename, nx, ny, array)
-!    
-!    character(len=*), intent(in) :: filename
-!    integer, intent(in) :: nx, ny
-!    real(rp), intent(out) :: array(:,:)
-!
-!    integer :: ndim, nvar, n1, n2, ind, i, var_ndim
-!    integer :: msg, id_file
-!
-!    ! open file
-!	  msg = nf90_open(trim(filename), nf90_nowrite, id_file)
-!
-!    ! check dimensions
-!	  msg = nf90_inquire(id_file, ndim, nvar)	
-!	  if (ndim .ne. 2) then
-!		  print *,'Invalid input data: netcdf file should have only two dimensions'
-!      stop -1
-!    end if	
-!		msg = nf90_inquire_dimension(id_file, 1, len = n1)	
-!		if (n1 .ne. nx) then
-!      print *,'Invalid input data: data does not match the given dimensions (nx)'
-!      stop -1
-!    end if
-!		msg = nf90_inquire_dimension(id_file, 2, len = n2)	
-!		if (n2 .ne. ny) then
-!      print *,'Invalid input data: data does not match the given dimensions (ny)'
-!      stop -1
-!    end if
-!    
-!    ! identify array variable 
-!    ind = -1
-!    do i = 1, nvar
-!			msg = nf90_inquire_variable(id_file, i, ndims = var_ndim)
-!		  if ((var_ndim .eq. 2) .and. (ind .ne. -1)) then
-!				print*,'Invalid input data: netcdf file should only have one 2D variable'
-!        stop -1
-!      end if
-!      if (var_ndim .eq. 2) ind = i
-!  	end do	
-!
-!    ! read array to interior points
-!	  msg = nf90_get_var(id_file, ind, array(2:nx+1, 2:ny+1))
-!    
-!    ! close file
-!    msg = nf90_close(id_file)
-!
-!  end subroutine read_array_nc
-!
 !
 !  ! ---------------------------------------------------------------------------
 !  ! SUB: create output netcdf file

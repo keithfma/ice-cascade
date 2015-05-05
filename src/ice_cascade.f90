@@ -21,13 +21,10 @@ call prm%check()
 call sta%alloc(prm%nx+2, prm%ny+2)
 call io%read_var(prm, sta)
 
-! DEBUG
+! Get model state at time = start
 
-!
-!! Get model state at time = start
-!
-!! Create output file and write initial values
-!call io%create_output(s, c, g)
+! Create output file and write initial values
+call io%write_file(prm, sta)
 !
 !! Start loop
 !do while (s%time_now .le. s%time_finish-s%time_step)
