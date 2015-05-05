@@ -1,5 +1,5 @@
 ! =============================================================================
-! Shared model state variables for ice-cascade. 
+! Shared parameters and state variables for ice-cascade. 
 !
 ! Contains:
 !   type state_type (public)
@@ -15,21 +15,9 @@ private
 public :: state_type
 
   ! --------------------------------------------------------------------------- 
-  ! TYPE: model state variables
+  ! TYPE: shared state variables
   ! ---------------------------------------------------------------------------
   type state_type
-    integer :: nx ! num grid points in x-dir, [1]
-    integer :: ny ! num grid points in y-dir, [1]
-    real(rp) :: lx ! grid dim in x-dir, [m]
-    real(rp) :: ly ! grid dim in y-dir, [m]
-    real(rp) :: dx ! grid spacing in x-dir, [m]
-    real(rp) :: dy ! grid spacing in y-dir, [m]
-    real(rp) :: rhoi ! density of glacial ice, [kg/m3]
-    real(rp) :: grav ! acceleration of gravity, [m/s2]
-    real(rp) :: time_now ! current time [a]
-    real(rp) :: time_start ! start time [a]
-    real(rp) :: time_finish ! finish time [a]
-    real(rp) :: time_step ! time step [a]
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
@@ -48,52 +36,43 @@ public :: state_type
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
   contains
-    procedure, pass :: init ! initialize object
+    procedure, pass :: alloc ! allocate all dynamic arrays 
   end type state_type
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize object
+  ! SUB: allocate all dynamic arrays
   ! ---------------------------------------------------------------------------
-  subroutine init(s)
+  subroutine alloc(s, nx, ny)
 
     class(state_type), intent(inout) :: s
-
-    integer :: i
-
-    ! Populate scalars
-    s%grav = 9.81_rp
-    s%dx = s%lx/real(s%nx-1, rp)
-    s%dy = s%ly/real(s%ny-1, rp)
+    integer, intent(in) :: nx
+    integer, intent(in) :: ny
 
     ! Allocate arrays
-    allocate(s%x(s%nx+2))
-    allocate(s%y(s%ny+2))
-    allocate(s%topo(s%nx+2, s%ny+2))
-    allocate(s%topo_dot_ice(s%nx+2, s%ny+2))
-    allocate(s%temp_surf(s%nx+2, s%ny+2))
-    allocate(s%temp_ice(s%nx+2, s%ny+2))
-    allocate(s%temp_base(s%nx+2, s%ny+2))
-    allocate(s%precip(s%nx+2, s%ny+2))
-    allocate(s%runoff(s%nx+2, s%ny+2))
-    allocate(s%ice_q_surf(s%nx+2, s%ny+2))
-    allocate(s%ice_h(s%nx+2, s%ny+2))
-    allocate(s%ice_h_dot(s%nx+2, s%ny+2))
-    allocate(s%ice_h_soln(s%nx+2, s%ny+2))
-    allocate(s%ice_ud(s%nx+2, s%ny+2))
-    allocate(s%ice_vd(s%nx+2, s%ny+2))
-    allocate(s%ice_us(s%nx+2, s%ny+2))
-    allocate(s%ice_vs(s%nx+2, s%ny+2))
+    allocate(s%x(nx))
+    allocate(s%y(ny))
+    allocate(s%topo(nx, ny))
+    allocate(s%topo_dot_ice(nx, ny))
+    allocate(s%temp_surf(nx, ny))
+    allocate(s%temp_ice(nx, ny))
+    allocate(s%temp_base(nx, ny))
+    allocate(s%precip(nx, ny))
+    allocate(s%runoff(nx, ny))
+    allocate(s%ice_q_surf(nx, ny))
+    allocate(s%ice_h(nx, ny))
+    allocate(s%ice_h_dot(nx, ny))
+    allocate(s%ice_h_soln(nx, ny))
+    allocate(s%ice_ud(nx, ny))
+    allocate(s%ice_vd(nx, ny))
+    allocate(s%ice_us(nx, ny))
+    allocate(s%ice_vs(nx, ny))
 
-    ! Populate arrays
-    do i = 1, s%nx+2
-      s%x(i) = real(i-2, rp)*s%dx
-    enddo
-    do i = 1, s%ny+2
-      s%y(i) = real(i-2, rp)*s%dy
-    enddo
+    ! Set initial value to zero (just to be sure)
+    s%x = 0.0_rp
+    s%y = 0.0_rp
     s%topo = 0.0_rp
     s%topo_dot_ice = 0.0_rp
     s%temp_surf = 0.0_rp
@@ -110,6 +89,6 @@ contains
     s%ice_us = 0.0_rp
     s%ice_vs = 0.0_rp
 
-  end subroutine init
+  end subroutine alloc
 
-end module state_mod
+end module state_mod 

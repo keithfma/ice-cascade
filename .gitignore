@@ -8,3 +8,5 @@ src/*.mod
 *.bak
 to_delete
 *.pyc
+*.nc
+in

@@ -64,27 +64,24 @@ mask = np.where(rr <= L)
 ice_h_soln[mask] = (4.0*M0/gamma)**(1.0/8.0)*(L**(4.0/3.0)-rr[mask]**(4.0/3.0))**(3.0/8.0)
 
 # define parameters and variables 
-#   parameters
-p = ic.null_param()
-p['descr'] = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
+v = ic.null_input(nxy, nxy)
+v['descr'] = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
   ' Isothermal, non-sliding, steady state with fixed margin position and '
   'constant, positive surface ice flux.')
-p['nx'] = nxy
-p['ny'] = nxy
-p['lx'] = L
-p['ly'] = L
-p['dx'] = dxy
-p['dy'] = dxy
-p['rhoi'] = rhoi
-p['grav'] = g
-p['time_start'] = ti
-p['time_finish'] = tf
-p['time_step'] = dt
-p['time_step_write'] = dtw 
-p['ice_name'] = 'mahaffy_isothermal_nonsliding'
-p['ice_param'] = [A]
-#   initial variables
-v = ic.null_var(nxy, nxy)
+v['nx'] = nxy
+v['ny'] = nxy
+v['lx'] = L
+v['ly'] = L
+v['dx'] = dxy
+v['dy'] = dxy
+v['rhoi'] = rhoi
+v['grav'] = g
+v['time_start'] = ti
+v['time_finish'] = tf
+v['time_step'] = dt
+v['time_step_write'] = dtw 
+v['ice_name'] = 'mahaffy_isothermal_nonsliding'
+v['ice_param'] = [A]
 v['x'] = xy
 v['y'] = xy
 v['ice_q_surf'] = v['ice_q_surf']+M0 
@@ -96,5 +93,5 @@ v['write_ice_ud'] = 1
 v['write_ice_vd'] = 1
 
 # create input file
-ic.create(filename, p, v)
+ic.create(filename, v)
 

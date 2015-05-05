@@ -23,6 +23,7 @@ LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
 SRC = \
 kinds.f90 \
+param.f90 \
 state.f90 \
 climate.f90 \
 ice.f90 \
