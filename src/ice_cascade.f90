@@ -41,7 +41,7 @@ do while (sta%time_now .lt. prm%time_finish)
   ! Write timestep
   if (mod(sta%time_now-prm%time_start, prm%time_step) .eq. 0.0_rp) then
 !    if (g%on_soln) call g%solve(s)
-!    call io%write_status(s)
+    call io%write_status(prm, sta)
     call io%write_step(prm, sta)
   end if
 

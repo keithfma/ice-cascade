@@ -28,7 +28,7 @@ public :: io_type
     procedure, nopass :: read_var ! read initial values 
     procedure, nopass :: write_file ! create output file
     procedure, nopass :: write_step ! append model state to ouput
-    !procedure, nopass :: write_status ! print model status to screen
+    procedure, nopass :: write_status ! print model status to screen
   end type io_type
 
 
@@ -68,7 +68,6 @@ contains
 
   ! ---------------------------------------------------------------------------
   ! SUB: Read input parameters from file
-  !   TO_DO: add write flags as attributes
   ! ---------------------------------------------------------------------------
   subroutine read_param(prm)
 
@@ -652,21 +651,87 @@ contains
 
   end subroutine write_step
 
+  ! --------------------------------------------------------------------------
+  ! SUB: print model status update to stdout
+  ! --------------------------------------------------------------------------
+  subroutine write_status(p, s)
+    
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
 
-!  ! --------------------------------------------------------------------------
-!  ! SUB: print model status update to stdout
-!  ! --------------------------------------------------------------------------
-!  subroutine write_status(s)
-!    
-!    type(state_type), intent(in) :: s
-!
-!    print "('MODEL TIME [a]           : ', EN11.3)", s%time_now 
-!    print "('TOPO (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-!          maxval(s%topo), sum(s%topo)/size(s%topo), minval(s%topo)
-!    print *, ''
-!
-!  end subroutine
-!
-!
+      print "('TIME [a]                         : ', EN11.3)", s%time_now 
+
+    if (p%write_topo) then
+      print "('TOPO (max, mean, min) [m]        : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%topo), sum(s%topo)/size(s%topo), minval(s%topo)
+    end if
+
+    if (p%write_topo_dot_ice) then
+      print "('TOPO_DOT_ICE (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%topo_dot_ice), sum(s%topo_dot_ice)/size(s%topo_dot_ice), minval(s%topo_dot_ice)
+    end if
+
+    if (p%write_temp_surf) then
+      print "('TEMP_SURF (max, mean, min) [C]   : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%temp_surf), sum(s%temp_surf)/size(s%temp_surf), minval(s%temp_surf)
+    end if
+
+    if (p%write_temp_base) then
+      print "('TEMP_BASE (max, mean, min) [C]   : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%temp_base), sum(s%temp_base)/size(s%temp_base), minval(s%temp_base)
+    end if
+
+    if (p%write_temp_ice) then
+      print "('TEMP_ICE (max, mean, min) [C]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%temp_ice), sum(s%temp_ice)/size(s%temp_ice), minval(s%temp_ice)
+    end if
+
+    if (p%write_precip) then
+      print "('PRECIP (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%precip), sum(s%precip)/size(s%precip), minval(s%precip)
+    end if
+
+    if (p%write_runoff) then
+      print "('RUNOFF (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%runoff), sum(s%runoff)/size(s%runoff), minval(s%runoff)
+    end if
+
+    if (p%write_ice_q_surf) then
+      print "('ICE_Q_SURF (max, mean, min) [m/a]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_q_surf), sum(s%ice_q_surf)/size(s%ice_q_surf), minval(s%ice_q_surf)
+    end if
+    
+    if (p%write_ice_h) then
+      print "('ICE_H (max, mean, min) [m]       : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_h), sum(s%ice_h)/size(s%ice_h), minval(s%ice_h)
+    end if
+
+    if (p%write_ice_h_dot) then
+      print "('ICE_H_DOT (max, mean, min) [m/a] : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_h_dot), sum(s%ice_h_dot)/size(s%ice_h_dot), minval(s%ice_h_dot)
+    end if
+
+    if (p%write_ice_uvd) then
+      print "('ICE_UD (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_ud), sum(s%ice_ud)/size(s%ice_ud), minval(s%ice_ud)
+      print "('ICE_VD (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_vd), sum(s%ice_vd)/size(s%ice_vd), minval(s%ice_vd)
+    end if
+
+    if (p%write_ice_uvs) then
+      print "('ICE_US (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_us), sum(s%ice_us)/size(s%ice_us), minval(s%ice_us)
+      print "('ICE_VS (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_vs), sum(s%ice_vs)/size(s%ice_vs), minval(s%ice_vs)
+    end if
+
+    if (p%write_ice_h_soln) then
+      print "('ICE_H_SOLN (max, mean, min) [m]  : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
+        maxval(s%ice_h_soln), sum(s%ice_h_soln)/size(s%ice_h_soln), minval(s%ice_h_soln)
+    end if
+
+    print *, ''
+
+  end subroutine write_status
 
 end module io_mod
