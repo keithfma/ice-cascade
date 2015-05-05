@@ -28,7 +28,7 @@ import numpy as np
 import ic_input_tools as ic
 
 # defaults
-filename = 'bueler_isothermal_a.in.nc' 
+filename = 'bueler_isothermal_a_in.nc' 
 nxy = 51 
 
 # parse input arguments

@@ -43,7 +43,7 @@ public :: io_type
     !logical :: write_ice_h_soln
   contains
     procedure, pass :: read_param ! read parameters from the input file
-    !procedure, pass :: read_initial_vals ! read initial values 
+    procedure, pass :: read_var ! read initial values 
     !procedure, pass :: create_output ! create output file
     !procedure, nopass :: write_status ! print model status to screen
     !procedure, pass :: write_output_step ! write step
@@ -86,6 +86,7 @@ contains
 
   ! ---------------------------------------------------------------------------
   ! SUB: Read input parameters from file
+  !   TO_DO: add write flags as attributes
   ! ---------------------------------------------------------------------------
   subroutine read_param(io, prm, cli, ice)
 
@@ -108,114 +109,208 @@ contains
 
     ! Open file
     e = nf90_open(io%name_in, nf90_nowrite, ncid)
-    call err_req('read_param open file: ', e)
+    call err_req('read_param: open file: ', e)
 
     ! Read parameters from global attributes
     e = nf90_get_att(ncid, nf90_global, 'nx__1', prm%nx)
-    call err_req('read_param nx__1: ', e)
+    call err_req('read_param: nx__1: ', e)
 
     e = nf90_get_att(ncid, nf90_global, 'ny__1', prm%ny)
-    call err_req('read_param ny__1: ', e)
+    call err_req('read_param: ny__1: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'lx__m', prm%lx)
-    call err_req('read_param lx__m: ', e)
+    call err_req('read_param: lx__m: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ly__m', prm%ly)
-    call err_req('read_param ly__m: ', e)
+    call err_req('read_param: ly__m: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'dx__m', prm%dx)
-    call err_req('read_param dx__m: ', e)
+    call err_req('read_param: dx__m: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'dy__m', prm%dy)
-    call err_req('read_param dy__m: ', e)
+    call err_req('read_param: dy__m: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'rhoi__kg_m3', prm%rhoi)
-    call err_req('read_param rhoi__kg_m3: ', e)
+    call err_req('read_param: rhoi__kg_m3: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'grav__m_s2', prm%grav)
-    call err_req('read_param grav__m_s2: ', e)
+    call err_req('read_param: grav__m_s2: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'time_start__a', prm%time_start )
-    call err_req('read_param time_start__a: ', e)
+    call err_req('read_param: time_start__a: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'time_finish__a', prm%time_finish)
-    call err_req('read_param time_finish__a: ', e)
+    call err_req('read_param: time_finish__a: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'time_step__a', prm%time_step)
-    call err_req('read_param time_step__a: ', e)
+    call err_req('read_param: time_step__a: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', io%time_step)
-    call err_req('read_param time_step_write__a: ', e)
+    call err_req('read_param: time_step_write__a: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'climate_name', cli%name)
-    call err_req('read_param climate_name: ', e)
+    call err_req('read_param: climate_name: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'climate_param__var', len = n)
-    call err_req('read_param climate_param__var: ', e)
+    call err_req('read_param: climate_param__var: ', e)
     allocate(cli%param(n))
     e = nf90_get_att(ncid, nf90_global, 'climate_param__var', cli%param)
-    call err_req('read_param climate_param__var: ', e)
+    call err_req('read_param: climate_param__var: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name', ice%name)
-    call err_req('read_param ice_name: ', e)
+    call err_req('read_param: ice_name: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'ice_param__var', len = n)
-    call err_req('read_param ice_param__var: ', e)
+    call err_req('read_param: ice_param__var: ', e)
     allocate(ice%param(n))
     e = nf90_get_att(ncid, nf90_global, 'ice_param__var', ice%param)
-    call err_req('read_param ice_param__var: ', e)
+    call err_req('read_param: ice_param__var: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name_ebc', ice%name_ebc)
-    call err_req('read_param ice_name_ebc: ', e)
+    call err_req('read_param: ice_name_ebc: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name_wbc', ice%name_wbc)
-    call err_req('read_param ice_name_wbc: ', e)
+    call err_req('read_param: ice_name_wbc: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name_nbc', ice%name_nbc)
-    call err_req('read_param ice_name_nbc: ', e)
+    call err_req('read_param: ice_name_nbc: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name_sbc', ice%name_sbc)
-    call err_req('read_param ice_name_sbc: ', e)
+    call err_req('read_param: ice_name_sbc: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_name_soln', ice%name_soln)
-    call err_req('read_param ice_name_soln: ', e)
+    call err_req('read_param: ice_name_soln: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'ice_param_soln__var', len = n)
-    call err_req('read_param ice_param_soln__var: ', e)
+    call err_req('read_param: ice_param_soln__var: ', e)
     allocate(ice%param_soln(n))
     e = nf90_get_att(ncid, nf90_global, 'ice_param_soln__var', ice%param_soln)
-    call err_req('read_param ice_param_soln__var: ', e)
+    call err_req('read_param: ice_param_soln__var: ', e)
 
     ! Close file
     e = nf90_close(ncid)
-    call err_req('read_param close file: ', e)
-
+    call err_req('read_param: close file: ', e)
 
   end subroutine read_param
 
 
   !----------------------------------------------------------------------------
   ! SUB: Read initial variables from netcdf file
-  !   unspecified variables retain the default value (0.)
-  !   unspecified write flags retain the default value (.false.)
+  !   unspecified variables retain the default value (0)
   ! ---------------------------------------------------------------------------
-  subroutine read_vars(io, sta)
+  subroutine read_var(io, prm, sta)
 
-    class(io_type), intent(inout) :: io
+    class(io_type), intent(in) :: io
+    type(param_type), intent(in) :: prm
     type(state_type), intent(inout) :: sta
-    
-    !! Open file
-    !call try_nc(nf90_open(io%name_in, nf90_nowrite, ncid))
 
-    ! Read required variables
+    integer :: e, ncid, varid
     
-    ! Read optional variables
-    !! check for variable
-    !! read variable if present
-    !! check for write flag 
-    !! read write flag if present
+    ! Open file
+    e = nf90_open(io%name_in, nf90_nowrite, ncid)
+    call err_req('read vars: open file: ', e)
 
-  end subroutine read_vars
+    ! Read variables
+    e = nf90_inq_varid(ncid, 'x', varid)
+    call err_req('read_vars: x: ', e)
+    e = nf90_get_var(ncid, varid, sta%x(2:prm%nx+1))
+    call err_req('read_vars: x: ', e)
+    sta%x(1) = sta%x(2)-prm%dx
+    sta%x(prm%nx+2) = sta%x(prm%nx+1)+prm%dx
+
+    e = nf90_inq_varid(ncid, 'y', varid)
+    call err_req('read_vars: y: ', e)
+    e = nf90_get_var(ncid, varid, sta%y(2:prm%ny+1))
+    call err_req('read_vars: y: ', e)
+    sta%y(1) = sta%y(2)-prm%dy
+    sta%y(prm%ny+2) = sta%y(prm%ny+1)+prm%dy
+
+    e = nf90_inq_varid(ncid, 'topo', varid)
+    call err_opt('read_vars: topo: ', e)
+    e = nf90_get_var(ncid, varid, sta%topo(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: topo: ', e)
+
+    e = nf90_inq_varid(ncid, 'topo_dot_ice', varid)
+    call err_opt('read_vars: topo_dot_ice: ', e)
+    e = nf90_get_var(ncid, varid, sta%topo_dot_ice(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: topo_dot_ice: ', e)
+
+    e = nf90_inq_varid(ncid, 'temp_surf', varid)
+    call err_opt('read_vars: temp_surf: ', e)
+    e = nf90_get_var(ncid, varid, sta%temp_surf(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: temp_surf: ', e)
+
+    e = nf90_inq_varid(ncid, 'temp_ice', varid)
+    call err_opt('read_vars: temp_ice: ', e)
+    e = nf90_get_var(ncid, varid, sta%temp_ice(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: temp_ice: ', e)
+    
+    e = nf90_inq_varid(ncid, 'temp_base', varid)
+    call err_opt('read_vars: temp_base: ', e)
+    e = nf90_get_var(ncid, varid, sta%temp_base(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: temp_base: ', e)
+
+    e = nf90_inq_varid(ncid, 'precip', varid)
+    call err_opt('read_vars: precip: ', e)
+    e = nf90_get_var(ncid, varid, sta%precip(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: precip: ', e)
+
+    e = nf90_inq_varid(ncid, 'runoff', varid)
+    call err_opt('read_vars: runoff: ', e)
+    e = nf90_get_var(ncid, varid, sta%runoff(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: runoff: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_q_surf', varid)
+    call err_opt('read_vars: ice_q_surf: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_q_surf(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_q_surf: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_h', varid)
+    call err_opt('read_vars: ice_h: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_h(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_h: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_h_dot', varid)
+    call err_opt('read_vars: ice_h_dot: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_h_dot(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_h_dot: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_h_soln', varid)
+    call err_opt('read_vars: ice_h_soln: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_h_soln(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_h_soln: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_ud', varid)
+    call err_opt('read_vars: ice_ud: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_ud(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_ud: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_vd', varid)
+    call err_opt('read_vars: ice_vd: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_vd(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_vd: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_us', varid)
+    call err_opt('read_vars: ice_us: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_us(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_us: ', e)
+
+    e = nf90_inq_varid(ncid, 'ice_vs', varid)
+    call err_opt('read_vars: ice_vs: ', e)
+    e = nf90_get_var(ncid, varid, sta%ice_vs(2:prm%nx+1, 2:prm%ny+1))
+    call err_opt('read_vars: ice_vs: ', e)
+
+    !! template for additional vars
+    !e = nf90_inq_varid(ncid, 'NAME', varid)
+    !call err_opt('read_vars: NAME: ', e)
+    !e = nf90_get_var(ncid, varid, sta%NAME(2:prm%nx+1, 2:prm%ny+1))
+    !call err_opt('read_vars: NAME: ', e)
+
+    ! Close file
+    e = nf90_close(ncid)
+    call err_req('read_param: close file: ', e)
+
+  end subroutine read_var
 
 
 

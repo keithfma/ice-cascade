@@ -17,11 +17,9 @@ type(ice_type) :: ice
 
 ! Initialize objects
 call io%read_param(prm, cli, ice)
-!call prm%check() 
-!call sta%alloc(prm%nx, prm%ny)
-!call c%init()
-!call g%init(s)
-!call io%read_initial_vals(s, g)
+call prm%check() 
+call sta%alloc(prm%nx+2, prm%ny+2)
+call io%read_var(prm, sta)
 
 ! DEBUG
 
