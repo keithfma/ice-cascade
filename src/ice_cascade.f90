@@ -17,11 +17,14 @@ type(ice_type) :: ice
 
 ! Initialize objects
 call io%read_param(prm, cli, ice)
-call prm%check() 
-call sta%alloc(prm%nx, prm%ny)
+!call prm%check() 
+!call sta%alloc(prm%nx, prm%ny)
 !call c%init()
 !call g%init(s)
 !call io%read_initial_vals(s, g)
+
+! DEBUG
+
 !
 !! Get model state at time = start
 !

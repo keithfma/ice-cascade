@@ -22,7 +22,7 @@ public climate_type
   type climate_type
     logical :: on ! enable/disable
     character(len=100) :: name ! procedure name
-    real(rp), dimension(10) :: param ! model parameters, [various]
+    real(rp), allocatable :: param(:) ! model parameters, [various]
     !
     !logical :: on_temp_surf ! enable/disable temperature
     !logical :: on_precip ! enable/disable precipitation

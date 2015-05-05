@@ -32,8 +32,8 @@ public ice_type
     character(len=100) :: name_wbc ! west BC name
     character(len=100) :: name_ebc ! east BC name
     character(len=100) :: name_soln ! exact solution name
-    real(rp), dimension(10) :: param ! flow model parameters, [various]
-    real(rp), dimension(10) :: param_soln ! solution parameters, [various]
+    real(rp), allocatable :: param(:) ! flow model parameters, [various]
+    real(rp), allocatable :: param_soln(:) ! solution parameters, [various]
     ! procedure for flow
     ! procedure for solution
 
