@@ -15,22 +15,7 @@ use netcdf
 
 implicit none
 private
-public :: io_type
-
-
-  ! ---------------------------------------------------------------------------
-  ! TYPE: input/output vars and procedures
-  ! ---------------------------------------------------------------------------
-  type io_type
-    !integer :: n_step ! counter for current output step
-  contains
-    procedure, nopass :: read_param ! read parameters from the input file
-    procedure, nopass :: read_var ! read initial values 
-    procedure, nopass :: write_file ! create output file
-    procedure, nopass :: write_step ! append model state to ouput
-    procedure, nopass :: write_status ! print model status to screen
-  end type io_type
-
+public :: read_param, read_var, write_file, write_step, write_status
 
 contains
 
