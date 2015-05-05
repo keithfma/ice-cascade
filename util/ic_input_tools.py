@@ -36,10 +36,7 @@ def null_input(nx, ny):
   v['climate_param'] = [] # climate model parameters, [various]
   v['ice_name'] = 'none' # ice method name
   v['ice_param'] = [] # ice model parameters, [various]
-  v['ice_name_ebc'] = 'none' # boundary condition name, east
-  v['ice_name_wbc'] = 'none' # boundary condition name, west
-  v['ice_name_nbc'] = 'none' # boundary condition name, north
-  v['ice_name_sbc'] = 'none' # boundary condition name, south
+  v['ice_name_bc'] = 'none,none,none,none' # boundary condition names, NESW
   v['ice_name_soln'] = 'none' # ice solution name
   v['ice_param_soln'] = [] # ice solution parameters, [various]
   v['x'] = zero1x # x coordinate vector, [m]
@@ -106,12 +103,22 @@ def create(filename, v):
   file.climate_param__var = v['climate_param']
   file.ice_name = v['ice_name']
   file.ice_param__var = v['ice_param']
-  file.ice_name_ebc = v['ice_name_ebc']
-  file.ice_name_wbc = v['ice_name_wbc']
-  file.ice_name_nbc = v['ice_name_nbc']
-  file.ice_name_sbc = v['ice_name_sbc']
+  file.ice_name_bc = v['ice_name_bc']
   file.ice_name_soln = v['ice_name_soln']
   file.ice_param_soln__var = v['ice_param_soln']
+  file.write_topo = v['write_topo']
+  file.write_topo_dot_ice = v['write_topo_dot_ice']
+  file.write_temp_surf = v['write_temp_surf']
+  file.write_temp_ice = v['write_temp_ice']
+  file.write_temp_base = v['write_temp_base']
+  file.write_precip = v['write_precip']
+  file.write_runoff = v['write_runoff']
+  file.write_ice_q_surf = v['write_ice_q_surf']
+  file.write_ice_h = v['write_ice_h']
+  file.write_ice_h_dot = v['write_ice_h_dot']
+  file.write_ice_h_soln = v['write_ice_h_soln']
+  file.write_ice_uvd = v['write_ice_uvd']
+  file.write_ice_uvs = v['write_ice_uvs']
 
   # create dimensions
   dim_x = file.createDimension('x', size = v['nx'])
@@ -132,91 +139,76 @@ def create(filename, v):
   var[:,:] = v['topo']
   var.long_name = 'topography'
   var.units = 'm'
-  var.write = v['write_topo']
   
   var = file.createVariable('topo_dot_ice', v['topo_dot_ice'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['topo_dot_ice']
   var.long_name = 'topography_rate_of_change_from_ice_erosion_and_deposition'
   var.units = 'm_a'
-  var.write = v['write_topo_dot_ice']
 
   var = file.createVariable('temp_surf', v['temp_surf'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['temp_surf']
   var.long_name = 'temperature_at_surface_of_ice_or_bedrock'
   var.units = 'C'
-  var.write = v['write_temp_surf']
 
   var = file.createVariable('temp_ice', v['temp_ice'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['temp_ice']
   var.long_name = 'mean_ice_temperature'
   var.units = 'C'
-  var.write = v['write_temp_ice']
 
   var = file.createVariable('temp_base', v['temp_base'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['temp_base']
   var.long_name = 'temperature_at_surface_of_bedrock'
   var.units = 'C'
-  var.write = v['write_temp_base']
 
   var = file.createVariable('precip', v['precip'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['precip']
   var.long_name = 'precipitation_rate'
   var.units = 'mwater_a'
-  var.write = v['write_precip']
 
   var = file.createVariable('runoff', v['runoff'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['runoff']
   var.long_name = 'water_runoff_rate'
   var.units = 'mwater_a'
-  var.write = v['write_runoff']
 
   var = file.createVariable('ice_q_surf', v['ice_q_surf'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_q_surf']
   var.long_name = 'surface_ice_flux'
   var.units = 'mice_a'
-  var.write = v['write_ice_q_surf']
 
   var = file.createVariable('ice_h', v['ice_h'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_h']
   var.long_name = 'ice_thickness'
   var.units = 'm'
-  var.write = v['write_ice_h']
 
   var = file.createVariable('ice_h_dot', v['ice_h_dot'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_h_dot']
   var.long_name = 'ice_thickness_rate_of_change'
   var.units = 'm_a'
-  var.write = v['write_ice_h_dot']
-
+  
   var = file.createVariable('ice_h_soln', v['ice_h_soln'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_h_soln']
   var.long_name = 'ice_thickness_exact_solution'
   var.units = 'm'
-  var.write = v['write_ice_h_soln']
-
+  
   var = file.createVariable('ice_ud', v['ice_ud'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_ud']
   var.long_name = 'ice_deformation_velocity_x_dir'
   var.units = 'm_a'
-  var.write = v['write_ice_uvd']
 
   var = file.createVariable('ice_vd', v['ice_vd'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_vd']
   var.long_name = 'ice_deformation_velocity_y_dir'
   var.units = 'm_a'
-  var.write = v['write_ice_uvd'] 
-
+  
   var = file.createVariable('ice_us', v['ice_us'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_us']
   var.long_name = 'ice_sliding_velocity_x_dir'
   var.units = 'm_a'
-  var.write = v['write_ice_uvs']
 
   var = file.createVariable('ice_vs', v['ice_vs'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['ice_vs']
   var.long_name = 'ice_sliding_velocity_y_dir'
   var.units = 'm_a'
-  var.write = v['write_ice_uvs'] 
 
   # finalize file
   file.close()

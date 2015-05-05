@@ -11,8 +11,6 @@ module io_mod
 use kinds_mod, only: rp, rp_nc
 use param_mod, only: param_type
 use state_mod, only: state_type
-use climate_mod, only: climate_type
-use ice_mod, only: ice_type
 use netcdf
 
 implicit none
@@ -24,26 +22,10 @@ public :: io_type
   ! TYPE: input/output vars and procedures
   ! ---------------------------------------------------------------------------
   type io_type
-    character(len=100) :: name_in ! input file name
-    character(len=100) :: name_out ! output file name
     !integer :: n_step ! counter for current output step
-    real(rp) :: time_step ! interval btw outputs, [a]
-    !logical :: write_topo 
-    !logical :: write_topo_dot_ice
-    !logical :: write_temp_surf 
-    !logical :: write_temp_base 
-    !logical :: write_temp_ice 
-    !logical :: write_precip 
-    !logical :: write_runoff 
-    !logical :: write_ice_q_surf 
-    !logical :: write_ice_h 
-    !logical :: write_ice_h_dot
-    !logical :: write_ice_uvd 
-    !logical :: write_ice_uvs 
-    !logical :: write_ice_h_soln
   contains
-    procedure, pass :: read_param ! read parameters from the input file
-    procedure, pass :: read_var ! read initial values 
+    procedure, nopass :: read_param ! read parameters from the input file
+    procedure, nopass :: read_var ! read initial values 
     !procedure, pass :: create_output ! create output file
     !procedure, nopass :: write_status ! print model status to screen
     !procedure, pass :: write_output_step ! write step
@@ -88,27 +70,24 @@ contains
   ! SUB: Read input parameters from file
   !   TO_DO: add write flags as attributes
   ! ---------------------------------------------------------------------------
-  subroutine read_param(io, prm, cli, ice)
+  subroutine read_param(prm)
 
-    class(io_type), intent(out) :: io
     type(param_type), intent(out) :: prm
-    type(climate_type), intent(out) :: cli
-    type(ice_type), intent(out) :: ice
     
-    integer :: ncid, e, n
+    integer :: ncid, e, n, tf
 
     ! Get input arguments
     select case (command_argument_count())
       case (2)
-      	call get_command_argument(1, io%name_in) 
-      	call get_command_argument(2, io%name_out) 
+      	call get_command_argument(1, prm%input_file) 
+      	call get_command_argument(2, prm%output_file) 
       case default
       	print*,'ICE-CASCADE expects exactly 2 input arguments'
       	stop -1
     end select
 
     ! Open file
-    e = nf90_open(io%name_in, nf90_nowrite, ncid)
+    e = nf90_open(prm%input_file, nf90_nowrite, ncid)
     call err_req('read_param: open file: ', e)
 
     ! Read parameters from global attributes
@@ -145,47 +124,90 @@ contains
     e = nf90_get_att(ncid, nf90_global, 'time_step__a', prm%time_step)
     call err_req('read_param: time_step__a: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', io%time_step)
+    e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', prm%time_step_write)
     call err_req('read_param: time_step_write__a: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'climate_name', cli%name)
+    e = nf90_get_att(ncid, nf90_global, 'climate_name', prm%climate_name)
     call err_req('read_param: climate_name: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'climate_param__var', len = n)
     call err_req('read_param: climate_param__var: ', e)
-    allocate(cli%param(n))
-    e = nf90_get_att(ncid, nf90_global, 'climate_param__var', cli%param)
+    allocate(prm%climate_param(n))
+    e = nf90_get_att(ncid, nf90_global, 'climate_param__var', prm%climate_param)
     call err_req('read_param: climate_param__var: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_name', ice%name)
+    e = nf90_get_att(ncid, nf90_global, 'ice_name', prm%ice_name)
     call err_req('read_param: ice_name: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'ice_param__var', len = n)
     call err_req('read_param: ice_param__var: ', e)
-    allocate(ice%param(n))
-    e = nf90_get_att(ncid, nf90_global, 'ice_param__var', ice%param)
+    allocate(prm%ice_param(n))
+    e = nf90_get_att(ncid, nf90_global, 'ice_param__var', prm%ice_param)
     call err_req('read_param: ice_param__var: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_ebc', ice%name_ebc)
-    call err_req('read_param: ice_name_ebc: ', e)
+    e = nf90_get_att(ncid, nf90_global, 'ice_name_bc', prm%ice_bc_name)
+    call err_req('read_param: ice_name_bc: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_wbc', ice%name_wbc)
-    call err_req('read_param: ice_name_wbc: ', e)
-    
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_nbc', ice%name_nbc)
-    call err_req('read_param: ice_name_nbc: ', e)
-    
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_sbc', ice%name_sbc)
-    call err_req('read_param: ice_name_sbc: ', e)
-    
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_soln', ice%name_soln)
+    e = nf90_get_att(ncid, nf90_global, 'ice_name_soln', prm%ice_soln_name)
     call err_req('read_param: ice_name_soln: ', e)
     
     e = nf90_inquire_attribute(ncid, nf90_global, 'ice_param_soln__var', len = n)
     call err_req('read_param: ice_param_soln__var: ', e)
-    allocate(ice%param_soln(n))
-    e = nf90_get_att(ncid, nf90_global, 'ice_param_soln__var', ice%param_soln)
+    allocate(prm%ice_soln_param(n))
+    e = nf90_get_att(ncid, nf90_global, 'ice_param_soln__var', prm%ice_soln_param)
     call err_req('read_param: ice_param_soln__var: ', e)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_topo', tf)
+    call err_req('read_param: write_topo: ', e)
+    prm%write_topo = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_topo_dot_ice', tf)
+    call err_req('read_param: write_topo_dot_ice: ', e)
+    prm%write_topo_dot_ice = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_temp_surf', tf)
+    call err_req('read_param: write_temp_surf: ', e)
+    prm%write_temp_surf = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_temp_ice', tf)
+    call err_req('read_param: write_temp_ice: ', e)
+    prm%write_temp_ice = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_temp_base', tf)
+    call err_req('read_param: write_temp_base: ', e)
+    prm%write_temp_base = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_precip', tf)
+    call err_req('read_param: write_precip: ', e)
+    prm%write_precip = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_runoff', tf)
+    call err_req('read_param: write_runoff: ', e)
+    prm%write_runoff = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_q_surf', tf)
+    call err_req('read_param: write_ice_q_surf: ', e)
+    prm%write_ice_q_surf = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_h', tf)
+    call err_req('read_param: write_ice_h: ', e)
+    prm%write_ice_h = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_h_dot', tf)
+    call err_req('read_param: write_ice_h_dot: ', e)
+    prm%write_ice_h_dot = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_uvd', tf)
+    call err_req('read_param: write_ice_uvd: ', e)
+    prm%write_ice_uvd = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_uvs', tf)
+    call err_req('read_param: write_ice_uvs: ', e)
+    prm%write_ice_uvs = (tf .eq. 1)
+
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_h_soln', tf)
+    call err_req('read_param: write_ice_h_soln: ', e)
+    prm%write_ice_h_soln = (tf .eq. 1)
 
     ! Close file
     e = nf90_close(ncid)
@@ -198,16 +220,15 @@ contains
   ! SUB: Read initial variables from netcdf file
   !   unspecified variables retain the default value (0)
   ! ---------------------------------------------------------------------------
-  subroutine read_var(io, prm, sta)
+  subroutine read_var(prm, sta)
 
-    class(io_type), intent(in) :: io
     type(param_type), intent(in) :: prm
     type(state_type), intent(inout) :: sta
 
     integer :: e, ncid, varid
     
     ! Open file
-    e = nf90_open(io%name_in, nf90_nowrite, ncid)
+    e = nf90_open(prm%input_file, nf90_nowrite, ncid)
     call err_req('read vars: open file: ', e)
 
     ! Read variables

@@ -26,14 +26,6 @@ public ice_type
   type ice_type
     logical :: on ! enable/disable ice flow
     logical :: on_soln ! enable/disable solution calculation
-    character(len=100) :: name ! flow model name
-    character(len=100) :: name_nbc ! north BC name
-    character(len=100) :: name_sbc ! south BC name
-    character(len=100) :: name_wbc ! west BC name
-    character(len=100) :: name_ebc ! east BC name
-    character(len=100) :: name_soln ! exact solution name
-    real(rp), allocatable :: param(:) ! flow model parameters, [various]
-    real(rp), allocatable :: param_soln(:) ! solution parameters, [various]
     ! procedure for flow
     ! procedure for solution
 

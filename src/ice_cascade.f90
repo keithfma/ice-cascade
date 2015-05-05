@@ -16,7 +16,7 @@ type(climate_type) :: cli
 type(ice_type) :: ice
 
 ! Initialize objects
-call io%read_param(prm, cli, ice)
+call io%read_param(prm)
 call prm%check() 
 call sta%alloc(prm%nx+2, prm%ny+2)
 call io%read_var(prm, sta)

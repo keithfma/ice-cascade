@@ -19,6 +19,8 @@ public :: param_type
   ! TYPE: shared parameters
   ! ---------------------------------------------------------------------------
   type param_type
+    character(len=500) :: input_file ! input file name
+    character(len=500) :: output_file ! output file name
     integer :: nx ! num grid points in x-dir, [1]
     integer :: ny ! num grid points in y-dir, [1]
     real(rp) :: lx ! grid dim in x-dir, [m]
@@ -30,6 +32,27 @@ public :: param_type
     real(rp) :: time_start ! start time [a]
     real(rp) :: time_finish ! finish time [a]
     real(rp) :: time_step ! time step [a]
+    real(rp) :: time_step_write ! interval btw outputs, [a]
+    character(len=500) :: climate_name ! climate method name
+    real(rp), allocatable :: climate_param(:) ! climate model parameters, [various]
+    character(len=500) :: ice_name ! ice method name
+    character(len=500) :: ice_bc_name ! ice BC names (comma-delimited)
+    real(rp), allocatable :: ice_param(:) ! ice model parameters, [various]
+    character(len=100) :: ice_soln_name ! ice model exact solution name
+    real(rp), allocatable :: ice_soln_param(:) ! ice solution parameters, [various]
+    logical :: write_topo ! write flag for state var
+    logical :: write_topo_dot_ice ! ' '
+    logical :: write_temp_surf 
+    logical :: write_temp_base 
+    logical :: write_temp_ice 
+    logical :: write_precip 
+    logical :: write_runoff 
+    logical :: write_ice_q_surf 
+    logical :: write_ice_h 
+    logical :: write_ice_h_dot
+    logical :: write_ice_uvd 
+    logical :: write_ice_uvs 
+    logical :: write_ice_h_soln
   contains
     procedure, pass :: check! check for sane parameters 
   end type param_type
@@ -91,13 +114,19 @@ contains
 
     ! forward model: start before finish 
     if ((p%time_step .gt. 0.0_rp) .and. (p%time_start .ge. p%time_finish)) then
-      print *, 'Invalid parameter: start_time must be before finish_time for forward models.'
+      print *, 'Invalid parameters: start_time must be before finish_time for forward models.'
       stop 'Stopped.'
     end if
 
     ! reverse model: start after finish
     if ((p%time_step .lt. 0.0_rp) .and. (p%time_start .le. p%time_finish)) then
-      print *, 'Invalid parameter: start_time must be after finish_time for reverse models.'
+      print *, 'Invalid parameters: start_time must be after finish_time for reverse models.'
+      stop 'Stopped.'
+    end if
+
+    ! write step is a multiple of the time step
+    if (mod(p%time_step, p%time_step_write) .ne. 0.0_rp) then
+      print *, 'Invalid parameters: time_step_write must be a multiple of time_step.'
       stop 'Stopped.'
     end if
 

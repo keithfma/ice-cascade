@@ -21,9 +21,6 @@ public climate_type
   ! ---------------------------------------------------------------------------
   type climate_type
     logical :: on ! enable/disable
-    character(len=100) :: name ! procedure name
-    real(rp), allocatable :: param(:) ! model parameters, [various]
-    !
     !logical :: on_temp_surf ! enable/disable temperature
     !logical :: on_precip ! enable/disable precipitation
     !logical :: on_ice_q_surf ! enable/disable surface ice flux
