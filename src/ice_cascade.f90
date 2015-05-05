@@ -27,27 +27,25 @@ sta%time_now = prm%time_start
 ! Create output file and write initial values
 call io%write_file(prm)
 call io%write_step(prm, sta)
-!
-!! Start loop
-!do while (s%time_now .le. s%time_finish-s%time_step)
-!
-!  ! Truncate last timestep, if needed
-!
-!  ! Update model state (climate, ice, time, other)
-!  s%time_now = s%time_now+s%time_step
+
+! Start loop
+do while (sta%time_now .lt. prm%time_finish)
+
+  ! Update model state (climate, ice, time, other)
+  sta%time_now = sta%time_now+prm%time_step
 !  call c%update(s)
 !  call g%update(s)
-!
+
 !  ! Apply erosion/deposition/isostasy
-!
-!  ! Write timestep
-!  if (mod(s%time_now-s%time_start, io%time_step) .eq. 0.0_rp) then
+
+  ! Write timestep
+  if (mod(sta%time_now-prm%time_start, prm%time_step) .eq. 0.0_rp) then
 !    if (g%on_soln) call g%solve(s)
 !    call io%write_status(s)
-!    call io%write_output_step(s)
-!  end if
-!
-!end do
-!! End loop
+    call io%write_step(prm, sta)
+  end if
+
+end do
+! End loop
 
 end program ice_cascade

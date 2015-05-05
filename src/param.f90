@@ -124,6 +124,12 @@ contains
       stop 'Stopped.'
     end if
 
+    ! model duration is an integer multiple of time_step
+    if (mod(p%time_start-p%time_finish, p%time_step) .ne. 0.0_rp) then
+      print *, 'Invalid parameters: model duration must nbe an integer number of time steps.'
+      stop 'Stopped.'
+    end if
+
     ! write step is a multiple of the time step
     if (mod(p%time_step, p%time_step_write) .ne. 0.0_rp) then
       print *, 'Invalid parameters: time_step_write must be a multiple of time_step.'
