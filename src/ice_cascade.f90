@@ -18,6 +18,7 @@ type(ice_type) :: ice
 call read_param(prm)
 call prm%check() 
 call sta%alloc(prm%nx+2, prm%ny+2)
+call cli%init(prm)
 call read_var(prm, sta)
 
 ! Update model at time = start
