@@ -54,15 +54,15 @@ public :: param_type
     logical :: write_ice_uvs 
     logical :: write_ice_h_soln
   contains
-    procedure, pass :: check! check for sane parameters 
+    procedure, pass :: init ! initialize, i.e. check for sane parameters 
   end type param_type
 
 contains
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Check for same parameters
+  ! SUB: Initialize object, i.e. check for sane parameters
   ! ---------------------------------------------------------------------------
-  subroutine check(p)
+  subroutine init(p)
 
     class(param_type), intent(in) :: p
 
@@ -136,6 +136,6 @@ contains
       stop 'Stopped.'
     end if
 
-  end subroutine check
+  end subroutine init
 
 end module param_mod

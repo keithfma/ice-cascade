@@ -9,6 +9,7 @@
 module state_mod
 
 use kinds_mod, only: rp
+use param_mod, only: param_type
 
 implicit none
 private
@@ -37,41 +38,46 @@ public :: state_type
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
   contains
-    procedure, pass :: alloc ! allocate all dynamic arrays 
+    procedure, pass :: init ! initialize object
   end type state_type
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: allocate all dynamic arrays
+  ! SUB: initialize object
   ! ---------------------------------------------------------------------------
-  subroutine alloc(s, nx, ny)
+  subroutine init(s, p)
 
     class(state_type), intent(inout) :: s
-    integer, intent(in) :: nx
-    integer, intent(in) :: ny
+    type(param_type), intent(in) :: p
+
+    integer :: nxp, nyp
+
+    ! add ghost points to array dimensions
+    nxp = p%nx+2
+    nyp = p%ny+2
 
     ! allocate arrays
-    allocate(s%x(nx))
-    allocate(s%y(ny))
-    allocate(s%topo(nx, ny))
-    allocate(s%topo_dot_ice(nx, ny))
-    allocate(s%temp_surf(nx, ny))
-    allocate(s%temp_ice(nx, ny))
-    allocate(s%temp_base(nx, ny))
-    allocate(s%precip(nx, ny))
-    allocate(s%runoff(nx, ny))
-    allocate(s%ice_q_surf(nx, ny))
-    allocate(s%ice_h(nx, ny))
-    allocate(s%ice_h_dot(nx, ny))
-    allocate(s%ice_h_soln(nx, ny))
-    allocate(s%ice_ud(nx, ny))
-    allocate(s%ice_vd(nx, ny))
-    allocate(s%ice_us(nx, ny))
-    allocate(s%ice_vs(nx, ny))
+    allocate(s%x(nxp))
+    allocate(s%y(nyp))
+    allocate(s%topo(nxp, nyp))
+    allocate(s%topo_dot_ice(nxp, nyp))
+    allocate(s%temp_surf(nxp, nyp))
+    allocate(s%temp_ice(nxp, nyp))
+    allocate(s%temp_base(nxp, nyp))
+    allocate(s%precip(nxp, nyp))
+    allocate(s%runoff(nxp, nyp))
+    allocate(s%ice_q_surf(nxp, nyp))
+    allocate(s%ice_h(nxp, nyp))
+    allocate(s%ice_h_dot(nxp, nyp))
+    allocate(s%ice_h_soln(nxp, nyp))
+    allocate(s%ice_ud(nxp, nyp))
+    allocate(s%ice_vd(nxp, nyp))
+    allocate(s%ice_us(nxp, nyp))
+    allocate(s%ice_vs(nxp, nyp))
 
-    ! initialize to zero (just to be sure)
+    ! set initial value to zero (compiler default,  done explicitly  just to be sure)
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp
@@ -90,6 +96,6 @@ contains
     s%ice_us = 0.0_rp
     s%ice_vs = 0.0_rp
 
-  end subroutine alloc
+  end subroutine init
 
 end module state_mod 

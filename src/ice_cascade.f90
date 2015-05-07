@@ -16,8 +16,8 @@ type(ice_type) :: ice
 
 ! Initialize objects
 call read_param(prm)
-call prm%check() 
-call sta%alloc(prm%nx+2, prm%ny+2)
+call prm%init() 
+call sta%init(prm)
 call cli%init(prm)
 call read_var(prm, sta)
 
