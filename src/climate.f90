@@ -53,7 +53,11 @@ contains
 
     case ('none')
       c%on = .false.
-      c%update => NULL() ! will fail if called
+      c%update => NULL() ! will seg-fault if called, by design
+
+    case('bueler_isothermal_a')
+      c%on = .true.
+      c%update => NULL() ! NOT YET IMPLEMENTED
 
     case default
       print *, 'Invalid parameter: climate method name is not recognized.'

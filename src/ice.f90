@@ -74,10 +74,6 @@ public ice_type
     end subroutine soln_tmpl 
   end interface
 
-  ! ---------------------------------------------------------------------------
-  ! PARAMETERS: constants for benchmarks, etc
-  ! ---------------------------------------------------------------------------
-
 
 contains
 
@@ -116,6 +112,10 @@ contains
       case ('none')
         g%on_soln = .false.
         g%solve => NULL() ! will seg-fault if called, by design
+
+      case('bueler_isothermal_a')
+        g%on_soln = .true.
+        g%solve => NULL() ! NOT YET IMPLEMENTED
 
       case default
         print *, "Invalid name for exact solution: " // trim(p%ice_soln_name)
@@ -161,63 +161,5 @@ contains
     end select
 
   end subroutine set_bc_pointer
-
-
-  !! ---------------------------------------------------------------------------
-  !! SUB: Update ice model 
-  !! ---------------------------------------------------------------------------
-  !subroutine update(g, s)
-
-  !  class(ice_type), intent(inout) :: g
-  !  type(state_type), intent(inout) :: s
-
-  !  ! NOT YET IMPLEMENTED
-
-  !end subroutine update
-
-
-  !! ---------------------------------------------------------------------------
-  !! SUB: Benchmark solution, Bueler isothermal A
-  !!   Parameters
-  !!   L: fixed ice cap radius [m] =  g%param_soln(1)
-  !!   M0: constant positive surface ice flux [m_ice/a] =  g%param_soln(2)
-  !!   A: isothermal ice deformation parameter [Pa-3 a-1]  = g%A0
-  !! ---------------------------------------------------------------------------
-  !subroutine solve_bueler_isothermal_a(g, s)
-
-  !  class(ice_type), intent(in) :: g
-  !  type(state_type), intent(inout) :: s
-
-  !  integer :: i, j
-  !  real(rp) :: A, c1, c2, gam, L, M0, r
-
-  !  ! rename parameters for local use
-  !  L = g%param_soln(1)     
-  !  M0 = g%param_soln(2)
-  !  A = g%A0
-
-  !  ! pre-compute constants
-  !  gam = 2.0_rp/5.0_rp*A*(s%rhoi*s%grav)**3.0_rp
-  !  c1 = (4.0_rp*M0/gam)**(1.0_rp/8.0_rp)
-  !  c2 = L**(4.0_rp/3.0_rp)
-
-  !  ! solve
-  !  do j = 1, s%ny+2
-  !    do i = 1, s%nx+2
-  !      r = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
-  !      if (r .le. L) then
-  !        s%ice_h_soln(i,j) = c1*(c2-r**(4.0_rp/3.0_rp))**(3.0_rp/8.0_rp)
-  !      else
-  !        s%ice_h_soln(i,j) = 0.0_rp
-  !      end if
-  !    end do
-  !  end do
-
-  !end subroutine solve_bueler_isothermal_a
-
-
-  !! ---------------------------------------------------------------------------
-  !! SUB: Benchmark solution, Bueler isothermal B
-  !! ---------------------------------------------------------------------------
 
 end module ice_mod
