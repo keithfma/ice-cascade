@@ -22,13 +22,12 @@ INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC)
 LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
 SRC = \
-types.f90 \
-time.f90 \
-grid.f90 \
-topo.f90 \
+kinds.f90 \
+param.f90 \
+state.f90 \
+m_bueler_isothermal_a.f90 \
 climate.f90 \
 ice.f90 \
-hill.f90 \
 io.f90 \
 ice_cascade.f90
 

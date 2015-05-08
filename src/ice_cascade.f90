@@ -1,67 +1,56 @@
 program ice_cascade
 
-use types, only: dp 
-use grid_module, only: grid_type
-use time_module, only: time_type
-use topo_module, only: topo_type
-use climate_module, only: climate_type
-use ice_module, only: ice_type
-use hill_module, only: hill_type
-use io_module, only: readParam, createOutfile, writeStep
+use kinds_mod, only: rp
+use param_mod, only: param_type
+use state_mod, only: state_type
+use climate_mod, only: climate_type
+use ice_mod, only: ice_type
+use io_mod, only: read_param, read_var, write_file, write_step, write_status
+
 implicit none
 
-character(len=100) :: runname
-type(grid_type)    :: fgrid
-type(time_type)    :: time
-type(topo_type)    :: ftopo
-type(climate_type) :: fclimate
-type(ice_type)     :: fice
-type(hill_type)    :: fhill
-
-! Read model parameters
-call readParam(runname, fgrid, time, ftopo, fclimate, fice, fhill)
+type(param_type) :: prm
+type(state_type) :: sta
+type(climate_type) :: cli
+type(ice_type) :: ice
 
 ! Initialize objects
-call fgrid%init()
-call time%init()
-call ftopo%init(fgrid)
-call fclimate%init(fgrid)
-call fice%init(fgrid)
-call fhill%init(fgrid)
+call read_param(prm)
+call prm%init() 
+call sta%init(prm)
+call cli%init(prm)
+call ice%init(prm)
+call read_var(prm, sta)
 
-! Populate variables at time = start
-if (fclimate%on) call fclimate%run(time%now, ftopo%z)
+! Update model at time = start
+sta%time_now = prm%time_start
+if (cli%on) call cli%update(prm, sta)
+if (ice%on) call ice%update(prm, sta)
 
 ! Create output file and write initial values
-call createOutfile(runname, fgrid, time, ftopo, fclimate, fice, fhill)
-call writeStep(runname, time, ftopo, fclimate, fice, fhill)
+call write_file(prm)
+call write_step(prm, sta)
 
-do while (time%now .lt. time%finish) ! main loop
+! Start loop
+do while (sta%time_now .lt. prm%time_finish)
 
-  ! Truncate last timestep, if needed
-	if ((time%now+time%step) .gt. time%finish) time%step = time%finish-time%now	
+  ! Update model state 
+  if (cli%on) call cli%update(prm, sta)
+  if (ice%on) call ice%update(prm, sta)
 
-  ! Climate model
-  if (fclimate%on) call fclimate%run(time%now, ftopo%z)
+  ! Increment time
+  sta%time_now = sta%time_now+prm%time_step
 
-  ! Ice model
+  ! Apply erosion/deposition/isostasy
 
-  ! Fluvial model
+  ! Write step 
+  if (mod(sta%time_now-prm%time_start, prm%time_step) .eq. 0.0_rp) then
+    if (ice%on_soln) call ice%solve(prm, sta)
+    call write_status(prm, sta)
+    call write_step(prm, sta)
+  end if
 
-  ! Hillslope model
-  if (fhill%on) call fhill%run(ftopo%z, time%step)
-
-  ! Erosion
-
-  ! Isostasy
-
-  ! Advance time
-	time%now = time%now+time%step
-  time%now_step = time%now_step+1
-	
-  ! Write output
-  if (time%write_now()) call writeStep(runname, time, ftopo, fclimate, fice, fhill)
-
-end do ! exit main loop		
+end do
+! End loop
 
 end program ice_cascade
