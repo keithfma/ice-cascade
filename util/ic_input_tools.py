@@ -36,9 +36,9 @@ def null_input(nx, ny):
   v['climate_param'] = [] # climate model parameters, [various]
   v['ice_name'] = 'none' # ice method name
   v['ice_param'] = [] # ice model parameters, [various]
-  v['ice_name_bc'] = 'none,none,none,none' # boundary condition names, NESW
-  v['ice_name_soln'] = 'none' # ice solution name
-  v['ice_param_soln'] = [] # ice solution parameters, [various]
+  v['ice_bc_name'] = 'none,none,none,none' # boundary condition names, NESW
+  v['ice_soln_name'] = 'none' # ice solution name
+  v['ice_soln_param'] = [] # ice solution parameters, [various]
   v['x'] = zero1x # x coordinate vector, [m]
   v['y'] = zero1y # y coordinate vector, [m]
   v['topo'] = zero2 # bedrock elevation, [m above sea level]
@@ -103,9 +103,9 @@ def create(filename, v):
   file.climate_param__var = v['climate_param']
   file.ice_name = v['ice_name']
   file.ice_param__var = v['ice_param']
-  file.ice_name_bc = v['ice_name_bc']
-  file.ice_name_soln = v['ice_name_soln']
-  file.ice_param_soln__var = v['ice_param_soln']
+  file.ice_bc_name = v['ice_bc_name']
+  file.ice_soln_name = v['ice_soln_name']
+  file.ice_soln_param__var = v['ice_soln_param']
   file.write_topo = v['write_topo']
   file.write_topo_dot_ice = v['write_topo_dot_ice']
   file.write_temp_surf = v['write_temp_surf']

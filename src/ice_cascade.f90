@@ -19,10 +19,13 @@ call read_param(prm)
 call prm%init() 
 call sta%init(prm)
 call cli%init(prm)
+call ice%init(prm)
 call read_var(prm, sta)
 
 ! Update model at time = start
 sta%time_now = prm%time_start
+if (cli%on) call cli%update(prm, sta)
+if (ice%on) call ice%update(prm, sta)
 
 ! Create output file and write initial values
 call write_file(prm)
@@ -31,16 +34,18 @@ call write_step(prm, sta)
 ! Start loop
 do while (sta%time_now .lt. prm%time_finish)
 
-  ! Update model state (climate, ice, time, other)
+  ! Update model state 
+  if (cli%on) call cli%update(prm, sta)
+  if (ice%on) call ice%update(prm, sta)
+
+  ! Increment time
   sta%time_now = sta%time_now+prm%time_step
-!  call c%update(s)
-!  call g%update(s)
 
-!  ! Apply erosion/deposition/isostasy
+  ! Apply erosion/deposition/isostasy
 
-  ! Write timestep
+  ! Write step 
   if (mod(sta%time_now-prm%time_start, prm%time_step) .eq. 0.0_rp) then
-!    if (g%on_soln) call g%solve(s)
+    if (ice%on_soln) call ice%solve(prm, sta)
     call write_status(prm, sta)
     call write_step(prm, sta)
   end if
