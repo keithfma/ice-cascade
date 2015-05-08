@@ -15,6 +15,7 @@ module ice_mod
 use kinds_mod, only: rp
 use param_mod, only: param_type
 use state_mod, only: state_type
+use m_bueler_isothermal_a_mod, only: ice_bueler_isothermal_a
 
 implicit none
 private
@@ -94,11 +95,11 @@ contains
 
       case ('none')
         g%on = .false.
-        g%update => NULL() ! will fail if called, by design
+        g%update => NULL() ! will seg-fault if called, by design
 
       case ('mahaffy_isothermal_nonsliding')
-        g%on_soln = .false.
-        g%solve => NULL() ! NOT YET IMPLEMENTED
+        g%on = .false.
+        g%update => NULL() ! NOT YET IMPLEMENTED
     
       case default
         print *, "Invalid name for ice model method: " // trim(p%ice_name)
@@ -115,7 +116,7 @@ contains
 
       case('bueler_isothermal_a')
         g%on_soln = .true.
-        g%solve => NULL() ! NOT YET IMPLEMENTED
+        g%solve => ice_bueler_isothermal_a
 
       case default
         print *, "Invalid name for exact solution: " // trim(p%ice_soln_name)

@@ -25,6 +25,7 @@ call read_var(prm, sta)
 ! Update model at time = start
 sta%time_now = prm%time_start
 if (cli%on) call cli%update(prm, sta)
+if (ice%on) call ice%update(prm, sta)
 
 ! Create output file and write initial values
 call write_file(prm)
@@ -35,6 +36,7 @@ do while (sta%time_now .lt. prm%time_finish)
 
   ! Update model state 
   if (cli%on) call cli%update(prm, sta)
+  if (ice%on) call ice%update(prm, sta)
 
   ! Increment time
   sta%time_now = sta%time_now+prm%time_step
@@ -43,6 +45,7 @@ do while (sta%time_now .lt. prm%time_finish)
 
   ! Write step 
   if (mod(sta%time_now-prm%time_start, prm%time_step) .eq. 0.0_rp) then
+    if (ice%on_soln) call ice%solve(prm, sta)
     call write_status(prm, sta)
     call write_step(prm, sta)
   end if

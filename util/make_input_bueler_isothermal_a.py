@@ -53,15 +53,17 @@ dtw = dt # model output time step
 
 # derived parameters and variables
 #   coordinate grid
-dxy = L/(nxy-1) 
-(xy, dxy) = np.linspace(0.0, L, num = nxy, retstep = True, dtype = np.float64)
-#   exact solution, used as initial condition
+dxy = L/(nxy-3) 
+(xy, dxy) = np.linspace(0.0, L+2*dxy, num = nxy, retstep = True, dtype = np.float64)
+
+#   exact solution
 (xx, yy) = np.meshgrid(xy, xy)
 rr = np.sqrt(xx**2+yy**2)
 gamma = 2.0/5.0*A*(rhoi*g)**3.0
 ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
 mask = np.where(rr <= L)
 ice_h_soln[mask] = (4.0*M0/gamma)**(1.0/8.0)*(L**(4.0/3.0)-rr[mask]**(4.0/3.0))**(3.0/8.0)
+
 
 # define parameters and variables 
 v = ic.null_input(nxy, nxy)
@@ -70,8 +72,8 @@ v['descr'] = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
   'constant, positive surface ice flux.')
 v['nx'] = nxy
 v['ny'] = nxy
-v['lx'] = L
-v['ly'] = L
+v['lx'] = L+2*dxy
+v['ly'] = L+2*dxy
 v['dx'] = dxy
 v['dy'] = dxy
 v['rhoi'] = rhoi
@@ -80,13 +82,17 @@ v['time_start'] = ti
 v['time_finish'] = tf
 v['time_step'] = dt
 v['time_step_write'] = dtw 
+v['climate_name'] = 'bueler_isothermal_a'
+v['climate_param'] = [M0, L]
 v['ice_name'] = 'mahaffy_isothermal_nonsliding'
 v['ice_param'] = [A]
+v['ice_soln_name'] = 'bueler_isothermal_a'
+v['ice_soln_param'] = [M0, L, A]
 v['x'] = xy
 v['y'] = xy
-v['ice_q_surf'] = v['ice_q_surf']+M0 
 v['ice_h'] = ice_h_soln
 v['ice_h_soln'] = ice_h_soln
+v['write_ice_q_surf'] = 1
 v['write_ice_h'] = 1
 v['write_ice_h_soln'] = 1 
 v['write_ice_ud'] = 1 

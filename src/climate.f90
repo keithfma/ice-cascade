@@ -11,6 +11,7 @@ module climate_mod
 use kinds_mod, only: rp
 use param_mod, only: param_type
 use state_mod, only: state_type
+use m_bueler_isothermal_a_mod, only: climate_bueler_isothermal_a
 
 implicit none
 private
@@ -57,7 +58,7 @@ contains
 
     case('bueler_isothermal_a')
       c%on = .true.
-      c%update => NULL() ! NOT YET IMPLEMENTED
+      c%update => climate_bueler_isothermal_a
 
     case default
       print *, 'Invalid parameter: climate method name is not recognized.'

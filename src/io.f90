@@ -129,17 +129,17 @@ contains
     e = nf90_get_att(ncid, nf90_global, 'ice_param__var', prm%ice_param)
     call err_req('read_param: ice_param__var: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_bc', prm%ice_bc_name)
-    call err_req('read_param: ice_name_bc: ', e)
+    e = nf90_get_att(ncid, nf90_global, 'ice_bc_name', prm%ice_bc_name)
+    call err_req('read_param: ice_bc_name: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_name_soln', prm%ice_soln_name)
-    call err_req('read_param: ice_name_soln: ', e)
+    e = nf90_get_att(ncid, nf90_global, 'ice_soln_name', prm%ice_soln_name)
+    call err_req('read_param: ice_soln_name: ', e)
     
-    e = nf90_inquire_attribute(ncid, nf90_global, 'ice_param_soln__var', len = n)
-    call err_req('read_param: ice_param_soln__var: ', e)
+    e = nf90_inquire_attribute(ncid, nf90_global, 'ice_soln_param__var', len = n)
+    call err_req('read_param: ice_soln_param__var: ', e)
     allocate(prm%ice_soln_param(n))
-    e = nf90_get_att(ncid, nf90_global, 'ice_param_soln__var', prm%ice_soln_param)
-    call err_req('read_param: ice_param_soln__var: ', e)
+    e = nf90_get_att(ncid, nf90_global, 'ice_soln_param__var', prm%ice_soln_param)
+    call err_req('read_param: ice_soln_param__var: ', e)
 
     e = nf90_get_att(ncid, nf90_global, 'write_topo', tf)
     call err_req('read_param: write_topo: ', e)
@@ -364,11 +364,11 @@ contains
     
     e = nf90_put_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
     
-    e = nf90_put_att(ncid, nf90_global, 'ice_name_bc', p%ice_bc_name)
+    e = nf90_put_att(ncid, nf90_global, 'ice_bc_name', p%ice_bc_name)
     
-    e = nf90_put_att(ncid, nf90_global, 'ice_name_soln', p%ice_soln_name)
+    e = nf90_put_att(ncid, nf90_global, 'ice_soln_name', p%ice_soln_name)
     
-    e = nf90_put_att(ncid, nf90_global, 'ice_param_soln__var', p%ice_soln_param)
+    e = nf90_put_att(ncid, nf90_global, 'ice_soln_param__var', p%ice_soln_param)
 
     tf = merge(1, 0, p%write_topo)
     e = nf90_put_att(ncid, nf90_global, 'write_topo', tf)
