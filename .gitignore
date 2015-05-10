@@ -9,4 +9,5 @@ src/*.mod
 to_delete
 *.pyc
 *.nc
-in
+in_a
+in_b

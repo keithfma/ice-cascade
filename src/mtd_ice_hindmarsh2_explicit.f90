@@ -3,7 +3,7 @@
 !   exponent 3, no basal sliding, Hindmarsh "method 2" stencil, explicit
 !   adaptive timestep.
 !
-! Enabled if the input parameter 'ice_name' is 'hindmarsh_m2_explicit'
+! Enabled if the input parameter 'ice_name' is 'hindmarsh2_explicit'
 !
 ! Spatial discretization: Hindmarsh "method 2" stencil (see [1] and references
 !   therein), also commonly refered to as the Mahaffy method (see [2]). Ice flux
@@ -44,40 +44,47 @@ private
 public :: ice_update_hindmarsh2_explicit
 
 
-  ! ---------------------------------------------------------------------------
-  ! Global parameters (set once, then constant)
-  ! ---------------------------------------------------------------------------
-  logical, save :: set ! flag indicating if param have been set
-  real(rp), save :: A ! isothermal ice deformation parameter [Pa-3 a-1] 
-
-
 contains
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: Set global parameters, executed once
-  ! ---------------------------------------------------------------------------
-  subroutine init_hindmarsh2_explicit(p)
-
-    type(param_type), intent(in) :: p
-
-    set = .true.
-    A = p%ice_param(1)
-
-  end subroutine init_hindmarsh2_explicit
 
 
   ! ---------------------------------------------------------------------------
   ! SUB: Ice flow model
   ! ---------------------------------------------------------------------------
-  subroutine ice_update_hindmarsh2_explicit(p, s)
+  subroutine ice_update_hindmarsh2_explicit(prm, sta)
 
-    type(param_type), intent(in) :: p
-    type(state_type), intent(inout) :: s
+    type(param_type), intent(in) :: prm
+    type(state_type), intent(inout) :: sta
 
-    if (.not. set) call init_hindmarsh2_explicit(p)
+    ! saved vars (init once)
+    logical, save :: init ! flag indicating if saved vars have been initialized
+    real(rp), save :: A ! isothermal ice deformation parameter [Pa-3 a-1] 
+    real(rp), allocatable, save :: h(:,:) ! ice thickness, w/ ghost pts
+    real(rp), allocatable, save :: s(:,:) ! ice/bedrock surface elev, w/ ghost pts
+    real(rp), allocatable, save :: Dx(:,:) ! diffusivity at x-midpoints 
+    real(rp), allocatable, save :: Dy(:,:) ! diffusivity at y-midpoints
+    real(rp), allocatable, save :: qx(:,:) ! ice flux at x-midpoints
+    real(rp), allocatable, save :: qy(:,:) ! ice flux at y-midpoints
 
-    ! NOT YET IMPLEMENTED
+    ! unsaved vars
+
+    
+    ! init, first time only
+    if (.not. init) then
+      A = prm%ice_param(1)
+      allocate(h(prm%nx+2, prm%ny+2))
+      allocate(s(prm%nx+2, prm%ny+2))
+      allocate(Dx(prm%nx+1, prm%ny))
+      allocate(qx(prm%nx+1, prm%ny))
+      allocate(Dy(prm%nx, prm%ny+1))
+      allocate(qy(prm%nx, prm%ny+1))
+      init = .true.
+    end if
+
+    ! copy in shared values
+    h(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h
+    s(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h+sta%topo
+    
+    ! apply boundary conditions
 
   end subroutine ice_update_hindmarsh2_explicit
 

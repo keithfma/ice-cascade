@@ -44,14 +44,14 @@ public ice_type
   ! TEMPLATE: common form for the bc functions
   ! ---------------------------------------------------------------------------
   abstract interface 
-    function bc_tmpl(topo_edge, topo_intr, topo_oppo, &
-                     ice_edge, ice_intr, ice_oppo) result(bnd)
+    subroutine bc_tmpl(topo_edge, topo_intr, topo_oppo, topo_bnd, &
+                       ice_edge, ice_intr, ice_oppo, ice_bnd)
       import :: rp                                       ! use special types
       real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
       real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
       real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
-      real(rp) :: bnd(size(topo_edge))                   ! bc points
-    end function bc_tmpl 
+      real(rp), intent(in) :: topo_bnd(:), ice_bnd(:)    ! bc ghost points
+    end subroutine bc_tmpl 
   end interface
 
 
@@ -160,6 +160,9 @@ contains
 
       case ('none')
         ptr => NULL() ! will fail if called, by design. 
+
+      case ('no_ice')
+        ptr => bc_no_ice ! will fail if called, by design. 
     
       case default
         print *, "Invalid name for boundary condition: " // trim(str)
@@ -168,5 +171,17 @@ contains
     end select
 
   end subroutine set_bc_pointer
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: BC, no ice
+  ! ---------------------------------------------------------------------------
+  subroutine bc_no_ice(topo_edge, topo_intr, topo_oppo, topo_bnd, &
+                       ice_edge, ice_intr, ice_oppo, ice_bnd) 
+    real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
+    real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
+    real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
+    real(rp), intent(out) :: topo_bnd(:), ice_bnd(:)   ! bc ghost points
+  end subroutine bc_no_ice 
 
 end module ice_mod
