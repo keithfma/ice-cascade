@@ -11,7 +11,7 @@ module climate_mod
 use kinds_mod, only: rp
 use param_mod, only: param_type
 use state_mod, only: state_type
-use m_bueler_isothermal_a_mod, only: climate_bueler_isothermal_a
+use test_bueler_isothermal_a_mod, only: climate_bueler_isothermal_a
 
 implicit none
 private

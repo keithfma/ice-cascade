@@ -28,7 +28,7 @@
 !
 ! ============================================================================
 
-module m_bueler_isothermal_a_mod
+module test_bueler_isothermal_a_mod
 
 use kinds_mod, only: rp
 use param_mod, only: param_type
@@ -36,7 +36,7 @@ use state_mod, only: state_type
 
 implicit none
 private
-public :: climate_bueler_isothermal_a, ice_bueler_isothermal_a
+public :: climate_bueler_isothermal_a, ice_soln_bueler_isothermal_a
 
 
   ! ---------------------------------------------------------------------------
@@ -61,10 +61,7 @@ contains
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
 
-    integer :: i, j, nxp, nyp
-
-    nxp = p%nx+2
-    nyp = p%ny+2
+    integer :: i, j
 
     ! define global parameters
     set = .true.
@@ -72,9 +69,9 @@ contains
     L = p%ice_soln_param(2)
     A = p%ice_soln_param(3)
     Mn = -1000.
-    allocate(r(nxp, nyp))
-    do j = 1, nyp
-      do i = 1, nxp
+    allocate(r(p%nx, p%ny))
+    do j = 1, p%ny
+      do i = 1, p%nx
         r(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
       end do
     end do
@@ -141,13 +138,14 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: Ice exact solution method for this benchmark
   ! ---------------------------------------------------------------------------
-  subroutine ice_bueler_isothermal_a(p, s)
+  subroutine ice_soln_bueler_isothermal_a(p, s)
 
     type(param_type), intent(in)    :: p 
     type(state_type), intent(inout) :: s
 
     real(rp) :: c1, c2, gam
 
+    ! initialize parameters, once
     if (.not. set) call init_bueler_isothermal_a(p, s)
 
     ! pre-compute constants
@@ -162,8 +160,7 @@ contains
       s%ice_h_soln = 0.0_rp
     end where
 
-  end subroutine ice_bueler_isothermal_a
+  end subroutine ice_soln_bueler_isothermal_a
 
 
-end module m_bueler_isothermal_a_mod
-
+end module test_bueler_isothermal_a_mod

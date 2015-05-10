@@ -7,7 +7,7 @@
 #   ./make_input_bueler_isothermal_a filename nxy
 #
 # Arguments:
-#   stub = name of input and output files, without extentions (optional)
+#   stub = name of generated input files (optional)
 #   nxy = num grid points in x- and y-dir (optional)
 #
 # Dependencies:
@@ -44,26 +44,26 @@ if len(sys.argv) > 3:
 M0 = 0.3 # surface ice flux, [m_ice/a] 
 L = 7.5e5 # ice cap radius, [m]
 g = 9.81 # acceleration of gravity, [m/s2]
-rhoi = 910.0 # check paper
+rhoi = 910. # ice density, [kg/m3]
 A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
+
+# general parameters
+lxy = 1.1*L # domain dimensions, 10% larger than icecap
 ti = 0. # model start time
 tf = 100. # model end time
 dt = 10. # model time step
 dtw = dt # model output time step
 
-# derived parameters and variables
 #   coordinate grid
-dxy = L/(nxy-3) 
-(xy, dxy) = np.linspace(0.0, L+2*dxy, num = nxy, retstep = True, dtype = np.float64)
+(xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
 
 #   exact solution
 (xx, yy) = np.meshgrid(xy, xy)
 rr = np.sqrt(xx**2+yy**2)
 gamma = 2.0/5.0*A*(rhoi*g)**3.0
-ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
 mask = np.where(rr <= L)
+ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
 ice_h_soln[mask] = (4.0*M0/gamma)**(1.0/8.0)*(L**(4.0/3.0)-rr[mask]**(4.0/3.0))**(3.0/8.0)
-
 
 # define parameters and variables 
 v = ic.null_input(nxy, nxy)
@@ -72,8 +72,8 @@ v['descr'] = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
   'constant, positive surface ice flux.')
 v['nx'] = nxy
 v['ny'] = nxy
-v['lx'] = L+2*dxy
-v['ly'] = L+2*dxy
+v['lx'] = lxy
+v['ly'] = lxy
 v['dx'] = dxy
 v['dy'] = dxy
 v['rhoi'] = rhoi
@@ -95,8 +95,7 @@ v['ice_h_soln'] = ice_h_soln
 v['write_ice_q_surf'] = 1
 v['write_ice_h'] = 1
 v['write_ice_h_soln'] = 1 
-v['write_ice_ud'] = 1 
-v['write_ice_vd'] = 1
+v['write_ice_uvd'] = 1 
 
 # create input file
 ic.create(filename, v)

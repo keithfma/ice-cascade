@@ -52,30 +52,24 @@ contains
     class(state_type), intent(inout) :: s
     type(param_type), intent(in) :: p
 
-    integer :: nxp, nyp
-
-    ! add ghost points to array dimensions
-    nxp = p%nx+2
-    nyp = p%ny+2
-
     ! allocate arrays
-    allocate(s%x(nxp))
-    allocate(s%y(nyp))
-    allocate(s%topo(nxp, nyp))
-    allocate(s%topo_dot_ice(nxp, nyp))
-    allocate(s%temp_surf(nxp, nyp))
-    allocate(s%temp_ice(nxp, nyp))
-    allocate(s%temp_base(nxp, nyp))
-    allocate(s%precip(nxp, nyp))
-    allocate(s%runoff(nxp, nyp))
-    allocate(s%ice_q_surf(nxp, nyp))
-    allocate(s%ice_h(nxp, nyp))
-    allocate(s%ice_h_dot(nxp, nyp))
-    allocate(s%ice_h_soln(nxp, nyp))
-    allocate(s%ice_ud(nxp, nyp))
-    allocate(s%ice_vd(nxp, nyp))
-    allocate(s%ice_us(nxp, nyp))
-    allocate(s%ice_vs(nxp, nyp))
+    allocate(s%x(p%nx))
+    allocate(s%y(p%ny))
+    allocate(s%topo(p%nx, p%ny))
+    allocate(s%topo_dot_ice(p%nx, p%ny))
+    allocate(s%temp_surf(p%nx, p%ny))
+    allocate(s%temp_ice(p%nx, p%ny))
+    allocate(s%temp_base(p%nx, p%ny))
+    allocate(s%precip(p%nx, p%ny))
+    allocate(s%runoff(p%nx, p%ny))
+    allocate(s%ice_q_surf(p%nx, p%ny))
+    allocate(s%ice_h(p%nx, p%ny))
+    allocate(s%ice_h_dot(p%nx, p%ny))
+    allocate(s%ice_h_soln(p%nx, p%ny))
+    allocate(s%ice_ud(p%nx, p%ny))
+    allocate(s%ice_vd(p%nx, p%ny))
+    allocate(s%ice_us(p%nx, p%ny))
+    allocate(s%ice_vs(p%nx, p%ny))
 
     ! set initial value to zero (compiler default,  done explicitly  just to be sure)
     s%x = 0.0_rp
