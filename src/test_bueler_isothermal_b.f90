@@ -21,7 +21,7 @@
 !
 ! ============================================================================
 
-module m_bueler_isothermal_b_mod
+module test_bueler_isothermal_b_mod
 
 use kinds_mod, only: rp
 use param_mod, only: param_type
@@ -55,10 +55,7 @@ contains
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
 
-    integer :: i, j, nxp, nyp
-
-    nxp = p%nx+2
-    nyp = p%ny+2
+    integer :: i, j
 
     ! define global parameters
     set = .true.
@@ -67,9 +64,9 @@ contains
     H0 = p%ice_soln_param(3)
     R0 = p%ice_soln_param(4)
     t0 = p%ice_soln_param(5)
-    allocate(r(nxp, nyp))
-    do j = 1, nyp
-      do i = 1, nxp
+    allocate(r(p%nx, p%ny))
+    do j = 1, p%ny
+      do i = 1, p%nx
         r(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
       end do
     end do
@@ -124,4 +121,4 @@ contains
 
   end subroutine ice_soln_bueler_isothermal_b
 
-end module m_bueler_isothermal_b_mod
+end module test_bueler_isothermal_b_mod

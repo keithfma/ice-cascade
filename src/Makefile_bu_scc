@@ -25,7 +25,9 @@ SRC = \
 kinds.f90 \
 param.f90 \
 state.f90 \
-m_bueler_isothermal_a.f90 \
+mtd_ice_hindmarsh2_explicit.f90 \
+test_bueler_isothermal_a.f90 \
+test_bueler_isothermal_b.f90 \
 climate.f90 \
 ice.f90 \
 io.f90 \
