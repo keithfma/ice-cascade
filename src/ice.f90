@@ -174,7 +174,7 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: BC, no ice
+  ! SUB: BC, no ice, flat topography
   ! ---------------------------------------------------------------------------
   subroutine bc_no_ice(topo_edge, topo_intr, topo_oppo, topo_bnd, &
                        ice_edge, ice_intr, ice_oppo, ice_bnd) 
@@ -182,6 +182,10 @@ contains
     real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
     real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
     real(rp), intent(out) :: topo_bnd(:), ice_bnd(:)   ! bc ghost points
+
+    topo_bnd = topo_edge
+    ice_bnd = 0.0_rp
+
   end subroutine bc_no_ice 
 
 end module ice_mod

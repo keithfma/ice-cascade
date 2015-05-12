@@ -48,7 +48,7 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Ice flow model
+  ! SUB: Run ice flow model for the specified time step
   ! ---------------------------------------------------------------------------
   subroutine ice_update_hindmarsh2_explicit(prm, sta)
 
@@ -66,7 +66,7 @@ contains
     real(rp), allocatable, save :: qy(:,:) ! ice flux at y-midpoints
 
     ! unsaved vars
-
+    real(rp) :: t, dt 
     
     ! init, first time only
     if (.not. init) then
@@ -84,7 +84,26 @@ contains
     h(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h
     s(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h+sta%topo
     
-    ! apply boundary conditions
+    ! start time stepping
+    t = 0.0_rp
+    do while (t .lt. prm%time_step)
+
+      ! boundary conditions
+      call 
+  subroutine bc_no_ice(topo_edge, topo_intr, topo_oppo, topo_bnd, &
+                       ice_edge, ice_intr, ice_oppo, ice_bnd) 
+
+
+      ! diffusivity and ice flux
+
+      ! thickness rate of change 
+   
+    end do
+    ! end time stepping 
+
+    ! velocities
+
+    ! copy out shared variables
 
   end subroutine ice_update_hindmarsh2_explicit
 
