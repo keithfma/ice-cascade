@@ -40,13 +40,13 @@ public :: ice_type
   ! TEMPLATE: common form for the bc functions
   ! ---------------------------------------------------------------------------
   abstract interface 
-    subroutine bc_tmpl(topo_edge, topo_intr, topo_oppo, topo_bnd, &
-                       ice_edge, ice_intr, ice_oppo, ice_bnd)
+    subroutine bc_tmpl(surf_edge, surf_intr, surf_oppo, surf_bnd, &
+                       thck_edge, thck_intr, thck_oppo, thck_bnd)
       import :: rp                                       ! use special types
-      real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
-      real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
-      real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
-      real(rp), intent(in) :: topo_bnd(:), ice_bnd(:)    ! bc ghost points
+      real(rp), intent(in) :: surf_edge(:), thck_edge(:)  ! domain edge 
+      real(rp), intent(in) :: surf_intr(:), thck_intr(:)  ! domain edge-1
+      real(rp), intent(in) :: surf_oppo(:), thck_oppo(:)  ! opposite domain edge
+      real(rp), intent(in) :: surf_bnd(:), thck_bnd(:)    ! bc ghost points
     end subroutine bc_tmpl 
   end interface
 
@@ -141,7 +141,7 @@ contains
     call set_bc_pointer(nbc_name, g%apply_nbc)
     call set_bc_pointer(ebc_name, g%apply_ebc)
     call set_bc_pointer(sbc_name, g%apply_sbc)
-    call set_bc_pointer(wbc_name, g%apply_nbc)
+    call set_bc_pointer(wbc_name, g%apply_wbc)
 
   end subroutine init
 
@@ -180,15 +180,15 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: BC, no ice, flat topography
   ! ---------------------------------------------------------------------------
-  subroutine bc_no_ice(topo_edge, topo_intr, topo_oppo, topo_bnd, &
-                       ice_edge, ice_intr, ice_oppo, ice_bnd) 
-    real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
-    real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
-    real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
-    real(rp), intent(out) :: topo_bnd(:), ice_bnd(:)   ! bc ghost points
+  subroutine bc_no_ice(surf_edge, surf_intr, surf_oppo, surf_bnd, &
+                       thck_edge, thck_intr, thck_oppo, thck_bnd) 
+    real(rp), intent(in) :: surf_edge(:), thck_edge(:)  ! domain edge 
+    real(rp), intent(in) :: surf_intr(:), thck_intr(:)  ! domain edge-1
+    real(rp), intent(in) :: surf_oppo(:), thck_oppo(:)  ! opposite domain edge
+    real(rp), intent(out) :: surf_bnd(:), thck_bnd(:)   ! bc ghost points
 
-    topo_bnd = topo_edge
-    ice_bnd = 0.0_rp
+    surf_bnd = surf_edge
+    thck_bnd = 0.0_rp
 
   end subroutine bc_no_ice 
 
@@ -196,15 +196,15 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: BC, mirrored ice and topo
   ! ---------------------------------------------------------------------------
-  subroutine bc_mirror(topo_edge, topo_intr, topo_oppo, topo_bnd, &
-                       ice_edge, ice_intr, ice_oppo, ice_bnd) 
-    real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
-    real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
-    real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
-    real(rp), intent(out) :: topo_bnd(:), ice_bnd(:)   ! bc ghost points
+  subroutine bc_mirror(surf_edge, surf_intr, surf_oppo, surf_bnd, &
+                       thck_edge, thck_intr, thck_oppo, thck_bnd) 
+    real(rp), intent(in) :: surf_edge(:), thck_edge(:)  ! domain edge 
+    real(rp), intent(in) :: surf_intr(:), thck_intr(:)  ! domain edge-1
+    real(rp), intent(in) :: surf_oppo(:), thck_oppo(:)  ! opposite domain edge
+    real(rp), intent(out) :: surf_bnd(:), thck_bnd(:)   ! bc ghost points
 
-    topo_bnd = topo_intr
-    ice_bnd = ice_intr
+    surf_bnd = surf_intr
+    thck_bnd = thck_intr
 
   end subroutine bc_mirror 
 
@@ -265,54 +265,67 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: run step for hindmarsh2_explicit method
   ! ---------------------------------------------------------------------------
-  subroutine update_hindmarsh2_explicit(ice, prm, sta)
+  subroutine update_hindmarsh2_explicit(g, p, s)
 
-    class(ice_type), intent(in) :: ice
-    type(param_type), intent(in) :: prm
-    type(state_type), intent(inout) :: sta
+    class(ice_type), intent(in) :: g
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
 
     ! saved vars (init once)
     logical, save :: init ! flag indicating if saved vars have been initialized
     real(rp), save :: A ! isothermal ice deformation parameter [Pa-3 a-1] 
-    real(rp), allocatable, save :: h(:,:) ! ice thickness, w/ ghost pts
-    real(rp), allocatable, save :: s(:,:) ! ice/bedrock surface elev, w/ ghost pts
+    real(rp), allocatable, save :: thck(:,:) ! ice thickness, w/ ghost pts
+    real(rp), allocatable, save :: surf(:,:) ! ice/bedrock surface elev, w/ ghost pts
     real(rp), allocatable, save :: Dx(:,:) ! diffusivity at x-midpoints 
     real(rp), allocatable, save :: Dy(:,:) ! diffusivity at y-midpoints
     real(rp), allocatable, save :: qx(:,:) ! ice flux at x-midpoints
     real(rp), allocatable, save :: qy(:,:) ! ice flux at y-midpoints
+    integer, save :: jn, ie, js, iw ! indices for edges
 
     ! unsaved vars
     real(rp) :: t, dt 
     
     ! init, first time only
     if (.not. init) then
-      A = prm%ice_param(1)
-      allocate(h(prm%nx+2, prm%ny+2))
-      allocate(s(prm%nx+2, prm%ny+2))
-      allocate(Dx(prm%nx+1, prm%ny))
-      allocate(qx(prm%nx+1, prm%ny))
-      allocate(Dy(prm%nx, prm%ny+1))
-      allocate(qy(prm%nx, prm%ny+1))
+      A = p%ice_param(1)
+      allocate(thck(p%nx+2, p%ny+2))
+      allocate(surf(p%nx+2, p%ny+2))
+      allocate(Dx(p%nx+1, p%ny))
+      allocate(qx(p%nx+1, p%ny))
+      allocate(Dy(p%nx, p%ny+1))
+      allocate(qy(p%nx, p%ny+1))
+      jn = p%ny+1
+      ie = p%nx+1
+      js = 2
+      iw = 2
       init = .true.
     end if
 
     ! copy in shared values
-    h(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h
-    s(2:prm%nx+1, 2:prm%ny+1) = sta%ice_h+sta%topo
+    thck(iw:ie, js:jn) = s%ice_h
+    surf(iw:ie, js:jn) = s%ice_h+s%topo
     
-    ! start time stepping
+    ! srt time stepping
     t = 0.0_rp
-    dt = prm%time_step ! DEBUG ONLY
-    do while (t .lt. prm%time_step)
+    dt = p%time_step ! DEBUG ONLY
+    do while (t .lt. p%time_step)
 
       ! boundary conditions
+      call g%apply_nbc(surf(:,jn), surf(:,jn-1), surf(:,js), surf(:,jn+1), &
+                       thck(:,jn), thck(:,jn-1), thck(:,js), thck(:,jn+1))
+      call g%apply_sbc(surf(:,js), surf(:,js+1), surf(:,jn), surf(:,js-1), &
+                       thck(:,js), thck(:,js+1), thck(:,jn), thck(:,js-1))
+      call g%apply_ebc(surf(ie,:), surf(ie-1,:), surf(iw,:), surf(ie+1,:), &
+                       thck(ie,:), thck(ie-1,:), thck(iw,:), thck(ie+1,:))
+      call g%apply_wbc(surf(iw,:), surf(iw+1,:), surf(ie,:), surf(iw-1,:), &
+                       thck(iw,:), thck(iw+1,:), thck(ie,:), thck(iw-1,:))
 
       ! diffusivity and ice flux
 
       ! thickness rate of change 
 
-      ! stable timestep
-      dt = min(dt, prm%time_step-t)
+      ! sble timestep
+      dt = min(dt, p%time_step-t)
 
       ! update and increment time
       t = t+dt
