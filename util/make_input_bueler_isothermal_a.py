@@ -86,6 +86,7 @@ v['climate_name'] = 'bueler_isothermal_a'
 v['climate_param'] = [M0, L]
 v['ice_name'] = 'hindmarsh2_explicit'
 v['ice_param'] = [A]
+v['ice_bc_name'] = 'mirror,mirror,mirror,mirror'
 v['ice_soln_name'] = 'bueler_isothermal_a'
 v['ice_soln_param'] = [M0, L, A]
 v['x'] = xy

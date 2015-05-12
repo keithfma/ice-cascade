@@ -14,24 +14,17 @@ type(state_type) :: sta
 type(climate_type) :: cli
 type(ice_type) :: ice
 
-! Initialize objects
+! Initialize
 call read_param(prm)
 call prm%init() 
 call sta%init(prm)
 call cli%init(prm)
 call ice%init(prm)
 call read_var(prm, sta)
-
-! Update model at time = start
-sta%time_now = prm%time_start
-if (cli%on) call cli%update(prm, sta)
-if (ice%on) call ice%update(prm, sta)
-
-! Create output file and write initial values
 call write_file(prm)
-call write_step(prm, sta)
 
 ! Start loop
+sta%time_now = prm%time_start
 do while (sta%time_now .lt. prm%time_finish)
 
   ! Update model state 

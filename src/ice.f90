@@ -160,7 +160,10 @@ contains
         ptr => NULL() ! will fail if called, by design. 
 
       case ('no_ice')
-        ptr => bc_no_ice ! will fail if called, by design. 
+        ptr => bc_no_ice 
+
+      case ('mirror')
+        ptr => bc_mirror 
     
       case default
         print *, "Invalid name for boundary condition: " // trim(str)
@@ -188,6 +191,22 @@ contains
     ice_bnd = 0.0_rp
 
   end subroutine bc_no_ice 
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: BC, mirrored ice and topo
+  ! ---------------------------------------------------------------------------
+  subroutine bc_mirror(topo_edge, topo_intr, topo_oppo, topo_bnd, &
+                       ice_edge, ice_intr, ice_oppo, ice_bnd) 
+    real(rp), intent(in) :: topo_edge(:), ice_edge(:)  ! domain edge 
+    real(rp), intent(in) :: topo_intr(:), ice_intr(:)  ! domain edge-1
+    real(rp), intent(in) :: topo_oppo(:), ice_oppo(:)  ! opposite domain edge
+    real(rp), intent(out) :: topo_bnd(:), ice_bnd(:)   ! bc ghost points
+
+    topo_bnd = topo_intr
+    ice_bnd = ice_intr
+
+  end subroutine bc_mirror 
 
 
 ! ICE FLOW !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -222,6 +241,10 @@ contains
   !   doi:10.1007/978-3-662-04439-1_13
   ! ---------------------------------------------------------------------------
 
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: set saved variables for hindmarsh2_explicit method
+  ! ---------------------------------------------------------------------------
   subroutine set_hindmarsh2_explicit(g, p)
     
     type(ice_type), intent(inout) :: g
@@ -239,6 +262,9 @@ contains
   end subroutine set_hindmarsh2_explicit
 
 
+  ! ---------------------------------------------------------------------------
+  ! SUB: run step for hindmarsh2_explicit method
+  ! ---------------------------------------------------------------------------
   subroutine update_hindmarsh2_explicit(ice, prm, sta)
 
     class(ice_type), intent(in) :: ice
@@ -276,6 +302,7 @@ contains
     
     ! start time stepping
     t = 0.0_rp
+    dt = prm%time_step ! DEBUG ONLY
     do while (t .lt. prm%time_step)
 
       ! boundary conditions
@@ -283,6 +310,12 @@ contains
       ! diffusivity and ice flux
 
       ! thickness rate of change 
+
+      ! stable timestep
+      dt = min(dt, prm%time_step-t)
+
+      ! update and increment time
+      t = t+dt
    
     end do
     ! end time stepping 
