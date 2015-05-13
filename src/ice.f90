@@ -46,7 +46,7 @@ public :: ice_type
       real(rp), intent(in) :: surf_edge(:), thck_edge(:)  ! domain edge 
       real(rp), intent(in) :: surf_intr(:), thck_intr(:)  ! domain edge-1
       real(rp), intent(in) :: surf_oppo(:), thck_oppo(:)  ! opposite domain edge
-      real(rp), intent(in) :: surf_bnd(:), thck_bnd(:)    ! bc ghost points
+      real(rp), intent(out) :: surf_bnd(:), thck_bnd(:)    ! bc ghost points
     end subroutine bc_tmpl 
   end interface
 
@@ -272,39 +272,32 @@ contains
     type(state_type), intent(inout) :: s
 
     ! saved vars (init once)
-    logical, save :: init ! flag indicating if saved vars have been initialized
-    real(rp), save :: A ! isothermal ice deformation parameter [Pa-3 a-1] 
-    real(rp), allocatable, save :: thck(:,:) ! ice thickness, w/ ghost pts
-    real(rp), allocatable, save :: surf(:,:) ! ice/bedrock surface elev, w/ ghost pts
-    real(rp), allocatable, save :: Dx(:,:) ! diffusivity at x-midpoints 
-    real(rp), allocatable, save :: Dy(:,:) ! diffusivity at y-midpoints
-    real(rp), allocatable, save :: qx(:,:) ! ice flux at x-midpoints
-    real(rp), allocatable, save :: qy(:,:) ! ice flux at y-midpoints
-    integer, save :: jn, ie, js, iw ! indices for edges
+    logical, save :: init 
+    real(rp), save :: A, dxinv, dyinv
+    real(rp), allocatable, save :: qx(:,:), qy(:,:), thck(:,:), surf(:,:) 
 
     ! unsaved vars
-    real(rp) :: t, dt 
+    integer :: i, ie, iw, j, jn, js 
+    real(rp) :: c1, c2, dif, dif_max, dt, dsurf_dx_mid, dsurf_dy_mid, gam, t, thck_mid
     
     ! init, first time only
     if (.not. init) then
       A = p%ice_param(1)
-      allocate(thck(p%nx+2, p%ny+2))
-      allocate(surf(p%nx+2, p%ny+2))
-      allocate(Dx(p%nx+1, p%ny))
-      allocate(qx(p%nx+1, p%ny))
-      allocate(Dy(p%nx, p%ny+1))
-      allocate(qy(p%nx, p%ny+1))
-      jn = p%ny+1
-      ie = p%nx+1
-      js = 2
-      iw = 2
+      allocate(thck(p%nx+2, p%ny+2), surf(p%nx+2, p%ny+2), &
+               qx(p%nx+1, p%ny), qy(p%nx, p%ny+1))
+      thck = 0.0_rp; surf = 0.0_rp; qx = 0.0_rp; qy = 0.0_rp
       init = .true.
     end if
+
+    ! constants
+    js = 2; jn = p%ny+1
+    iw = 2; ie = p%nx+1
+    gam = 2.0_rp/5.0_rp*A*(p%rhoi*p%grav)**3
 
     ! copy in shared values
     thck(iw:ie, js:jn) = s%ice_h
     surf(iw:ie, js:jn) = s%ice_h+s%topo
-    
+
     ! srt time stepping
     t = 0.0_rp
     dt = p%time_step ! DEBUG ONLY
@@ -320,14 +313,54 @@ contains
       call g%apply_wbc(surf(iw,:), surf(iw+1,:), surf(ie,:), surf(iw-1,:), &
                        thck(iw,:), thck(iw+1,:), thck(ie,:), thck(iw-1,:))
 
-      ! diffusivity and ice flux
+      ! ice flux
+      ! x-direction
+      dif_max = 0.0_rp
+      c1 = 1.0_rp/p%dx
+      c2 = 1.0_rp/(4.0_rp*p%dy)
+      do j = js, jn
+        do i = 1, ie
+          thck_mid = 0.5_rp*(thck(i,j)+thck(i+1,j))
+          dsurf_dx_mid = c1*(surf(i+1,j)-surf(i,j)) 
+          dsurf_dy_mid = c2*(surf(i,j+1)-surf(i,j-1)+surf(i+1,j+1)-surf(i+1,j-1))
+          dif = gam*(thck_mid**5)*(dsurf_dx_mid**2+dsurf_dy_mid**2)
+          qx(i,j-1) = -dif*dsurf_dx_mid
+          dif_max = max(dif_max, dif)
+        end do
+      end do
+      ! y-direction
+      c1 = 1.0_rp/p%dy
+      c2 = 1.0_rp/(4.0_rp*p%dx)
+      do j = 1, jn
+        do i = iw, ie
+          thck_mid = 0.5_rp*(thck(i,j)+thck(i,j+1))
+          dsurf_dy_mid = c1*(surf(i,j+1)-surf(i,j))
+          dsurf_dx_mid = c2*(surf(i+1,j)-surf(i-1,j)+surf(i+1,j+1)-surf(i-1,j+1))
+          dif = gam*(thck_mid**5)*(dsurf_dx_mid**2+dsurf_dy_mid**2)
+          qy(i-1,j) = -dif*dsurf_dy_mid
+          dif_max = max(dif_max, dif)
+        end do
+      end do
 
-      ! thickness rate of change 
+      ! thickness rate of change
+      c1 = 1.0_rp/p%dx
+      c2 = 1.0_rp/p%dy
+      do j = 1, p%ny
+        do i = 1, p%nx
+          s%ice_h_dot(i,j) = c1*(qx(i+1,j)-qx(i,j))+c2*(qy(i,j+1)-qy(i,j))
+        end do
+      end do
 
-      ! sble timestep
-      dt = min(dt, p%time_step-t)
+      ! timestep
+      dt = p%dx*p%dy/(8.0_dp*dif_max) ! stable
+      dt = min(dt, p%time_step-t) ! trimmed
 
-      ! update and increment time
+      ! update thickness
+      thck(iw:ie, js:jn) = thck(iw:ie, js:jn)+dt*(s%ice_h_dot+s%ice_q_surf)
+      thck = max(thck, 0.0_rp)
+      surf(iw:ie, js:jn) = thck(iw:ie, js:jn)+s%topo
+      
+      ! increment time
       t = t+dt
    
     end do
@@ -336,6 +369,7 @@ contains
     ! velocities
 
     ! copy out shared variables
+    s%ice_h = thck(iw:ie, js:jn)
 
   end subroutine update_hindmarsh2_explicit
 

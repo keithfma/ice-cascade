@@ -50,8 +50,8 @@ A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 lxy = 1.1*L # domain dimensions, 10% larger than icecap
 ti = 0. # model start time
-tf = 100. # model end time
-dt = 10. # model time step
+tf = 10000. # model end time
+dt = 100. # model time step
 dtw = dt # model output time step
 
 #   coordinate grid
@@ -91,7 +91,7 @@ v['ice_soln_name'] = 'bueler_isothermal_a'
 v['ice_soln_param'] = [M0, L, A]
 v['x'] = xy
 v['y'] = xy
-v['ice_h'] = ice_h_soln
+#v['ice_h'] = ice_h_soln
 v['ice_h_soln'] = ice_h_soln
 v['write_ice_q_surf'] = 1
 v['write_ice_h'] = 1
