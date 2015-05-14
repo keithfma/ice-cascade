@@ -1,4 +1,5 @@
 ice-cascade
+test-ice-cascade
 *.out
 *~
 src/*.o

@@ -15,9 +15,9 @@ NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
 NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
 
 FORT = pgfortran
-FFLAGS = -c -tp=px-64 -g -O0 -C 
+FFLAGS = -c -tp=px-64 -g -O0 -C
 LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),--enable-new-dtags
-DEFS = 
+DEFS =
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
 LIBS = -L$(NETCDF_LIB) -lnetcdf -L$(NETCDFF_LIB) -lnetcdff
 
@@ -25,20 +25,29 @@ SRC = \
 kinds.f90 \
 param.f90 \
 state.f90 \
-climate.f90 \
-ice.f90 \
+ice/ice_bc_no_ice.f90 \
+ice/ice_bc_mirror.f90 \
+ice/ice.f90 \
 io.f90 \
-ice_cascade.f90
+test.f90 \
+main.f90
 
 OBJ = $(patsubst %.f90, %.o, $(SRC))
+MAINOBJ = $(filter-out test.o, $(OBJ))
+TESTOBJ = $(filter-out main.o, $(OBJ))
 
-ice_cascade: $(OBJ)
-	$(FORT) $(LIBS) $(LDFLAGS) $^ -o ../ice-cascade
+all: main test
 
-%.o %.mod: %.f90 	
+main: $(MAINOBJ) 
+	$(FORT) $(LIBS) $(LDFLAGS) $(MAINOBJ) -o ../ice-cascade
+
+test: $(TESTOBJ)
+	$(FORT) $(LIBS) $(LDFLAGS) $(TESTOBJ) -o ../test-ice-cascade
+
+$(OBJ): %.o: %.f90 	
 	$(FORT) $(FFLAGS) $(DEFS) $(INCL) $< -o $@ 
 
 .PHONY: clean	
 
 clean:
-	rm -f *.o *.mod ../ice-cascade
+	rm -f *.o *.mod ice/*.o ice/*.mod ../ice-cascade ../test-ice-cascade

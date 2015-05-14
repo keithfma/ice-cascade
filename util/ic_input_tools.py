@@ -36,7 +36,7 @@ def null_input(nx, ny):
   v['climate_param'] = [] # climate model parameters, [various]
   v['ice_name'] = 'none' # ice method name
   v['ice_param'] = [] # ice model parameters, [various]
-  v['ice_bc_name'] = 'none,none,none,none' # boundary condition names, NESW
+  v['ice_bc_name__nesw'] = 'none,none,none,none' # boundary condition names, NESW
   v['ice_soln_name'] = 'none' # ice solution name
   v['ice_soln_param'] = [] # ice solution parameters, [various]
   v['x'] = zero1x # x coordinate vector, [m]
@@ -103,7 +103,7 @@ def create(filename, v):
   file.climate_param__var = v['climate_param']
   file.ice_name = v['ice_name']
   file.ice_param__var = v['ice_param']
-  file.ice_bc_name = v['ice_bc_name']
+  file.ice_bc_name__nesw = v['ice_bc_name__nesw']
   file.ice_soln_name = v['ice_soln_name']
   file.ice_soln_param__var = v['ice_soln_param']
   file.write_topo = v['write_topo']

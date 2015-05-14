@@ -6,11 +6,11 @@
 !   
 ! ============================================================================
 
-module io_mod
+module io
 
-use kinds_mod, only: rp, rp_nc
-use param_mod, only: param_type
-use state_mod, only: state_type
+use kinds, only: rp, rp_nc
+use param, only: param_type
+use state, only: state_type
 use netcdf
 
 implicit none
@@ -129,8 +129,8 @@ contains
     e = nf90_get_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
     call err_req('read_param: ice_param__var: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'ice_bc_name', p%ice_bc_name)
-    call err_req('read_param: ice_bc_name: ', e)
+    e = nf90_get_att(ncid, nf90_global, 'ice_bc_name__nesw', p%ice_bc_name)
+    call err_req('read_param: ice_bc_name__nesw: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'ice_soln_name', p%ice_soln_name)
     call err_req('read_param: ice_soln_name: ', e)
@@ -360,7 +360,7 @@ contains
     
     e = nf90_put_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
     
-    e = nf90_put_att(ncid, nf90_global, 'ice_bc_name', p%ice_bc_name)
+    e = nf90_put_att(ncid, nf90_global, 'ice_bc_name__nesw', p%ice_bc_name)
     
     e = nf90_put_att(ncid, nf90_global, 'ice_soln_name', p%ice_soln_name)
     
@@ -711,4 +711,4 @@ contains
 
   end subroutine write_status
 
-end module io_mod
+end module io

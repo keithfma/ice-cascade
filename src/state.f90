@@ -6,10 +6,10 @@
 !
 ! ============================================================================
 
-module state_mod
+module state
 
-use kinds_mod, only: rp
-use param_mod, only: param_type
+use kinds, only: rp
+use param, only: param_type
 
 implicit none
 private
@@ -47,31 +47,31 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: initialize object
   ! ---------------------------------------------------------------------------
-  subroutine init(s, p)
+  subroutine init(s, nx, ny)
 
     class(state_type), intent(inout) :: s
-    type(param_type), intent(in) :: p
+    integer, intent(in) :: nx, ny
 
     ! allocate arrays
-    allocate(s%x(p%nx))
-    allocate(s%y(p%ny))
-    allocate(s%topo(p%nx, p%ny))
-    allocate(s%topo_dot_ice(p%nx, p%ny))
-    allocate(s%temp_surf(p%nx, p%ny))
-    allocate(s%temp_ice(p%nx, p%ny))
-    allocate(s%temp_base(p%nx, p%ny))
-    allocate(s%precip(p%nx, p%ny))
-    allocate(s%runoff(p%nx, p%ny))
-    allocate(s%ice_q_surf(p%nx, p%ny))
-    allocate(s%ice_h(p%nx, p%ny))
-    allocate(s%ice_h_dot(p%nx, p%ny))
-    allocate(s%ice_h_soln(p%nx, p%ny))
-    allocate(s%ice_ud(p%nx, p%ny))
-    allocate(s%ice_vd(p%nx, p%ny))
-    allocate(s%ice_us(p%nx, p%ny))
-    allocate(s%ice_vs(p%nx, p%ny))
+    allocate(s%x(nx))
+    allocate(s%y(ny))
+    allocate(s%topo(nx, ny))
+    allocate(s%topo_dot_ice(nx, ny))
+    allocate(s%temp_surf(nx, ny))
+    allocate(s%temp_ice(nx, ny))
+    allocate(s%temp_base(nx, ny))
+    allocate(s%precip(nx, ny))
+    allocate(s%runoff(nx, ny))
+    allocate(s%ice_q_surf(nx, ny))
+    allocate(s%ice_h(nx, ny))
+    allocate(s%ice_h_dot(nx, ny))
+    allocate(s%ice_h_soln(nx, ny))
+    allocate(s%ice_ud(nx, ny))
+    allocate(s%ice_vd(nx, ny))
+    allocate(s%ice_us(nx, ny))
+    allocate(s%ice_vs(nx, ny))
 
-    ! set initial value to zero (compiler default,  done explicitly  just to be sure)
+    ! zero out (explicit just to be sure)
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp
@@ -92,4 +92,4 @@ contains
 
   end subroutine init
 
-end module state_mod 
+end module state 

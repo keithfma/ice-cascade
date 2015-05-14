@@ -50,7 +50,7 @@ A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 lxy = 1.1*L # domain dimensions, 10% larger than icecap
 ti = 0. # model start time
-tf = 10000. # model end time
+tf = 100. # model end time
 dt = 100. # model time step
 dtw = dt # model output time step
 
@@ -84,10 +84,10 @@ v['time_step'] = dt
 v['time_step_write'] = dtw 
 v['climate_name'] = 'bueler_isothermal_a'
 v['climate_param'] = [M0, L]
-v['ice_name'] = 'hindmarsh2_explicit'
+v['ice_name'] = 'none'
 v['ice_param'] = [A]
-v['ice_bc_name'] = 'mirror,mirror,mirror,mirror'
-v['ice_soln_name'] = 'bueler_isothermal_a'
+v['ice_bc_name__nesw'] = 'mirror,mirror,mirror,mirror'
+v['ice_soln_name'] = 'none'
 v['ice_soln_param'] = [M0, L, A]
 v['x'] = xy
 v['y'] = xy

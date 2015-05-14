@@ -7,9 +7,9 @@
 !
 ! ============================================================================
 
-module param_mod
+module param
 
-use kinds_mod, only: rp
+use kinds, only: rp
 
 implicit none
 private
@@ -35,6 +35,7 @@ public :: param_type
     real(rp) :: time_step_write ! interval btw outputs, [a]
     character(len=500) :: climate_name ! climate method name
     real(rp), allocatable :: climate_param(:) ! climate model parameters, [various]
+    logical :: ice_on ! enable/disable ice model
     character(len=500) :: ice_name ! ice method name
     character(len=500) :: ice_bc_name ! ice BC names (comma-delimited)
     real(rp), allocatable :: ice_param(:) ! ice model parameters, [various]
@@ -138,4 +139,4 @@ contains
 
   end subroutine init
 
-end module param_mod
+end module param

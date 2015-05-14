@@ -6,7 +6,7 @@
 !   (public) rp = selected real precision for Fortran variables
 !   (public) rp_nc = selected real precision for netCDF variables 
 ! =============================================================================
-module kinds_mod 
+module kinds 
 
 use netcdf, only: nf90_float, nf90_double, nf90_int
 
@@ -25,4 +25,4 @@ integer, parameter :: int_nc = nf90_int
 integer, parameter :: rp = dp 
 integer, parameter :: rp_nc = dp_nc
 
-end module kinds_mod
+end module kinds
