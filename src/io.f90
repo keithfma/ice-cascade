@@ -759,8 +759,6 @@ contains
         minval_intr(s%ice_q_surf)
     end if
     
-    print *, meanval_intr(s%ice_q_surf)
-
     if (p%write_ice_h) then
       print "('ICE_H (max, mean, min) [m]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_h), &
