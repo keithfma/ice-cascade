@@ -1,8 +1,11 @@
 ! =============================================================================
 ! Shared parameters and state variables for ice-cascade. 
 !
-! Contains:
-!   type state_type (public)
+! Public:
+!   state_type: derived type, model state variables
+!   init_state: procedure, allocate and initialize all state variables
+!
+! Private: none
 !
 ! ============================================================================
 
@@ -13,7 +16,7 @@ use param, only: param_type
 
 implicit none
 private
-public :: state_type
+public :: state_type, init_state
 
   ! --------------------------------------------------------------------------- 
   ! TYPE: shared state variables
@@ -37,39 +40,38 @@ public :: state_type
     real(rp), allocatable :: ice_vd(:,:) ! ice deformation velocity, y-dir, [m/a]
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
-  contains
-    procedure, pass :: init ! initialize object
   end type state_type
+
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize object
+  ! SUB: allocate and initialize variables
   ! ---------------------------------------------------------------------------
-  subroutine init(s, nx, ny)
+  subroutine init_state(p, s)
 
-    class(state_type), intent(inout) :: s
-    integer, intent(in) :: nx, ny
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
 
     ! allocate arrays
-    allocate(s%x(nx))
-    allocate(s%y(ny))
-    allocate(s%topo(nx, ny))
-    allocate(s%topo_dot_ice(nx, ny))
-    allocate(s%temp_surf(nx, ny))
-    allocate(s%temp_ice(nx, ny))
-    allocate(s%temp_base(nx, ny))
-    allocate(s%precip(nx, ny))
-    allocate(s%runoff(nx, ny))
-    allocate(s%ice_q_surf(nx, ny))
-    allocate(s%ice_h(nx, ny))
-    allocate(s%ice_h_dot(nx, ny))
-    allocate(s%ice_h_soln(nx, ny))
-    allocate(s%ice_ud(nx, ny))
-    allocate(s%ice_vd(nx, ny))
-    allocate(s%ice_us(nx, ny))
-    allocate(s%ice_vs(nx, ny))
+    allocate(s%x(p%nx))
+    allocate(s%y(p%ny))
+    allocate(s%topo(p%nx, p%ny))
+    allocate(s%topo_dot_ice(p%nx, p%ny))
+    allocate(s%temp_surf(p%nx, p%ny))
+    allocate(s%temp_ice(p%nx, p%ny))
+    allocate(s%temp_base(p%nx, p%ny))
+    allocate(s%precip(p%nx, p%ny))
+    allocate(s%runoff(p%nx, p%ny))
+    allocate(s%ice_q_surf(p%nx, p%ny))
+    allocate(s%ice_h(p%nx, p%ny))
+    allocate(s%ice_h_dot(p%nx, p%ny))
+    allocate(s%ice_h_soln(p%nx, p%ny))
+    allocate(s%ice_ud(p%nx, p%ny))
+    allocate(s%ice_vd(p%nx, p%ny))
+    allocate(s%ice_us(p%nx, p%ny))
+    allocate(s%ice_vs(p%nx, p%ny))
 
     ! zero out (explicit just to be sure)
     s%x = 0.0_rp
@@ -90,6 +92,6 @@ contains
     s%ice_us = 0.0_rp
     s%ice_vs = 0.0_rp
 
-  end subroutine init
+  end subroutine init_state
 
 end module state 

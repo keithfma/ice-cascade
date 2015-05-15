@@ -1,8 +1,8 @@
 program ice_cascade
 
 use kinds, only: rp
-use param, only: param_type
-use state, only: state_type
+use param, only: param_type, init_param
+use state, only: state_type, init_state
 use io, only: read_param, read_var, write_file, write_step, write_status
 use climate, only: on_climate, init_climate, update_climate
 use ice, only: on_ice, on_ice_soln, init_ice
@@ -14,8 +14,8 @@ type(state_type) :: s
 
 ! initialize
 call read_param(p)
-call p%init() 
-call s%init(p%nx, p%ny)
+call init_param(p) 
+call init_state(p, s)
 call init_ice(p)
 call init_climate(p)
 call read_var(p, s)

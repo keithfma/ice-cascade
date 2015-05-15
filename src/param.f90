@@ -1,9 +1,11 @@
 ! =============================================================================
 ! Shared parameters and state variables for ice-cascade. 
 !
-! Contains:
-!   type common_param_type (public)
-!   type common_state_type (public)
+! Public:
+!   param_type: derived type, all model parameters
+!   init_param: procedure, check for sane parameters
+! 
+! Private: none
 !
 ! ============================================================================
 
@@ -13,7 +15,7 @@ use kinds, only: rp
 
 implicit none
 private
-public :: param_type
+public :: param_type, init_param
 
   ! --------------------------------------------------------------------------- 
   ! TYPE: shared parameters
@@ -53,18 +55,18 @@ public :: param_type
     logical :: write_ice_uvd 
     logical :: write_ice_uvs 
     logical :: write_ice_h_soln
-  contains
-    procedure, pass :: init ! initialize, i.e. check for sane parameters 
   end type param_type
+
 
 contains
 
-  ! ---------------------------------------------------------------------------
-  ! SUB: Initialize object, i.e. check for sane parameters
-  ! ---------------------------------------------------------------------------
-  subroutine init(p)
 
-    class(param_type), intent(in) :: p
+  ! ---------------------------------------------------------------------------
+  ! SUB: initialize vars, i.e. check for sane parameters
+  ! ---------------------------------------------------------------------------
+  subroutine init_param(p)
+
+    type(param_type), intent(in) :: p
 
     ! positive grid dimensions
     if (p%nx .le. 0) then
@@ -136,6 +138,6 @@ contains
       stop 'Stopped.'
     end if
 
-  end subroutine init
+  end subroutine init_param
 
 end module param

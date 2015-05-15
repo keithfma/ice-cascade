@@ -43,5 +43,4 @@ $(OBJ): %.o: %.f90
 .PHONY: clean	
 
 clean:
-	rm -f *.o *.mod ice/*.o ice/*.mod climate/*.o climate/*.mod \
-		../ice-cascade ../test-ice-cascade
+	rm -f *.o *.mod ice/*.o ice/*.mod climate/*.o climate/*.mod ../ice-cascade 

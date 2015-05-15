@@ -54,7 +54,7 @@ contains
       on_climate = .false.
       update_climate => NULL() ! will seg-fault if called, by design
     case default
-      print *, 'Invalid name for climate method' // trim(p%climate_name)
+      print *, 'Invalid name for climate method: ' // trim(p%climate_name)
       stop 
     end select
 
