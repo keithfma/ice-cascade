@@ -26,6 +26,7 @@ use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
 use ice_bueler_isothermal_a, only: init_bueler_isothermal_a, &
   solve_bueler_isothermal_a
+use ice_hindmarsh2_explicit, only: init_hindmarsh2_explicit
 
 implicit none
 private
@@ -139,7 +140,7 @@ contains
 
       case ('hindmarsh2_explicit')
         on_ice = .true.
-        ! call init_hindmarsh2_explicit
+        call init_hindmarsh2_explicit(p, s)
         ! flow => flow_hindmarsh2_explicit 
 
       case default

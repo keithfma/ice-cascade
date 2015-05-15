@@ -29,9 +29,9 @@
 !   Environment (pp.  222–249). Springer Berlin Heidelberg.
 !   doi:10.1007/978-3-662-04439-1_13
 !
-! Public:
+! Public: init_hindmarsh2_explicit
 !
-! Private: 
+! Private: A
 ! 
 ! =============================================================================
 
@@ -43,10 +43,44 @@ use state, only: state_type
 
 implicit none
 private
-!public ::
+public :: init_hindmarsh2_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  ! VARS: set in init_hindmarsh2_explicit
+  ! ---------------------------------------------------------------------------
+  real(rp) :: A
+
 
 contains
 
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: check parameters and intializae variables, only once
+  ! ---------------------------------------------------------------------------
+  subroutine init_hindmarsh2_explicit(p, s)
+
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
+
+    ! expect exactly 1 parameter
+    if (size(p%ice_param) .ne. 1) then
+      print *, 'Invalid ice parameters: hindmarsh2_explicit requires exactly &
+               &1 parameter.'
+      stop
+    end if
+
+    ! rename parameters
+    A = p%ice_param(1)
+
+    ! A must be positive
+    if (A .le. 0.0_rp) then
+      print *, 'Invalid ice parameter: hindmarsh2_explicit method requires &
+               &a positive A'
+      stop 
+    end if
+
+  end subroutine init_hindmarsh2_explicit
 
 
 end module ice_hindmarsh2_explicit
