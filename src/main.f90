@@ -12,6 +12,12 @@ implicit none
 type(param_type) :: p
 type(state_type) :: s
 
+! NOTE: should the init routines run the update functions to set the starting
+! values for non-specified vars?
+
+! NOTE: will have to adjust init_state and the io routines to create arrays with
+! ghost points
+
 ! initialize
 call read_param(p)
 call init_param(p) 
@@ -20,7 +26,6 @@ call init_ice(p)
 call init_climate(p)
 call read_var(p, s)
 call write_file(p)
-
 
 !! Start loop
 !sta%time_now = prm%time_start
