@@ -26,7 +26,8 @@ use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
 use ice_bueler_isothermal_a, only: init_bueler_isothermal_a, &
   solve_bueler_isothermal_a
-use ice_hindmarsh2_explicit, only: init_hindmarsh2_explicit
+use ice_hindmarsh2_explicit, only: init_hindmarsh2_explicit, &
+  flow_hindmarsh2_explicit
 
 implicit none
 private
@@ -48,11 +49,12 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
   ! TEMPLATE: common form for the numerical ice flow routine
   ! ---------------------------------------------------------------------------
   abstract interface 
-    subroutine flow_tmpl(p, s)
-      import :: param_type, state_type ! use special types
+    function flow_tmpl(p, s) result(dt)
+      import :: rp, param_type, state_type ! use special types
       type(param_type), intent(in) :: p          ! parameters
       type(state_type), intent(inout) :: s       ! state vars
-    end subroutine flow_tmpl 
+      real(rp) :: dt ! timestep
+    end function flow_tmpl 
   end interface
 
 
@@ -141,7 +143,7 @@ contains
       case ('hindmarsh2_explicit')
         on_ice = .true.
         call init_hindmarsh2_explicit(p, s)
-        ! flow => flow_hindmarsh2_explicit 
+        flow => flow_hindmarsh2_explicit 
 
       case default
         print *, "Invalid name for glacier flow method: " // trim(p%ice_name)
@@ -191,11 +193,14 @@ contains
 
       ! call ice flow procedure, return timestep
       ! NOTE: this requires that the flow template be a function
-      dt = 1.0_rp ! DEBUG
+      dt = flow(p, s)
       dt = min(dt, p%time_step-t) ! trim last step
 
       ! update
       t = t+dt
+
+      ! DEBUG
+      print *, t
 
     end do
     

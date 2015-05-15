@@ -29,7 +29,7 @@
 !   Environment (pp.  222–249). Springer Berlin Heidelberg.
 !   doi:10.1007/978-3-662-04439-1_13
 !
-! Public: init_hindmarsh2_explicit
+! Public: init_hindmarsh2_explicit, flow_hindmarsh2_explicit
 !
 ! Private: A
 ! 
@@ -43,7 +43,7 @@ use state, only: state_type
 
 implicit none
 private
-public :: init_hindmarsh2_explicit
+public :: init_hindmarsh2_explicit, flow_hindmarsh2_explicit
 
 
   ! ---------------------------------------------------------------------------
@@ -81,6 +81,20 @@ contains
     end if
 
   end subroutine init_hindmarsh2_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  ! FUNC: compute ice thickness rate-of-change, return stable timestep
+  ! ---------------------------------------------------------------------------
+  function flow_hindmarsh2_explicit(p, s) result(dt)
+    
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+    real(rp) :: dt
+
+    dt = 1.0_rp ! DEBUG
+
+  end function flow_hindmarsh2_explicit
 
 
 end module ice_hindmarsh2_explicit
