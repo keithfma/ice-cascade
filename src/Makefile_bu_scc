@@ -30,20 +30,12 @@ ice/ice_bc_no_ice.f90 \
 ice/ice_bc_mirror.f90 \
 ice/ice.f90 \
 climate/climate.f90 \
-test.f90 \
 main.f90
 
 OBJ = $(patsubst %.f90, %.o, $(SRC))
-MAINOBJ = $(filter-out test.o, $(OBJ))
-TESTOBJ = $(filter-out main.o, $(OBJ))
 
-all: main test
-
-main: $(MAINOBJ) 
-	$(FORT) $(LIBS) $(LDFLAGS) $(MAINOBJ) -o ../ice-cascade
-
-test: $(TESTOBJ)
-	$(FORT) $(LIBS) $(LDFLAGS) $(TESTOBJ) -o ../test-ice-cascade
+main: $(OBJ) 
+	$(FORT) $(LIBS) $(LDFLAGS) $(OBJ) -o ../ice-cascade
 
 $(OBJ): %.o: %.f90 	
 	$(FORT) $(FFLAGS) $(DEFS) $(INCL) $< -o $@ 
@@ -51,4 +43,5 @@ $(OBJ): %.o: %.f90
 .PHONY: clean	
 
 clean:
-	rm -f *.o *.mod ice/*.o ice/*.mod ../ice-cascade ../test-ice-cascade
+	rm -f *.o *.mod ice/*.o ice/*.mod climate/*.o climate/*.mod \
+		../ice-cascade ../test-ice-cascade

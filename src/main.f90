@@ -3,31 +3,23 @@ program ice_cascade
 use kinds, only: rp
 use param, only: param_type
 use state, only: state_type
-!use climate_mod, only: climate_type
-!use ice_mod, only: ice_type
 use io, only: read_param, read_var, write_file, write_step, write_status
+use climate, only: on_climate, init_climate, update_climate
 use ice, only: on_ice, on_ice_soln, init_ice
 
 implicit none
 
-type(param_type) :: prm
-type(state_type) :: sta
-!type(climate_type) :: cli
-!type(ice_type) :: ice
+type(param_type) :: p
+type(state_type) :: s
 
-! Initialize
-call read_param(prm)
-call prm%init() 
-
-
-! DEBUG
-call init_ice(prm)
-
-call sta%init(prm%nx, prm%ny)
-!call cli%init(prm)
-!call ice%init(prm)
-call read_var(prm, sta)
-call write_file(prm)
+! initialize
+call read_param(p)
+call p%init() 
+call s%init(p%nx, p%ny)
+call init_ice(p)
+call init_climate(p)
+call read_var(p, s)
+call write_file(p)
 
 
 !! Start loop

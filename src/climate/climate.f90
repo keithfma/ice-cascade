@@ -3,6 +3,7 @@
 !
 ! Public:
 !   on_climate: logical, enable/disable model component
+!   init_climate: procedue, intialize procedures and vars
 !   update_climate: procedure, update climate variables using selected method
 !
 ! Private: none
@@ -17,7 +18,7 @@ use state, only: state_type
 
 implicit none
 private
-public :: on_climate, update_climate
+public :: on_climate, init_climate, update_climate
 
 
   ! ---------------------------------------------------------------------------

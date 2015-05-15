@@ -3,7 +3,6 @@
 !
 ! Public:
 !   init_ice: subroutine, select and intialize model procedures
-!   step_ice: subroutine, run glacier model for one timestep
 !   on_ice: logical, enable/disable model component
 !   on_ice_soln: logical, enable/disable exact solution
 !
@@ -87,7 +86,7 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: select and initialize model procedures
+  ! SUB: initialize procedures and vars
   ! ---------------------------------------------------------------------------
   subroutine init_ice(p)
 
