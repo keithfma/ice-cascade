@@ -29,6 +29,7 @@ io.f90 \
 ice/bc_no_ice.f90 \
 ice/bc_mirror.f90 \
 ice/ice.f90 \
+climate/bueler_isothermal_a.f90 \
 climate/climate.f90 \
 main.f90
 

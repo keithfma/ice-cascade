@@ -23,7 +23,7 @@ call read_param(p)
 call init_param(p) 
 call init_state(p, s)
 call init_ice(p)
-call init_climate(p)
+call init_climate(p, s)
 call read_var(p, s)
 call write_file(p)
 
