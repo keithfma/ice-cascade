@@ -14,7 +14,7 @@
 !
 ! Public: read_param, read_var, write_file, write_step, write_status
 !
-! Private: req, opt
+! Private: req, opt, maxval_intr, minval_intr, meanval_intr
 !   
 ! ============================================================================
 
@@ -61,6 +61,54 @@ contains
     end if
 
   end subroutine opt
+
+
+  ! ---------------------------------------------------------------------------
+  ! FUNC: max value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+  function maxval_intr(array) result(val)
+    
+    real(rp), intent(in) :: array(:,:)
+    integer :: n1, n2
+    real(rp) :: val
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = maxval(array(2:n1-1,2:n2-1))
+    
+  end function maxval_intr
+  
+  
+  ! ---------------------------------------------------------------------------
+  ! FUNC: min value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+  function minval_intr(array) result(val)
+    
+    real(rp), intent(in) :: array(:,:)
+    integer :: n1, n2
+    real(rp) :: val
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = minval(array(2:n1-1,2:n2-1))
+    
+  end function minval_intr
+
+
+  ! ---------------------------------------------------------------------------
+  ! FUNC: mean value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+  function meanval_intr(array) result(val)
+    
+    real(rp), intent(in) :: array(:,:)
+    integer :: n1, n2
+    real(rp) :: val 
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = sum(array(2:n1-1,2:n2-1))/((n1-2)*(n2-2))
+    
+  end function meanval_intr
 
 
   ! ---------------------------------------------------------------------------
@@ -647,83 +695,113 @@ contains
 
   ! --------------------------------------------------------------------------
   ! SUB: print model status update to stdout
-  !   Note that summary statistics lazily include the ghost points at grid
-  !   boundaries.
   ! --------------------------------------------------------------------------
   subroutine write_status(p, s)
     
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
 
-      print "('TIME [a]                         : ', EN11.3)", s%time_now 
+      print "('TIME [a]                         : ', EN12.3)", s%time_now 
 
     if (p%write_topo) then
-      print "('TOPO (max, mean, min) [m]        : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%topo), sum(s%topo)/size(s%topo), minval(s%topo)
+      print "('TOPO (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%topo), &
+        meanval_intr(s%topo), &
+        minval_intr(s%topo)
     end if
 
     if (p%write_topo_dot_ice) then
-      print "('TOPO_DOT_ICE (max, mean, min) [m]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%topo_dot_ice), sum(s%topo_dot_ice)/size(s%topo_dot_ice), minval(s%topo_dot_ice)
+      print "('TOPO_DOT_ICE (max, mean, min) [m]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%topo_dot_ice), &
+        meanval_intr(s%topo_dot_ice), &
+        minval_intr(s%topo_dot_ice)
     end if
 
     if (p%write_temp_surf) then
-      print "('TEMP_SURF (max, mean, min) [C]   : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%temp_surf), sum(s%temp_surf)/size(s%temp_surf), minval(s%temp_surf)
+      print "('TEMP_SURF (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%temp_surf), &
+        meanval_intr(s%temp_surf), &
+        minval_intr(s%temp_surf)
     end if
 
     if (p%write_temp_base) then
-      print "('TEMP_BASE (max, mean, min) [C]   : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%temp_base), sum(s%temp_base)/size(s%temp_base), minval(s%temp_base)
+      print "('TEMP_BASE (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%temp_base), &
+        meanval_intr(s%temp_base), &
+        minval_intr(s%temp_base)
     end if
 
     if (p%write_temp_ice) then
-      print "('TEMP_ICE (max, mean, min) [C]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%temp_ice), sum(s%temp_ice)/size(s%temp_ice), minval(s%temp_ice)
+      print "('TEMP_ICE (max, mean, min) [C]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%temp_ice), &
+        meanval_intr(s%temp_ice), &
+        minval_intr(s%temp_ice)
     end if
 
     if (p%write_precip) then
-      print "('PRECIP (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%precip), sum(s%precip)/size(s%precip), minval(s%precip)
+      print "('PRECIP (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%precip), &
+        meanval_intr(s%precip), &
+        minval_intr(s%precip)
     end if
 
     if (p%write_runoff) then
-      print "('RUNOFF (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%runoff), sum(s%runoff)/size(s%runoff), minval(s%runoff)
+      print "('RUNOFF (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%runoff), &
+        meanval_intr(s%runoff), &
+        minval_intr(s%runoff)
     end if
 
     if (p%write_ice_q_surf) then
-      print "('ICE_Q_SURF (max, mean, min) [m/a]: ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_q_surf), sum(s%ice_q_surf)/size(s%ice_q_surf), minval(s%ice_q_surf)
+      print "('ICE_Q_SURF (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_q_surf), &
+        meanval_intr(s%ice_q_surf), &
+        minval_intr(s%ice_q_surf)
     end if
     
+    print *, meanval_intr(s%ice_q_surf)
+
     if (p%write_ice_h) then
-      print "('ICE_H (max, mean, min) [m]       : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_h), sum(s%ice_h)/size(s%ice_h), minval(s%ice_h)
+      print "('ICE_H (max, mean, min) [m]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_h), &
+        meanval_intr(s%ice_h), &
+        minval_intr(s%ice_h)
     end if
 
     if (p%write_ice_h_dot) then
-      print "('ICE_H_DOT (max, mean, min) [m/a] : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_h_dot), sum(s%ice_h_dot)/size(s%ice_h_dot), minval(s%ice_h_dot)
+      print "('ICE_H_DOT (max, mean, min) [m/a] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_h_dot), &
+        meanval_intr(s%ice_h_dot), &
+        minval_intr(s%ice_h_dot)
     end if
 
     if (p%write_ice_uvd) then
-      print "('ICE_UD (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_ud), sum(s%ice_ud)/size(s%ice_ud), minval(s%ice_ud)
-      print "('ICE_VD (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_vd), sum(s%ice_vd)/size(s%ice_vd), minval(s%ice_vd)
+      print "('ICE_UD (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_ud), &
+        meanval_intr(s%ice_ud)/size(s%ice_ud), &
+        minval_intr(s%ice_ud)
+      print "('ICE_VD (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_vd), &
+        meanval_intr(s%ice_vd), &
+        minval_intr(s%ice_vd)
     end if
 
     if (p%write_ice_uvs) then
-      print "('ICE_US (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_us), sum(s%ice_us)/size(s%ice_us), minval(s%ice_us)
-      print "('ICE_VS (max, mean, min) [m/a]    : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_vs), sum(s%ice_vs)/size(s%ice_vs), minval(s%ice_vs)
+      print "('ICE_US (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_us), &
+        meanval_intr(s%ice_us), &
+        minval_intr(s%ice_us)
+      print "('ICE_VS (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_vs), &
+        meanval_intr(s%ice_vs), &
+        minval_intr(s%ice_vs)
     end if
 
     if (p%write_ice_h_soln) then
-      print "('ICE_H_SOLN (max, mean, min) [m]  : ', EN11.3, ', ', EN11.3, ', ', EN11.3)", &
-        maxval(s%ice_h_soln), sum(s%ice_h_soln)/size(s%ice_h_soln), minval(s%ice_h_soln)
+      print "('ICE_H_SOLN (max, mean, min) [m]  : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_h_soln), &
+        meanval_intr(s%ice_h_soln), &
+        minval_intr(s%ice_h_soln)
     end if
 
     print *, ''
