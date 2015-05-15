@@ -73,7 +73,8 @@ contains
     allocate(s%ice_us(p%nx, p%ny))
     allocate(s%ice_vs(p%nx, p%ny))
 
-    ! zero out (explicit just to be sure)
+    ! set initial values (some are overwritten by read_vars)
+    s%time_now = p%time_start
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp

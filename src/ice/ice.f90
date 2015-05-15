@@ -23,10 +23,12 @@ use param, only: param_type
 use state, only: state_type
 use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice 
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
+use ice_bueler_isothermal_a, only: init_bueler_isothermal_a, &
+  solve_bueler_isothermal_a
 
 implicit none
 private
-public :: init_ice, on_ice, on_ice_soln
+public :: on_ice, on_ice_soln, init_ice, solve_ice
 
 
   ! ---------------------------------------------------------------------------
@@ -74,7 +76,7 @@ public :: init_ice, on_ice, on_ice_soln
   procedure(bc_tmpl), pointer :: ebc ! apply east BC, sets (end,:)
   procedure(bc_tmpl), pointer :: wbc ! apply west BC, sets (1,:)
   procedure(flow_tmpl), pointer :: flow ! ice model method
-  procedure(solve_tmpl), pointer :: solve ! exact solution  
+  procedure(solve_tmpl), pointer :: solve_ice ! exact solution  
 
 
   ! ---------------------------------------------------------------------------
@@ -88,9 +90,10 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: initialize procedures and vars
   ! ---------------------------------------------------------------------------
-  subroutine init_ice(p)
+  subroutine init_ice(p, s)
 
     type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
 
     character(len=100), dimension(4) :: bc_names
     integer :: comma(3), i
@@ -100,46 +103,61 @@ contains
 
     do i = 1, 4
       select case (bc_names(i))
-      case ('none') ! will seg-fault if called, by design 
-        if (i .eq. 1) nbc => NULL() 
-        if (i .eq. 2) ebc => NULL() 
-        if (i .eq. 3) sbc => NULL() 
-        if (i .eq. 4) wbc => NULL() 
-      case ('no_ice')
-        if (i .eq. 1) nbc => nbc_no_ice 
-        if (i .eq. 2) ebc => ebc_no_ice
-        if (i .eq. 3) sbc => sbc_no_ice
-        if (i .eq. 4) wbc => wbc_no_ice
-      case ('mirror')
-        if (i .eq. 1) nbc => nbc_mirror 
-        if (i .eq. 2) ebc => ebc_mirror
-        if (i .eq. 3) sbc => sbc_mirror
-        if (i .eq. 4) wbc => wbc_mirror
-      case default
-        print *, "Invalid name for boundary condition: " // trim(bc_names(i))
-        stop 
+
+        case ('none') ! will seg-fault if called, by design 
+          if (i .eq. 1) nbc => NULL() 
+          if (i .eq. 2) ebc => NULL() 
+          if (i .eq. 3) sbc => NULL() 
+          if (i .eq. 4) wbc => NULL() 
+
+        case ('no_ice')
+          if (i .eq. 1) nbc => nbc_no_ice 
+          if (i .eq. 2) ebc => ebc_no_ice
+          if (i .eq. 3) sbc => sbc_no_ice
+          if (i .eq. 4) wbc => wbc_no_ice
+
+        case ('mirror')
+          if (i .eq. 1) nbc => nbc_mirror 
+          if (i .eq. 2) ebc => ebc_mirror
+          if (i .eq. 3) sbc => sbc_mirror
+          if (i .eq. 4) wbc => wbc_mirror
+
+        case default
+          print *, "Invalid name for boundary condition: " // trim(bc_names(i))
+          stop 
 
       end select
     end do
 
     ! select flow procedure
     select case (p%ice_name)
-    case ('none') 
-      on_ice = .false. 
-      flow => NULL() ! will seg-fault if called, by design
-    case default
-      print *, "Invalid name for glacier flow method: " // trim(p%ice_name)
-      stop 
+
+      case ('none') 
+        on_ice = .false. 
+        flow => NULL() ! will seg-fault if called, by design
+
+      case default
+        print *, "Invalid name for glacier flow method: " // trim(p%ice_name)
+        stop 
+
     end select
 
-    ! select flow procedure
+    ! select exact solution procedure
     select case (p%ice_soln_name)
-    case ('none') 
-      on_ice_soln = .false. 
-      solve => NULL() ! will seg-fault if called, by design
-    case default
-      print *, "Invalid name for glacier exact solution: " // trim(p%ice_soln_name)
-      stop 
+
+      case ('none') 
+        on_ice_soln = .false. 
+        solve_ice => NULL() ! will seg-fault if called, by design
+
+      case('bueler_isothermal_a')
+        on_ice_soln = .true.
+        call init_bueler_isothermal_a(p, s)
+        solve_ice => solve_bueler_isothermal_a
+
+      case default
+        print *, "Invalid name for glacier exact solution: " // trim(p%ice_soln_name)
+        stop 
+
     end select
 
   end subroutine init_ice

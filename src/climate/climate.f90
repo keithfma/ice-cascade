@@ -48,7 +48,7 @@ contains
   subroutine init_climate(p, s)
 
     type(param_type), intent(in) :: p
-    type(state_type), intent(in) :: s
+    type(state_type), intent(inout) :: s
 
     ! select update procedure
     select case (p%climate_name)
@@ -59,14 +59,17 @@ contains
     
     case('bueler_isothermal_a')
       on_climate = .true.
-      update_climate => update_bueler_isothermal_a
       call  init_bueler_isothermal_a(p, s)
+      update_climate => update_bueler_isothermal_a
     
     case default
       print *, 'Invalid name for climate method: ' // trim(p%climate_name)
       stop 
     
     end select
+
+    ! update climate state at initial time
+    if (on_climate) call update_climate(s)
 
   end subroutine init_climate
 
