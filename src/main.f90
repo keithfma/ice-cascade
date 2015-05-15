@@ -6,7 +6,7 @@ use state, only: state_type
 !use climate_mod, only: climate_type
 !use ice_mod, only: ice_type
 use io, only: read_param, read_var, write_file, write_step, write_status
-use ice, only: init_ice
+use ice, only: on_ice, on_ice_soln, init_ice
 
 implicit none
 

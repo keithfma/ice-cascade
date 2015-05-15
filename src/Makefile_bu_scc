@@ -25,10 +25,11 @@ SRC = \
 kinds.f90 \
 param.f90 \
 state.f90 \
+io.f90 \
 ice/ice_bc_no_ice.f90 \
 ice/ice_bc_mirror.f90 \
 ice/ice.f90 \
-io.f90 \
+climate/climate.f90 \
 test.f90 \
 main.f90
 

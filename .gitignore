@@ -4,6 +4,10 @@ test-ice-cascade
 *~
 src/*.o
 src/*.mod
+src/ice/*.o
+src/ice/*.mod
+src/climate/*.o
+src/climate/*.mod
 *.swp
 .nfs*
 *.bak
@@ -12,3 +16,4 @@ to_delete
 *.nc
 in_a
 in_b
+src/old_climate.f90

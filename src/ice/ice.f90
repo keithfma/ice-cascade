@@ -4,7 +4,8 @@
 ! Public:
 !   init_ice: subroutine, select and intialize model procedures
 !   step_ice: subroutine, run glacier model for one timestep
-!   on_ice: logical, enable/disable ice model component
+!   on_ice: logical, enable/disable model component
+!   on_ice_soln: logical, enable/disable exact solution
 !
 ! Private:
 !   bc_tmpl: template, common form for bc procedures 
@@ -65,8 +66,10 @@ public :: init_ice, on_ice, on_ice_soln
 
 
   ! ---------------------------------------------------------------------------
-  ! PROCEDURES: pointers, set in init_ice 
+  ! PROCEDURES & VARS: set in init_ice 
   ! ---------------------------------------------------------------------------
+  logical :: on_ice ! enable/disable model
+  logical :: on_ice_soln ! enable/disable exact solution
   procedure(bc_tmpl), pointer :: nbc ! apply north BC, sets (:,end)
   procedure(bc_tmpl), pointer :: sbc ! apply south BC, sets (:,1)
   procedure(bc_tmpl), pointer :: ebc ! apply east BC, sets (end,:)
@@ -78,8 +81,6 @@ public :: init_ice, on_ice, on_ice_soln
   ! ---------------------------------------------------------------------------
   ! VARS: global variables
   ! ---------------------------------------------------------------------------
-  logical, save :: on_ice ! enable/disable model
-  logical, save :: on_ice_soln ! enable/disable exact solution
 
 
 contains
