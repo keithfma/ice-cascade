@@ -27,8 +27,9 @@ public :: on_climate, init_climate, update_climate
   ! TEMPLATE: commom form for climate methods
   ! ---------------------------------------------------------------------------
   abstract interface
-    subroutine update_tmpl(s) 
-      import :: state_type
+    subroutine update_tmpl(p, s) 
+      import :: param_type, state_type
+      type(param_type), intent(in) :: p
       type(state_type), intent(inout) :: s
     end subroutine update_tmpl
   end interface
@@ -69,7 +70,7 @@ contains
     end select
 
     ! update climate state at initial time
-    if (on_climate) call update_climate(s)
+    if (on_climate) call update_climate(p, s)
 
   end subroutine init_climate
 

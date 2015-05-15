@@ -99,8 +99,9 @@ contains
   ! ---------------------------------------------------------------------------
   ! SUB: get climate at current time
   ! ---------------------------------------------------------------------------
-  subroutine update_bueler_isothermal_a(s)
+  subroutine update_bueler_isothermal_a(p, s)
 
+    type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
 
     where (r .lt. L)

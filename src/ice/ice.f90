@@ -93,7 +93,7 @@ contains
   subroutine init_ice(p, s)
 
     type(param_type), intent(in) :: p
-    type(state_type), intent(in) :: s
+    type(state_type), intent(inout) :: s
 
     character(len=100), dimension(4) :: bc_names
     integer :: comma(3), i
@@ -159,6 +159,10 @@ contains
         stop 
 
     end select
+
+    ! update ice and ice solution state at initial time
+    !if (on_ice) call update_ice(p, s)
+    if (on_ice_soln) call solve_ice(p, s)
 
   end subroutine init_ice
 

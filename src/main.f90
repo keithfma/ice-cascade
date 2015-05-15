@@ -35,9 +35,8 @@ call write_step(p, s)
 ! Start loop
 do while (s%time_now .lt. p%time_finish)
 
-!  ! Update model state 
-!  if (cli%on) call cli%update(prm, sta)
-!  if (ice%on) call ice%update(prm, sta)
+  ! Update model state 
+  if (on_climate) call update_climate(p, s)
 
   ! Increment time
   s%time_now = s%time_now+p%time_step
@@ -46,7 +45,7 @@ do while (s%time_now .lt. p%time_finish)
 
   ! Write step 
   if (mod(s%time_now-p%time_start, p%time_step) .eq. 0.0_rp) then
-!    if (ice%on_soln) call ice%solve(prm, sta)
+    if (on_ice_soln) call solve_ice(p, s)
 !    call write_status(prm, sta)
     call write_step(p, s)
   end if
