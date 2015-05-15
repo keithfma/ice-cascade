@@ -2,9 +2,11 @@
 ! Glacier dynamics model component for ice-cascade
 !
 ! Public:
-!   init_ice: subroutine, select and intialize model procedures
 !   on_ice: logical, enable/disable model component
 !   on_ice_soln: logical, enable/disable exact solution
+!   init_ice: subroutine, select and intialize model procedures
+!   update_ice: subroutine, run ice model for one timestep
+!   solve_ice: procedure, selected exact solution procedure
 !
 ! Private:
 !   bc_tmpl: template, common form for bc procedures 
@@ -12,7 +14,6 @@
 !   solve_tmpl: template, common form for exact solution procedures
 !   sbc, nbc, wbc, ebc: procedure ptrs, selected bc procedures
 !   flow: procedure ptr, selected numerical ice flow procedure
-!   solve: procedure ptr, selected exact solution procedure
 !   
 ! ============================================================================
 
@@ -28,7 +29,7 @@ use ice_bueler_isothermal_a, only: init_bueler_isothermal_a, &
 
 implicit none
 private
-public :: on_ice, on_ice_soln, init_ice, solve_ice
+public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
 
 
   ! ---------------------------------------------------------------------------
@@ -136,6 +137,11 @@ contains
         on_ice = .false. 
         flow => NULL() ! will seg-fault if called, by design
 
+      case ('hindmarsh2_explicit')
+        on_ice = .true.
+        ! call init_hindmarsh2_explicit
+        ! flow => flow_hindmarsh2_explicit 
+
       case default
         print *, "Invalid name for glacier flow method: " // trim(p%ice_name)
         stop 
@@ -161,10 +167,41 @@ contains
     end select
 
     ! update ice and ice solution state at initial time
-    !if (on_ice) call update_ice(p, s)
+    if (on_ice) call update_ice(p, s)
     if (on_ice_soln) call solve_ice(p, s)
 
   end subroutine init_ice
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: run ice model for one timestep
+  ! ---------------------------------------------------------------------------
+  subroutine update_ice(p, s)
+
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+
+    real(rp) :: t, dt
+
+    t = 0.0_rp
+    do while (t .lt. p%time_step) 
+
+      ! apply boundary conditions
+
+      ! call ice flow procedure, return timestep
+      ! NOTE: this requires that the flow template be a function
+      dt = 1.0_rp ! DEBUG
+      dt = min(dt, p%time_step-t) ! trim last step
+
+      ! update
+      t = t+dt
+
+    end do
+    
+    ! update ancillary variables (velocity, etc.)
+    ! NOTE: this will require a separate procedure for each flow method.
+
+  end subroutine update_ice
 
 
 end module ice

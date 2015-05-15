@@ -5,7 +5,7 @@ use param, only: param_type, init_param
 use state, only: state_type, init_state
 use io, only: read_param, read_var, write_file, write_step, write_status
 use climate, only: on_climate, init_climate, update_climate
-use ice, only: on_ice, on_ice_soln, init_ice, solve_ice
+use ice, only: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
 
 implicit none
 
@@ -37,6 +37,7 @@ do while (s%time_now .lt. p%time_finish)
 
   ! Update model state 
   if (on_climate) call update_climate(p, s)
+  if (on_ice) call update_ice(p, s)
 
   ! Increment time
   s%time_now = s%time_now+p%time_step
@@ -46,7 +47,7 @@ do while (s%time_now .lt. p%time_finish)
   ! Write step 
   if (mod(s%time_now-p%time_start, p%time_step) .eq. 0.0_rp) then
     if (on_ice_soln) call solve_ice(p, s)
-!    call write_status(prm, sta)
+    call write_status(p, s)
     call write_step(p, s)
   end if
 
