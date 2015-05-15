@@ -62,11 +62,11 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize vars, i.e. check for sane parameters
+  ! SUB: check for sane parameters and add ghost points
   ! ---------------------------------------------------------------------------
   subroutine init_param(p)
 
-    type(param_type), intent(in) :: p
+    type(param_type), intent(inout) :: p
 
     ! positive grid dimensions
     if (p%nx .le. 0) then
@@ -137,6 +137,10 @@ contains
       print *, 'Invalid parameters: time_step_write must be a multiple of time_step.'
       stop 'Stopped.'
     end if
+
+    ! computational grid has 1 ghost-point on all boundaries
+    p%nx = p%nx+2
+    p%ny = p%ny+2
 
   end subroutine init_param
 
