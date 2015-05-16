@@ -47,6 +47,11 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
 
   ! ---------------------------------------------------------------------------
   ! TEMPLATE: common form for the numerical ice flow routine
+  !
+  !   Description: flow routines compute a numerical approximation to the ice
+  !     flow equations, including sliding, temperature, and hydrology, where
+  !     applicable. They MUST set the value of the ice_h_dot variable, and may
+  !     set the value of other state variables as well.
   ! ---------------------------------------------------------------------------
   abstract interface 
     function flow_tmpl(p, s) result(dt)
@@ -185,19 +190,21 @@ contains
     t = 0.0_rp
     do while (t .lt. p%time_step) 
 
-      ! apply boundary conditions
+      ! init grids
       call nbc(s)
       call ebc(s)
       call sbc(s)
       call wbc(s)
+      s%surf = s%topo+s%ice_h
 
-      ! call ice flow procedure, return timestep
-      ! NOTE: this requires that the flow template be a function
+      ! ice flow procedure
       dt = flow(p, s)
       dt = min(dt, p%time_step-t) ! trim last step
 
       ! update
       t = t+dt
+      s%ice_h = s%ice_h+dt*(s%ice_h_dot+s%ice_q_surf)
+      s%ice_h = max(s%ice_h, 0.0_rp)
 
       ! DEBUG
       print *, t
