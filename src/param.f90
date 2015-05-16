@@ -44,6 +44,7 @@ public :: param_type, init_param
     real(rp), allocatable :: ice_soln_param(:) ! ice solution parameters, [various]
     logical :: write_topo ! write flag for state var
     logical :: write_topo_dot_ice ! ' '
+    logical :: write_surf
     logical :: write_temp_surf 
     logical :: write_temp_base 
     logical :: write_temp_ice 

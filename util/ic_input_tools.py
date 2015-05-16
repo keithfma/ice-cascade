@@ -45,6 +45,8 @@ def null_input(nx, ny):
   v['write_topo'] = 0
   v['topo_dot_ice'] = zero2 # topography rate-of-change due to glaciers, [m/a]
   v['write_topo_dot_ice'] = 0
+  v['surf'] = zero2 # surface elevation (ice+bedrock), [m above sea level]
+  v['write_surf'] = 0
   v['temp_surf'] = zero2# temp at ice/bedrock surface, [C]
   v['write_temp_surf'] = 0
   v['temp_ice'] = zero2 # mean ice temperature, [C]
@@ -108,6 +110,7 @@ def create(filename, v):
   file.ice_soln_param__var = v['ice_soln_param']
   file.write_topo = v['write_topo']
   file.write_topo_dot_ice = v['write_topo_dot_ice']
+  file.write_surf = v['write_surf']
   file.write_temp_surf = v['write_temp_surf']
   file.write_temp_ice = v['write_temp_ice']
   file.write_temp_base = v['write_temp_base']
@@ -144,6 +147,11 @@ def create(filename, v):
   var[:,:] = v['topo_dot_ice']
   var.long_name = 'topography_rate_of_change_from_ice_erosion_and_deposition'
   var.units = 'm_a'
+
+  var = file.createVariable('surf', v['surf'].dtype.str, dimensions = ('x', 'y'))
+  var[:,:] = v['surf']
+  var.long_name = 'surface_elevation_including_ice'
+  var.units = 'm'
 
   var = file.createVariable('temp_surf', v['temp_surf'].dtype.str, dimensions = ('x', 'y'))
   var[:,:] = v['temp_surf']

@@ -169,10 +169,6 @@ contains
 
     end select
 
-    ! update ice and ice solution state at initial time
-    if (on_ice) call update_ice(p, s)
-    if (on_ice_soln) call solve_ice(p, s)
-
   end subroutine init_ice
 
 
@@ -190,6 +186,10 @@ contains
     do while (t .lt. p%time_step) 
 
       ! apply boundary conditions
+      call nbc(s)
+      call ebc(s)
+      call sbc(s)
+      call wbc(s)
 
       ! call ice flow procedure, return timestep
       ! NOTE: this requires that the flow template be a function

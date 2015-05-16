@@ -100,35 +100,6 @@ contains
 end module ice_hindmarsh2_explicit
 
 
-
-!  ! ---------------------------------------------------------------------------
-!  ! SUB: set saved variables for hindmarsh2_explicit method
-!  ! ---------------------------------------------------------------------------
-!  subroutine set_hindmarsh2_explicit(g, p)
-!    
-!    type(ice_type), intent(inout) :: g
-!    type(param_type), intent(in) :: p
-!
-!    g%on = .true.
-!    g%update => update_hindmarsh2_explicit
-!
-!    if(p%ice_param(1) .le. 0.0_rp) then
-!      print *, 'Invalid ice model parameter: flow law coefficient A must &
-!               &be positive'
-!      stop
-!    end if 
-!
-!  end subroutine set_hindmarsh2_explicit
-!
-!
-!  ! ---------------------------------------------------------------------------
-!  ! SUB: run step for hindmarsh2_explicit method
-!  ! ---------------------------------------------------------------------------
-!  subroutine update_hindmarsh2_explicit(g, p, s)
-!
-!    class(ice_type), intent(in) :: g
-!    type(param_type), intent(in) :: p
-!    type(state_type), intent(inout) :: s
 !
 !    ! saved vars (init once)
 !    logical, save :: init 

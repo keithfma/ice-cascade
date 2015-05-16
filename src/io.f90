@@ -209,6 +209,10 @@ contains
     call req('read_param: write_topo_dot_ice: ', e)
     p%write_topo_dot_ice = (tf .eq. 1)
 
+    e = nf90_get_att(ncid, nf90_global, 'write_surf', tf)
+    call req('read_param: write_surf: ', e)
+    p%write_surf = (tf .eq. 1)
+
     e = nf90_get_att(ncid, nf90_global, 'write_temp_surf', tf)
     call req('read_param: write_temp_surf: ', e)
     p%write_temp_surf = (tf .eq. 1)
@@ -296,6 +300,11 @@ contains
     call opt('read_vars: topo_dot_ice: ', e)
     e = nf90_get_var(ncid, varid, s%topo_dot_ice(2:p%nx-1,2:p%ny-1))
     call opt('read_vars: topo_dot_ice: ', e)
+
+    e = nf90_inq_varid(ncid, 'surf', varid)
+    call opt('read_vars: surf: ', e)
+    e = nf90_get_var(ncid, varid, s%surf(2:p%nx-1,2:p%ny-1))
+    call opt('read_vars: surf: ', e)
 
     e = nf90_inq_varid(ncid, 'temp_surf', varid)
     call opt('read_vars: temp_surf: ', e)
@@ -434,6 +443,9 @@ contains
     tf = merge(1, 0, p%write_topo_dot_ice)
     e = nf90_put_att(ncid, nf90_global, 'write_topo_dot_ice', tf)
 
+    tf = merge(1, 0, p%write_surf)
+    e = nf90_put_att(ncid, nf90_global, 'write_surf', tf)
+
     tf = merge(1, 0, p%write_temp_surf)
     e = nf90_put_att(ncid, nf90_global, 'write_temp_surf', tf)
 
@@ -497,6 +509,13 @@ contains
         chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
      	e = nf90_put_att(ncid, vid, 'long_name', 'topo_rate_of_change_from_ice')
      	e = nf90_put_att(ncid, vid, 'units', 'm_a')
+    end if
+
+    if (p%write_surf) then
+     	e = nf90_def_var(ncid, 'surf', rp_nc, [xid, yid, tid], vid, &
+        chunksizes = chunk, shuffle = shuf, deflate_level = deflate)
+     	e = nf90_put_att(ncid, vid, 'long_name', 'surface_elevation_including_ice')
+     	e = nf90_put_att(ncid, vid, 'units', 'm')
     end if
 
     if (p%write_temp_surf) then
@@ -627,6 +646,11 @@ contains
       e = nf90_put_var(ncid, vid, s%topo_dot_ice(2:p%nx-1,2:p%ny-1), [1, 1, n])
     end if
     
+    if (p%write_surf) then
+      e = nf90_inq_varid(ncid, 'surf', vid)
+      e = nf90_put_var(ncid, vid, s%surf(2:p%nx-1,2:p%ny-1), [1, 1, n])
+    end if
+
     if (p%write_temp_surf) then
       e = nf90_inq_varid(ncid, 'temp_surf', vid)
       e = nf90_put_var(ncid, vid, s%temp_surf(2:p%nx-1,2:p%ny-1), [1, 1, n])
@@ -715,6 +739,13 @@ contains
         maxval_intr(s%topo_dot_ice), &
         meanval_intr(s%topo_dot_ice), &
         minval_intr(s%topo_dot_ice)
+    end if
+
+    if (p%write_surf) then
+      print "('SURF (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%surf), &
+        meanval_intr(s%surf), &
+        minval_intr(s%surf)
     end if
 
     if (p%write_temp_surf) then

@@ -69,9 +69,6 @@ contains
     
     end select
 
-    ! update climate state at initial time
-    if (on_climate) call update_climate(p, s)
-
   end subroutine init_climate
 
 end module climate

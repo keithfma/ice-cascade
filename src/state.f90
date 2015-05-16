@@ -27,6 +27,7 @@ public :: state_type, init_state
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
     real(rp), allocatable :: topo_dot_ice(:,:) ! topography rate-of-change due to glaciers, [m/a]
+    real(rp), allocatable :: surf(:,:) ! surface elevation (topo+ice_h), [m above sea level]
     real(rp), allocatable :: temp_surf(:,:) ! temp at ice/bedrock surface, [C]
     real(rp), allocatable :: temp_ice(:,:) ! mean ice temperature, [C]
     real(rp), allocatable :: temp_base(:,:) ! temp at bedrock surface, [C]
@@ -59,6 +60,7 @@ contains
     allocate(s%y(p%ny))
     allocate(s%topo(p%nx, p%ny))
     allocate(s%topo_dot_ice(p%nx, p%ny))
+    allocate(s%surf(p%nx, p%ny))
     allocate(s%temp_surf(p%nx, p%ny))
     allocate(s%temp_ice(p%nx, p%ny))
     allocate(s%temp_base(p%nx, p%ny))
@@ -78,6 +80,7 @@ contains
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp
+    s%surf = 0.0_rp
     s%topo_dot_ice = 0.0_rp
     s%temp_surf = 0.0_rp
     s%temp_ice = 0.0_rp
