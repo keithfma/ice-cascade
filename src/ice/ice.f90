@@ -185,6 +185,7 @@ contains
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
 
+    integer :: i, j ! debug
     real(rp) :: t, dt
 
     t = 0.0_rp
@@ -206,8 +207,17 @@ contains
       s%ice_h = s%ice_h+dt*(s%ice_h_dot+s%ice_q_surf)
       s%ice_h = max(s%ice_h, 0.0_rp)
 
-      ! DEBUG
-      print *, t
+      ! debug
+      !print *, 'ICE_H: '
+      !do i = 1, p%nx
+      !  write(*, '(EN11.1)', advance = 'no'), (s%ice_h(i,j), j = 1, p%ny) 
+      !  print *, ''
+      !end do 
+      print *, 'ICE_H_DOT: '
+      do i = 1, p%nx
+        write(*, '(EN11.1)', advance = 'no'), (s%ice_h_dot(i,j), j = 1, p%ny) 
+        print *, ''
+      end do 
 
     end do
     

@@ -32,13 +32,16 @@ filename = 'bueler_isothermal_a_in.nc'
 nxy = 51 
 
 # parse input arguments
-if len(sys.argv) > 1:
+if len(sys.argv) == 2:
   filename = sys.argv[1]
 if len(sys.argv) == 3:
+  filename = sys.argv[1]
   nxy = int(sys.argv[2])
 if len(sys.argv) > 3:
   print 'Too many input arguments. Exiting.'
   sys.exit(-1)
+print 'filename: ', filename
+print 'nxy: ', nxy
 
 # parameters for Bueler test A 
 M0 = 0.3 # surface ice flux, [m_ice/a] 
@@ -48,9 +51,9 @@ rhoi = 910. # ice density, [kg/m3]
 A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
-lxy = 1.1*L # domain dimensions, 10% larger than icecap
+lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
-tf = 1000. # model end time
+tf = 300. # model end time
 dt = 100. # model time step
 dtw = dt # model output time step
 

@@ -21,6 +21,7 @@ type(state_type) :: s
 ! read input data and init data objects
 call read_param(p)
 call init_param(p) 
+print *, p%nx, p%ny
 call init_state(p, s)
 call read_var(p, s)
 
