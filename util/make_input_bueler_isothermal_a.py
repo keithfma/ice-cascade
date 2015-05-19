@@ -7,11 +7,11 @@
 #   ./make_input_bueler_isothermal_a filename nxy
 #
 # Arguments:
-#   stub = name of generated input files (optional)
+#   filename = name of generated input file (optional)
 #   nxy = num grid points in x- and y-dir (optional)
 #
 # Dependencies:
-#   ic_input_tools
+#   ice_cascade_tools
 #   netcdf4
 #
 # References:
@@ -25,7 +25,8 @@
 
 import sys
 import numpy as np
-import ic_input_tools as ic
+import netCDF4 as nc
+import ice_cascade_tools as ict
 
 # defaults
 filename = 'bueler_isothermal_a_in.nc' 
@@ -53,14 +54,14 @@ A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
-tf = 10000. # model end time
-dt = 100. # model time step
+tf = 25000. # model end time
+dt = 1000. # model time step
 dtw = dt # model output time step
 
-#   coordinate grid
+# coordinate grid
 (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
 
-#   exact solution
+# exact solution
 (xx, yy) = np.meshgrid(xy, xy)
 rr = np.sqrt(xx**2+yy**2)
 gamma = 2.0/5.0*A*(rhoi*g)**3.0
@@ -68,39 +69,40 @@ mask = np.where(rr <= L)
 ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
 ice_h_soln[mask] = (4.0*M0/gamma)**(1.0/8.0)*(L**(4.0/3.0)-rr[mask]**(4.0/3.0))**(3.0/8.0)
 
+# create and open new input file
+file = ict.new_input(filename, nxy, nxy)
+
 # define parameters and variables 
-v = ic.null_input(nxy, nxy)
-v['descr'] = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
-  ' Isothermal, non-sliding, steady state with fixed margin position and '
-  'constant, positive surface ice flux.')
-v['nx'] = nxy
-v['ny'] = nxy
-v['lx'] = lxy
-v['ly'] = lxy
-v['dx'] = dxy
-v['dy'] = dxy
-v['rhoi'] = rhoi
-v['grav'] = g
-v['time_start'] = ti
-v['time_finish'] = tf
-v['time_step'] = dt
-v['time_step_write'] = dtw 
-v['climate_name'] = 'bueler_isothermal_a'
-v['climate_param'] = [M0, L]
-v['ice_name'] = 'hindmarsh2_explicit'
-v['ice_param'] = [A]
-v['ice_bc_name__nesw'] = 'mirror,mirror,mirror,mirror'
-v['ice_soln_name'] = 'none'
-v['ice_soln_param'] = [M0, L, A]
-v['x'] = xy
-v['y'] = xy
-#v['ice_h'] = ice_h_soln
-v['ice_h_soln'] = ice_h_soln
-v['write_ice_q_surf'] = 1
-v['write_ice_h'] = 1
-v['write_ice_h_dot'] = 1
-v['write_ice_h_soln'] = 1 
+file.descr = ''''Benchmark case with exact solution (Bueler et al 2005, test A).
+  Isothermal, non-sliding, steady state with fixed margin position and constant,
+  positive surface ice flux.'''
+file.nx__1 = nxy
+file.ny__1 = nxy
+file.lx__m = lxy
+file.ly__m = lxy
+file.dx__m = dxy
+file.dy__m = dxy
+file.rhoi__kg_m3 = rhoi
+file.grav__m_s2 = g
+file.time_start__a = ti
+file.time_finish__a = tf
+file.time_step__a = dt
+file.time_step_write__a = dtw 
+file.climate_name = 'bueler_isothermal_a'
+file.climate_param__var = [M0, L]
+file.ice_name = 'hindmarsh2_explicit'
+file.ice_param__var = [A]
+file.ice_bc_name__nesw = 'no_ice,no_ice,mirror,mirror'
+file.ice_soln_name = 'none'
+file.ice_soln_param__var = [M0, L, A]
+file.write_ice_q_surf = 1
+file.write_ice_h = 1
+file.write_ice_h_dot = 1
+file.write_ice_h_soln = 1 
+file.variables['x'][:] = xy
+file.variables['y'][:] = xy
+#file.variables['ice_h'][:,:] = ice_h_soln
+file.variables['ice_h_soln'][:,:] = ice_h_soln
 
-# create input file
-ic.create(filename, v)
-
+# finalize
+file.close()
