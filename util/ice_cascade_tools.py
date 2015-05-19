@@ -28,7 +28,7 @@ def new_input(filename, nx, ny):
   file.time_start__a = 0. 
   file.time_finish__a = 0. 
   file.time_step__a = 0. 
-  file.time_step_write__a = 0. 
+  file.time_write__a = 0. # new: expects a vector giving times explicitly
   file.climate_name = 'none' 
   file.climate_param__var = [] 
   file.ice_name = 'none' 

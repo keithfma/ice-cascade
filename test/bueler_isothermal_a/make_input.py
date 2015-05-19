@@ -39,8 +39,9 @@ A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
 tf = 25000. # model end time
-dt = 1000. # model time step
-dtw = dt # model output time step
+dt = 100. # model time step
+#tw = 25000. # output steps
+tw = np.linspace(ti, tf, 10)
 
 # main function
 def main(filename, nxy):
@@ -74,7 +75,7 @@ def main(filename, nxy):
   file.time_start__a = ti
   file.time_finish__a = tf
   file.time_step__a = dt
-  file.time_step_write__a = dtw 
+  file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_a'
   file.climate_param__var = [M0, L]
   file.ice_name = 'hindmarsh2_explicit'

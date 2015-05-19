@@ -16,12 +16,10 @@ import make_input
 
 # define grid sizes
 nxy = [16, 32, 64]
-#nxy = [16, 32, 64, 128, 256]
 
 # figure out padding
 d = 1
 while (max(nxy) > 10**d):
-  print 10**d
   d = d+1
 
 # generate files
@@ -29,6 +27,3 @@ for n in nxy:
   filename = 'bueler_isothermal_a_in_'+str(n).zfill(d)+'.nc'
   print filename
   make_input.main(filename, n)
-  
-
-

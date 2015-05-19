@@ -34,7 +34,7 @@ public :: param_type, init_param
     real(rp) :: time_start ! start time [a]
     real(rp) :: time_finish ! finish time [a]
     real(rp) :: time_step ! time step [a]
-    real(rp) :: time_step_write ! interval btw outputs, [a]
+    real(rp), allocatable :: time_write(:) ! output times, [a]
     character(len=500) :: climate_name ! climate method name
     real(rp), allocatable :: climate_param(:) ! climate model parameters, [various]
     character(len=500) :: ice_name ! ice method name
@@ -68,6 +68,8 @@ contains
   subroutine init_param(p)
 
     type(param_type), intent(inout) :: p
+
+    integer :: i
 
     ! positive grid dimensions
     if (p%nx .le. 0) then
@@ -133,11 +135,30 @@ contains
       stop 'Stopped.'
     end if
 
-    ! write step is a multiple of the time step
-    print *, mod(p%time_step, p%time_step_write)
-    if (mod(p%time_step, p%time_step_write) .gt. epsilon(0.0_rp)) then
-      print *, 'Invalid parameters: time_step_write must be a multiple of time_step.'
-      stop 'Stopped.'
+    ! write steps must be monotonic 
+    if (size(p%time_write) .gt. 1) then
+      do i = 1, size(p%time_write)-1
+        if ((p%time_step .gt. 0.0_rp) .and. &
+            (p%time_write(i+1) .le. p%time_write(i))) then
+          print *, 'Invalid parameters: time_write must be monotonically &
+                   &increasing for forward models'
+          stop
+        end if
+        if ((p%time_step .lt. 0.0_rp) .and. &
+            (p%time_write(i+1) .ge. p%time_write(i))) then
+          print *, 'Invalid parameters: time_write must be monotonically &
+                   &decreasing for reverse models'
+          stop
+        end if
+      end do
+    end if
+   
+    ! write steps must all be between start and finish
+    if ((minval(p%time_write) .lt. min(p%time_start, p%time_finish)) .or. &
+        (maxval(p%time_write) .gt. max(p%time_start, p%time_finish))) then
+      print *, 'Invalid parameters: write steps must all be between start &
+                &and finish.'
+      stop
     end if
 
     ! computational grid has 1 ghost-point on all boundaries

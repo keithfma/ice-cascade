@@ -168,8 +168,13 @@ contains
     e = nf90_get_att(ncid, nf90_global, 'time_step__a', p%time_step)
     call req('read_param: time_step__a: ', e)
     
-    e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
-    call req('read_param: time_step_write__a: ', e)
+    !e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
+    !call req('read_param: time_step_write__a: ', e)
+    e = nf90_inquire_attribute(ncid, nf90_global, 'time_write__a', len = n)
+    call req('read_param: time_write__a: ', e)
+    allocate(p%time_write(n))
+    e = nf90_get_att(ncid, nf90_global, 'time_write__a', p%time_write)
+    call req('read_param: time_write__a: ', e)
     
     e = nf90_get_att(ncid, nf90_global, 'climate_name', p%climate_name)
     call req('read_param: climate_name: ', e)
@@ -421,7 +426,7 @@ contains
     
     e = nf90_put_att(ncid, nf90_global, 'time_step__a', p%time_step)
     
-    e = nf90_put_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
+    e = nf90_put_att(ncid, nf90_global, 'time_write__a', p%time_write)
     
     e = nf90_put_att(ncid, nf90_global, 'climate_name', p%climate_name)
     
