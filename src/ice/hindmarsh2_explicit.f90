@@ -113,7 +113,7 @@ contains
         dsurf_dy_mid = c2*(s%surf(i,j+1)-s%surf(i,j-1)+ &
                            s%surf(i+1,j+1)-s%surf(i+1,j-1))
         D = gam*(ice_h_mid**5)*(dsurf_dx_mid*dsurf_dx_mid+ &
-                                dsurf_dy_mid**dsurf_dy_mid)
+                                dsurf_dy_mid*dsurf_dy_mid)
         qx(i,j-1) = -D*dsurf_dx_mid
         Dmax = max(Dmax, D)
       end do
@@ -129,15 +129,15 @@ contains
         dsurf_dx_mid = c2*(s%surf(i+1,j)-s%surf(i-1,j)+ &
                            s%surf(i+1,j+1)-s%surf(i-1,j+1))
         D = gam*(ice_h_mid**5)*(dsurf_dx_mid*dsurf_dx_mid+ &
-                                dsurf_dy_mid**dsurf_dy_mid)
+                                dsurf_dy_mid*dsurf_dy_mid)
         qy(i-1,j) = -D*dsurf_dy_mid
         Dmax = max(Dmax, D)
       end do
     end do
 
       ! thickness rate of change
-      c1 = 1.0_rp/p%dx
-      c2 = 1.0_rp/p%dy
+      c1 = -1.0_rp/p%dx
+      c2 = -1.0_rp/p%dy
       do j = 2, p%ny-1
         do i = 2, p%nx-1
           s%ice_h_dot(i,j) = c1*(qx(i,j-1)-qx(i-1,j-1))+ &

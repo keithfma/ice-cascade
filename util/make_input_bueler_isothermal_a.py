@@ -53,7 +53,7 @@ A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
-tf = 300. # model end time
+tf = 10000. # model end time
 dt = 100. # model time step
 dtw = dt # model output time step
 
