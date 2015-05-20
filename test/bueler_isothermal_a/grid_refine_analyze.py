@@ -37,7 +37,7 @@ h_err_abs = [] # abs(error)
 h_err_abs_max = [] # max of abs(error)
 h_err_abs_mean = [] # mean of abs(error)
 h_err_abs_std = [] # standard deviation of abs(error)
-h_err_dome = [] # error at ice cap center
+h_err_abs_dome = [] # error at ice cap center
 
 # loop over output files
 files = glob.glob(dir+'/bueler_isothermal_a_out_*.nc')
@@ -58,15 +58,42 @@ for i in range(len(files)):
   h_err_abs_max.append(h_err_abs[i].max())
   h_err_abs_mean.append(np.mean(h_err_abs[i][mask]))
   h_err_abs_std.append(np.std(h_err_abs[i][mask]))
-  h_err_dome.append(h_err[i][0,0])
+  h_err_abs_dome.append(h_err_abs[i][0,0])
+
+# fit power law function to statistics
+def fit_power_law(e, n):
   
-  # debug
-  print nx[i], dx[i], h_err_abs_max[i], h_err_abs_mean[i], h_err_abs_std[i], h_err_dome[i]
+  n = np.matrix(n, dtype = np.float64)
+  n = np.reshape(n, (n.size, 1))
+  n = np.log10(n)
+  ones = np.ones((n.size,1))
+  A = np.hstack([ones, n])
 
+  e = np.matrix(e, dtype = np.float64)
+  e = np.reshape(e, (e.size, 1))
+  e = np.log10(e)
+  b = e
 
-# fit power law function to scalar results
+  (x, residuals, rank, s) = np.linalg.lstsq(A,b)
+  
+  coeff = 10.**x.item(0)
+  power = x.item(1)
+
+  return (coeff, power)
+
 
 # plot scalar results
+(c, p) = fit_power_law(h_err_abs_max, nx)
+x = np.linspace(min(nx), max(nx), 100)
+y = c*x**p
+print 'coeff: ', c
+print 'power: ', p
+
+plt.figure()
+plt.plot(nx, h_err_abs_max, 'ro')
+plt.plot(x, y)
+plt.show()
+
 
 # tabulate scalar results
 

@@ -29,7 +29,7 @@ else:
     os.makedirs(dir)
 
 # define grid sizes
-nxy = [16, 32, 64, 128, 256]
+nxy = [30, 60, 90, 120]
 
 # figure out padding
 d = 1

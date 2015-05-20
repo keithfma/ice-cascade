@@ -33,13 +33,13 @@ M0 = 0.3 # surface ice flux, [m_ice/a]
 L = 7.5e5 # ice cap radius, [m]
 g = 9.81 # acceleration of gravity, [m/s2]
 rhoi = 910. # ice density, [kg/m3]
-A = 10.0e-16 # ice deformation coeff, [Pa-3 a-1]
+A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
-lxy = 1.2*L # domain dimensions, 20% larger than icecap
+lxy = L # domain dimensions
 ti = 0. # model start time
 tf = 25000. # model end time
-dt = 100. # model time step
+dt = 100. # model time step, should be irrelevant
 tw = 25000. # output steps
 
 # main function
