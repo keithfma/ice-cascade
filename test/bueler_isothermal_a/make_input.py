@@ -40,8 +40,7 @@ lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step
-#tw = 25000. # output steps
-tw = np.linspace(ti, tf, 10)
+tw = 25000. # output steps
 
 # main function
 def main(filename, nxy):
@@ -89,7 +88,7 @@ def main(filename, nxy):
   file.write_ice_h_soln = 1 
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
-  #file.variables['ice_h'][:,:] = ice_h_soln
+  file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
   
   # finalize

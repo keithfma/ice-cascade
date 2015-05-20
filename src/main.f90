@@ -29,10 +29,9 @@ call read_var(p, s)
 ! init module components
 call init_ice(p, s) ! should update internally to set initial values
 call init_climate(p, s)
-!
+
 ! init output file
 call write_file(p)
-call write_step(p, s)
 
 ! Start loop
 n = 1

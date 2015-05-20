@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 #
 # Prepare input files for grid refinement experiment for Test A in [1]. Depends
-# on the make_input.py script to generate input files.
+# on the make_input.py script to generate input files. Expects one input
+# argument with the directory to write the files to.
+#
+# Usage ./grid_refine_setup.py dir
 #
 # References:
 #
@@ -12,10 +15,21 @@
 #
 # Keith Ma, May 2015
 
+import sys
+import os
 import make_input
 
+# parse input arguments
+if len(sys.argv) != 2:
+  print 'Usage: grid_refine_setup.py dir'
+  sys.exit()
+else: 
+  dir = sys.argv[1]
+  if not os.path.exists(dir):
+    os.makedirs(dir)
+
 # define grid sizes
-nxy = [16, 32, 64]
+nxy = [16, 32, 64, 128, 256]
 
 # figure out padding
 d = 1
@@ -24,6 +38,6 @@ while (max(nxy) > 10**d):
 
 # generate files
 for n in nxy:
-  filename = 'bueler_isothermal_a_in_'+str(n).zfill(d)+'.nc'
+  filename = dir+'/bueler_isothermal_a_in_'+str(n).zfill(d)+'.nc'
   print filename
   make_input.main(filename, n)
