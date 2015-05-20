@@ -40,8 +40,7 @@ lxy = 1.2*L # domain dimensions, 20% larger than icecap
 ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step
-#tw = 25000. # output steps
-tw = np.linspace(ti, tf, 10)
+tw = 25000. # output steps
 
 # main function
 def main(filename, nxy):
