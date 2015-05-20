@@ -94,7 +94,6 @@ plt.plot(nx, h_err_abs_max, 'ro')
 plt.plot(x, y)
 plt.show()
 
-
 # tabulate scalar results
 
 # plot difference maps
