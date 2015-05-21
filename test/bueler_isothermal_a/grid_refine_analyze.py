@@ -16,6 +16,7 @@
 
 import glob
 import sys
+import os
 import numpy as np
 import netCDF4 as nc
 import matplotlib.pyplot as plt
@@ -115,39 +116,88 @@ for i in range(len(files)):
   h_err_abs_std.append(np.std(h_err_abs[i][mask]))
   h_err_abs_dome.append(h_err_abs[i][0,0])
 
-# plot mean absolute error
-plot_data(nx, h_err_abs_mean)
-plt.title('Bueler et al 2005, Test A, Grid Refinement')
-plt.ylabel('Mean absolute error')
-plt.savefig(dir+'/bueler_isothermal_a_err_abs_mean.pdf')
-plt.close()
-
-# plot max absolute error
-plot_data(nx, h_err_abs_max)
-plt.title('Bueler et al 2005, Test A, Grid Refinement')
-plt.ylabel('Max absolute error')
-plt.savefig(dir+'/bueler_isothermal_a_err_abs_max.pdf')
-plt.close()
-
-# plot dome absolute error
-plot_data(nx, h_err_abs_dome)
-plt.title('Bueler et al 2005, Test A, Grid Refinement')
-plt.ylabel('Dome absolute error')
-plt.savefig(dir+'/bueler_isothermal_a_err_abs_dome.pdf')
-plt.close()
+## plot mean absolute error
+#plot_data(nx, h_err_abs_mean)
+#plt.title('Bueler et al 2005, Test A, Mean Absolute Error')
+#plt.ylabel('Mean absolute error')
+#plt.savefig(dir+'/bueler_isothermal_a_err_abs_mean.pdf')
+#plt.close()
+#
+## plot max absolute error
+#plot_data(nx, h_err_abs_max)
+#plt.title('Bueler et al 2005, Test A, Max Absolute Error')
+#plt.ylabel('Max absolute error')
+#plt.savefig(dir+'/bueler_isothermal_a_err_abs_max.pdf')
+#plt.close()
+#
+## plot dome absolute error
+#plot_data(nx, h_err_abs_dome)
+#plt.title('Bueler et al 2005, Test A, Dome Absolute Error')
+#plt.ylabel('Dome absolute error')
+#plt.savefig(dir+'/bueler_isothermal_a_err_abs_dome.pdf')
+#plt.close()
 
 # figure out padding
 d = 1
 while (max(nx) > 10**d):
   d = d+1
 
-# plot difference maps
-for i in range(len(h_err)):
-  plot_map(h_err[i], dx[i]/1000.)
-  plt.title('''Bueler et al 2005, Test A
-      N = {0:.0f}, Delta = {1:.0f} m'''.format(nx[i], dx[i]))
-  plt.savefig(dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf')
-  plt.close()
+## plot difference maps
+#for i in range(len(h_err)):
+#  plot_map(h_err[i], dx[i]/1000.)
+#  plt.title('''Bueler et al 2005, Test A
+#      N = {0:.0f}, Delta = {1:.0f} m'''.format(nx[i], dx[i]))
+#  plt.savefig(dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf')
+#  plt.close()
 
-# generate report using latex
+# create latex report including figures and tabulared scalars
+with open(dir+'/bueler_isothermal_a_report.tex', 'w') as f:
+  
+  f.write('\documentclass[11pt]{article}\n')
+  f.write('\usepackage[margin=1.0in]{geometry}\n')
+  f.write('\usepackage{graphicx}\n')
+  f.write('\usepackage{placeins}\n')
+  f.write('\\title{Bueler et al, 2005 Test A, Grid Refinement Experiment}\n')
+  
+  f.write('\\begin{document}\n')
+  f.write('\maketitle\n')
 
+  f.write('\section{Error Maps}\n')
+
+  for i in range(len(nx)):
+    pdf = dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf'
+    f.write('\\begin{figure}[h]\n')
+    f.write('\centering\n')
+    f.write('\centerline{\includegraphics{'+pdf+'}}\n')
+    f.write('\end{figure}\n')
+
+  f.write('\FloatBarrier\n')
+  f.write('\section{Error Statistics}\n')
+ 
+  f.write('\\begin{figure}[h]\n')
+  f.write('\centering\n')
+  f.write('\centerline{\includegraphics{'+dir+'/bueler_isothermal_a_err_abs_max.pdf}}\n')
+  f.write('\end{figure}\n')
+  
+  f.write('\\begin{figure}[h]\n')
+  f.write('\centering\n')
+  f.write('\centerline{\includegraphics{'+dir+'/bueler_isothermal_a_err_abs_mean.pdf}}\n')
+  f.write('\end{figure}\n')
+
+  f.write('\\begin{figure}[h]\n')
+  f.write('\centering\n')
+  f.write('\centerline{\includegraphics{'+dir+'/bueler_isothermal_a_err_abs_dome.pdf}}\n')
+  f.write('\end{figure}\n')
+  
+  f.write('\end{document}\n')
+
+# compile report
+os.system('pdflatex '+dir+'/bueler_isothermal_a_report.tex')
+os.system('pdflatex '+dir+'/bueler_isothermal_a_report.tex')
+
+# clean up working files
+os.rename('bueler_isothermal_a_report.pdf',
+  dir+'/bueler_isothermal_a_report.pdf')
+for f in glob.glob('bueler_isothermal_a_report.*'):
+  os.remove(f)
+  
