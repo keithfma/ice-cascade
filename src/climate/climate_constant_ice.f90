@@ -7,9 +7,9 @@
 ! Parameters:
 !   (1) constant (in space and time) surface ice flux [m_ice/a]
 !
-! Public: init_constant_ice, update_constant_ice
+! Public: init_constant_ice
 !
-! Private
+! Private: None
 ! 
 ! =============================================================================
 
@@ -21,7 +21,7 @@ use state, only: state_type
 
 implicit none
 private
-public :: init_constant_ice, update_constant_ice
+public :: init_constant_ice 
 
 contains
 
@@ -44,18 +44,5 @@ contains
     s%ice_q_surf = p%climate_param(1)
 
   end subroutine init_constant_ice
-
-
-  ! ---------------------------------------------------------------------------
-  ! SUB: get climate at current time (do nothing!) 
-  ! ---------------------------------------------------------------------------
-  subroutine update_constant_ice(p, s)
-    
-    type(param_type), intent(in) :: p
-    type(state_type), intent(inout) :: s
-
-    ! constant climate, do nothing
-
-  end subroutine update_constant_ice
 
 end module climate_constant_ice

@@ -15,8 +15,9 @@ module climate
 use kinds, only: rp
 use param, only: param_type
 use state, only: state_type
-use climate_bueler_isothermal_a, only: init_bueler_isothermal_a, &
-  update_bueler_isothermal_a
+use climate_constant_ice, only: init_constant_ice
+use climate_bueler_isothermal_a, only: &
+  init_bueler_isothermal_a, update_bueler_isothermal_a
 
 implicit none
 private
@@ -41,6 +42,7 @@ public :: on_climate, init_climate, update_climate
   logical :: on_climate ! enable/disable model
   procedure(update_tmpl), pointer :: update_climate ! selected climate model
 
+
 contains
 
   ! ---------------------------------------------------------------------------
@@ -57,6 +59,10 @@ contains
     case ('none')
       on_climate = .false.
       update_climate => NULL() ! will seg-fault if called, by design
+
+    case ('constant_ice')
+      on_climate = .false.
+      call init_constant_ice(p, s)
     
     case('bueler_isothermal_a')
       on_climate = .true.
