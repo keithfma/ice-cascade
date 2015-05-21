@@ -26,12 +26,13 @@ kinds.f90 \
 param.f90 \
 state.f90 \
 io.f90 \
-ice/bc_no_ice.f90 \
-ice/bc_mirror.f90 \
-ice/bueler_isothermal_a.f90 \
-ice/hindmarsh2_explicit.f90 \
+ice/ice_bc_no_ice.f90 \
+ice/ice_bc_mirror.f90 \
+ice/ice_bueler_isothermal_a.f90 \
+ice/ice_hindmarsh2_explicit.f90 \
 ice/ice.f90 \
-climate/bueler_isothermal_a.f90 \
+climate/climate_bueler_isothermal_a.f90 \
+climate/climate_constant_ice.f90 \
 climate/climate.f90 \
 main.f90
 

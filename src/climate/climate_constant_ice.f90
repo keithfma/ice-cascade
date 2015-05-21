@@ -1,0 +1,61 @@
+! =============================================================================
+! Climate method
+!
+! Description: Constant surface ice flux set using a single input parameter, all
+!   other climate variables are ignored.
+!
+! Parameters:
+!   (1) constant (in space and time) surface ice flux [m_ice/a]
+!
+! Public: init_constant_ice, update_constant_ice
+!
+! Private
+! 
+! =============================================================================
+
+module climate_constant_ice
+
+use kinds, only: rp
+use param, only: param_type
+use state, only: state_type
+
+implicit none
+private
+public :: init_constant_ice, update_constant_ice
+
+contains
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: check parameters and initialize variables, only once
+  ! ---------------------------------------------------------------------------
+  subroutine init_constant_ice(p, s)
+
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+
+    ! expect exactly 1 parameter
+    if (size(p%climate_param) .ne. 2) then
+      print *, 'Invalid climate parameters: constant_ice requires &
+               &exactly 1 parameter.'
+      stop
+    end if
+
+    ! set state variable, which will remain constant thereafter
+    s%ice_q_surf = p%climate_param(1)
+
+  end subroutine init_constant_ice
+
+
+  ! ---------------------------------------------------------------------------
+  ! SUB: get climate at current time (do nothing!) 
+  ! ---------------------------------------------------------------------------
+  subroutine update_constant_ice(p, s)
+    
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+
+    ! constant climate, do nothing
+
+  end subroutine update_constant_ice
+
+end module climate_constant_ice

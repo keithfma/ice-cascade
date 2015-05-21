@@ -77,7 +77,8 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
-  file.climate_name = 'predefined'
+  file.climate_name = 'constant_ice'
+  file.climate_param__var = [0.]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,mirror,mirror'
