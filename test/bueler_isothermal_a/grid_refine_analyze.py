@@ -75,7 +75,6 @@ def plot_map(z, d):
   
   return
 
-
 # parse input arguments
 if len(sys.argv) != 2:
   print 'Usage: grid_refine_analyze.py dir'
@@ -116,39 +115,39 @@ for i in range(len(files)):
   h_err_abs_std.append(np.std(h_err_abs[i][mask]))
   h_err_abs_dome.append(h_err_abs[i][0,0])
 
-## plot mean absolute error
-#plot_data(nx, h_err_abs_mean)
-#plt.title('Bueler et al 2005, Test A, Mean Absolute Error')
-#plt.ylabel('Mean absolute error')
-#plt.savefig(dir+'/bueler_isothermal_a_err_abs_mean.pdf')
-#plt.close()
-#
-## plot max absolute error
-#plot_data(nx, h_err_abs_max)
-#plt.title('Bueler et al 2005, Test A, Max Absolute Error')
-#plt.ylabel('Max absolute error')
-#plt.savefig(dir+'/bueler_isothermal_a_err_abs_max.pdf')
-#plt.close()
-#
-## plot dome absolute error
-#plot_data(nx, h_err_abs_dome)
-#plt.title('Bueler et al 2005, Test A, Dome Absolute Error')
-#plt.ylabel('Dome absolute error')
-#plt.savefig(dir+'/bueler_isothermal_a_err_abs_dome.pdf')
-#plt.close()
+# plot mean absolute error
+plot_data(nx, h_err_abs_mean)
+plt.title('Bueler et al 2005, Test A, Mean Absolute Error')
+plt.ylabel('Mean absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_mean.pdf')
+plt.close()
+
+# plot max absolute error
+plot_data(nx, h_err_abs_max)
+plt.title('Bueler et al 2005, Test A, Max Absolute Error')
+plt.ylabel('Max absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_max.pdf')
+plt.close()
+
+# plot dome absolute error
+plot_data(nx, h_err_abs_dome)
+plt.title('Bueler et al 2005, Test A, Dome Absolute Error')
+plt.ylabel('Dome absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_dome.pdf')
+plt.close()
 
 # figure out padding
 d = 1
 while (max(nx) > 10**d):
   d = d+1
 
-## plot difference maps
-#for i in range(len(h_err)):
-#  plot_map(h_err[i], dx[i]/1000.)
-#  plt.title('''Bueler et al 2005, Test A
-#      N = {0:.0f}, Delta = {1:.0f} m'''.format(nx[i], dx[i]))
-#  plt.savefig(dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf')
-#  plt.close()
+# plot difference maps
+for i in range(len(h_err)):
+  plot_map(h_err[i], dx[i]/1000.)
+  plt.title('''Bueler et al 2005, Test A
+      N = {0:.0f}, Delta = {1:.0f} m'''.format(nx[i], dx[i]))
+  plt.savefig(dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf')
+  plt.close()
 
 # create latex report including figures and tabulared scalars
 with open(dir+'/bueler_isothermal_a_report.tex', 'w') as f:
@@ -162,6 +161,20 @@ with open(dir+'/bueler_isothermal_a_report.tex', 'w') as f:
   f.write('\\begin{document}\n')
   f.write('\maketitle\n')
 
+  f.write('\section{Error Statistics}\n')
+
+  f.write('\\begin{table}[h]\n')
+  f.write('\\begin{tabular}{rrrrr}\n')
+  f.write('$N$ & $\Delta$ & max$|err|$ & mean$|err|$ & $|err|$ dome \\\\\n')
+  f.write('\hline\n')
+  for i in range(len(nx)):
+    f.write('{0:.0f} & {1:.0f} & {2:.0f} & {3:.0f} & {4:.0f} \\\\\n'.format(
+      nx[i], dx[i], h_err_abs_max[i], h_err_abs_mean[i], h_err_abs_dome[i]))
+  f.write('\hline\n')
+  f.write('\end{tabular}\n')
+  f.write('\end{table}\n')
+
+  f.write('\FloatBarrier\n')
   f.write('\section{Error Maps}\n')
 
   for i in range(len(nx)):
@@ -172,7 +185,7 @@ with open(dir+'/bueler_isothermal_a_report.tex', 'w') as f:
     f.write('\end{figure}\n')
 
   f.write('\FloatBarrier\n')
-  f.write('\section{Error Statistics}\n')
+  f.write('\section{Convergence Rate Estimates}\n')
  
   f.write('\\begin{figure}[h]\n')
   f.write('\centering\n')
