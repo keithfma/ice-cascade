@@ -20,6 +20,61 @@ import numpy as np
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 
+# fit power law
+def fit_power_law(x, y):
+  
+  x = np.matrix(x, dtype = np.float64)
+  x = np.reshape(x, (x.size, 1))
+  x = np.log10(x)
+  one = np.ones((x.size,1))
+  y = np.matrix(y, dtype = np.float64)
+  y = np.reshape(y, (y.size, 1))
+  y = np.log10(y)
+  A = np.hstack([one, x])
+  b = y
+
+  (param, residuals, rank, s) = np.linalg.lstsq(A,b)
+  c = 10.**param.item(0)
+  p = param.item(1)
+
+  return (c, p)
+
+# plot data with power law fit
+def plot_data(x, y):
+  
+  (c, p) = fit_power_law(x, y)
+  xf = np.linspace(min(x), max(x), 100)
+  yf = c*xf**p
+
+  plt.figure()
+  plt.loglog(x, y, 'o')
+  plt.loglog(xf, yf)
+  plt.xlim(min(x), max(x))
+  plt.text(0.5, 0.9, 'y = {0:.2f} x ** {1:.2f}'.format(c, p),
+    size = 14, horizontalalignment='center', verticalalignment='center', 
+    transform = plt.gca().transAxes)
+  plt.xlabel('N grid points')
+  plt.grid(True, which = 'both')
+
+  return 
+
+# plot error maps
+def plot_map(z, d):
+
+  (nx, ny) = z.shape
+  extr = np.amax(abs(z))
+
+  plt.figure()
+  plt.imshow(z, cmap = 'bwr', interpolation = 'none', 
+    extent = (0., d*(nx-1), 0., d*(ny-1)), origin = 'lower', 
+    vmin = -extr, vmax = extr) 
+  plt.colorbar(label = 'Error, m')
+  plt.xlabel('X-position, km')
+  plt.ylabel('Y-position, km')
+  
+  return
+
+
 # parse input arguments
 if len(sys.argv) != 2:
   print 'Usage: grid_refine_analyze.py dir'
@@ -60,43 +115,39 @@ for i in range(len(files)):
   h_err_abs_std.append(np.std(h_err_abs[i][mask]))
   h_err_abs_dome.append(h_err_abs[i][0,0])
 
-# fit power law function to statistics
-def fit_power_law(e, n):
-  
-  n = np.matrix(n, dtype = np.float64)
-  n = np.reshape(n, (n.size, 1))
-  n = np.log10(n)
-  ones = np.ones((n.size,1))
-  A = np.hstack([ones, n])
+# plot mean absolute error
+plot_data(nx, h_err_abs_mean)
+plt.title('Bueler et al 2005, Test A, Grid Refinement')
+plt.ylabel('Mean absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_mean.pdf')
+plt.close()
 
-  e = np.matrix(e, dtype = np.float64)
-  e = np.reshape(e, (e.size, 1))
-  e = np.log10(e)
-  b = e
+# plot max absolute error
+plot_data(nx, h_err_abs_max)
+plt.title('Bueler et al 2005, Test A, Grid Refinement')
+plt.ylabel('Max absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_max.pdf')
+plt.close()
 
-  (x, residuals, rank, s) = np.linalg.lstsq(A,b)
-  
-  coeff = 10.**x.item(0)
-  power = x.item(1)
+# plot dome absolute error
+plot_data(nx, h_err_abs_dome)
+plt.title('Bueler et al 2005, Test A, Grid Refinement')
+plt.ylabel('Dome absolute error')
+plt.savefig(dir+'/bueler_isothermal_a_err_abs_dome.pdf')
+plt.close()
 
-  return (coeff, power)
-
-
-# plot scalar results
-(c, p) = fit_power_law(h_err_abs_max, nx)
-x = np.linspace(min(nx), max(nx), 100)
-y = c*x**p
-print 'coeff: ', c
-print 'power: ', p
-
-plt.figure()
-plt.plot(nx, h_err_abs_max, 'ro')
-plt.plot(x, y)
-plt.show()
-
-# tabulate scalar results
+# figure out padding
+d = 1
+while (max(nx) > 10**d):
+  d = d+1
 
 # plot difference maps
+for i in range(len(h_err)):
+  plot_map(h_err[i], dx[i]/1000.)
+  plt.title('''Bueler et al 2005, Test A
+      N = {0:.0f}, Delta = {1:.0f} m'''.format(nx[i], dx[i]))
+  plt.savefig(dir+'/bueler_isothermal_a_err_'+str(nx[i]).zfill(d)+'.pdf')
+  plt.close()
 
-# generate pdf
+# generate report using latex
 

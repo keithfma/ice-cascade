@@ -1,5 +1,4 @@
 ice-cascade
-test-ice-cascade
 *.out
 *~
 src/*.o
@@ -14,6 +13,5 @@ src/climate/*.mod
 to_delete
 *.pyc
 *.nc
-in_a
-in_b
 src/old_climate.f90
+test/bueler_isothermal_a/hindmarsh2_explicit

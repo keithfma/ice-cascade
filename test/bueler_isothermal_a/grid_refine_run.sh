@@ -15,6 +15,7 @@
 #$ -l h_rt=12:00:00
 #$ -j y
 #$ -o log.txt
+#$ -V
 
 if [[ $# -eq 0 ]] ; then 
   echo 'Usage: grid_refine_run.sh dir' 
