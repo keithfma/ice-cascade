@@ -34,7 +34,7 @@ contains
     type(state_type), intent(inout) :: s
 
     ! expect exactly 1 parameter
-    if (size(p%climate_param) .ne. 2) then
+    if (size(p%climate_param) .ne. 1) then
       print *, 'Invalid climate parameters: constant_ice requires &
                &exactly 1 parameter.'
       stop

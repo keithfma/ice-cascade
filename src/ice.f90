@@ -196,7 +196,7 @@ contains
     real(rp) :: t, dt
 
     t = 0.0_rp
-    do while (t .lt. p%time_step) 
+    do while (t .lt. s%step) 
 
       ! init grids
       call nbc(s)
@@ -207,7 +207,7 @@ contains
 
       ! ice flow procedure
       dt = flow(p, s)
-      dt = min(dt, p%time_step-t) ! trim last step
+      dt = min(dt, s%step-t) ! trim last step
 
       ! update
       t = t+dt

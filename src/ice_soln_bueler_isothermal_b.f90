@@ -67,11 +67,11 @@ contains
     end if
 
     ! rename parameters
-    alpha = p%ice_param(1)
-    beta = p%ice_param(2)
-    h0 = p%ice_param(3)
-    r0 = p%ice_param(4)
-    t0 = p%ice_param(5)
+    alpha = p%ice_soln_param(1)
+    beta = p%ice_soln_param(2)
+    h0 = p%ice_soln_param(3)
+    r0 = p%ice_soln_param(4)
+    t0 = p%ice_soln_param(5)
 
     ! h0 must be positive
     if (h0 .le. 0.0_rp) then
@@ -118,7 +118,7 @@ contains
     real(rp) :: c1, c2, e1, e2, rm, tp
 
     ! compute some constants
-    tp = s%time_now/t0 
+    tp = s%now/t0 
     c1 = h0*tp**(-alpha)
     c2 = tp**(-beta)/r0
     e1 = 4.0_rp/3.0_rp

@@ -11,7 +11,7 @@ implicit none
 
 type(param_type) :: p
 type(state_type) :: s
-real(rp) :: step, step_max
+real(rp) :: step_lim
 integer :: n
 
 ! NOTE: should the init routines run the update functions to set the starting
@@ -27,7 +27,7 @@ call init_state(p, s)
 call read_var(p, s)
 
 ! init module components
-call init_ice(p, s) ! should update internally to set initial values
+call init_ice(p, s) 
 call init_climate(p, s)
 
 ! init output file
@@ -35,25 +35,24 @@ call write_file(p)
 
 ! Start loop
 n = 1
-step = p%time_step
-do while (s%time_now .lt. p%time_finish)
+do while (s%now .lt. p%time_finish)
 
   ! truncate time step to hit end or write time exactly
-  step_max = min(p%time_write(n), p%time_finish)-s%time_now
-  if (step_max .lt. step) step = step_max
+  step_lim = min(p%time_write(n), p%time_finish)-s%now
+  if (step_lim .lt. s%step) s%step = step_lim
 
   ! Update model state 
   if (on_climate) call update_climate(p, s)
   if (on_ice) call update_ice(p, s)
 
   ! Increment time
-  s%time_now = s%time_now+step
+  s%now = s%now+s%step
 
   ! Apply erosion/deposition/isostasy
 
   ! Write step 
-  if (abs(s%time_now-p%time_write(n)) .le. epsilon(0.0_rp)) then
-    step = p%time_step ! reset step
+  if (abs(s%now-p%time_write(n)) .le. epsilon(0.0_rp)) then
+    s%step = p%time_step ! reset step
     if (on_ice_soln) call solve_ice(p, s)
     call write_status(p, s)
     call write_step(p, s)

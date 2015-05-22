@@ -168,8 +168,6 @@ contains
     e = nf90_get_att(ncid, nf90_global, 'time_step__a', p%time_step)
     call req('read_param: time_step__a: ', e)
     
-    !e = nf90_get_att(ncid, nf90_global, 'time_step_write__a', p%time_step_write)
-    !call req('read_param: time_step_write__a: ', e)
     e = nf90_inquire_attribute(ncid, nf90_global, 'time_write__a', len = n)
     call req('read_param: time_write__a: ', e)
     allocate(p%time_write(n))
@@ -639,7 +637,7 @@ contains
 
     ! write data
     e = nf90_inq_varid(ncid, 't', vid)
-    e = nf90_put_var(ncid, vid, s%time_now, [n] )
+    e = nf90_put_var(ncid, vid, s%now, [n] )
 
     if (p%write_topo) then
       e = nf90_inq_varid(ncid, 'topo', vid)
@@ -730,7 +728,7 @@ contains
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
 
-      print "('TIME [a]                         : ', EN12.3)", s%time_now 
+      print "('TIME [a]                         : ', EN12.3)", s%now 
 
     if (p%write_topo) then
       print "('TOPO (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &

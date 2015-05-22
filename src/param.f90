@@ -161,6 +161,20 @@ contains
       stop
     end if
 
+    ! model cannot end after the last write step
+    if ((p%time_step .gt. 0.0_rp) .and. &
+        (maxval(p%time_write) .lt. p%time_finish)) then
+      print *, 'Invalid parameters: model cannot end after the last time step &
+                &for forward models.' 
+      stop
+    end if
+    if ((p%time_step .lt. 0.0_rp) .and. &
+        (minval(p%time_write) .gt. p%time_finish)) then
+      print *, 'Invalid parameters: model cannot end before the last time step &
+                &for reverse models.' 
+      stop
+    end if
+
     ! computational grid has 1 ghost-point on all boundaries
     p%nx = p%nx+2
     p%ny = p%ny+2
