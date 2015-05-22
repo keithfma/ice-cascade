@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #
-# Generate ICE-CASCADE input file for Test B in (1). Grid spacing is an
-# (optional) command line argument to facilitate grid refinement experiments.
+# Generate ICE-CASCADE input file for Test B in [1]. This 'full' variant
+# computes the whole ice cap, as opposed to only the northeast quadrant as in
+# [1] Grid spacing is an (optional) command line argument to facilitate grid
+# refinement experiments.
 #
 # Usage:
 #   ./make_input_bueler_isothermal_b filename nxy
@@ -47,9 +49,16 @@ lxy = 1.1*R0*(tf/t0)**beta # domain dimensions (final radius + 10%)
 
 # main function
 def main(filename, nxy):
+
+  # confirm that nxy is odd and greater than 1
+  if (nxy%2 == 0) or (nxy < 3):
+    print 'Invalid value for input parameter nxy'
+    sys.exit()
   
   # coordinate grid
-  (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
+  dxy = 2.*lxy/float(nxy-1)
+  nhalf = (nxy-1)/2
+  xy = dxy*np.arange(-nhalf, nhalf+1, 1, dtype = np.float64) 
   (xx, yy) = np.meshgrid(xy, xy)
   rr = np.sqrt(xx**2+yy**2)
   
