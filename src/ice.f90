@@ -14,6 +14,13 @@
 !   solve_tmpl: template, common form for exact solution procedures
 !   sbc, nbc, wbc, ebc: procedure ptrs, selected bc procedures
 !   flow: procedure ptr, selected numerical ice flow procedure
+!   volume: function, compute ice volume using eq. 31 in ref [1]
+!
+! References:
+!   [1] Bueler, E., Lingle, C. S., Kallen-Brown, J. A., Covey, D. N., & Bowman,
+!   L.  N. (2005). Exact solutions and verification of numerical models for
+!   isothermal ice sheets. Journal of Glaciology, 51(173), 291-306.
+!   doi:10.3189/172756505781829449
 !   
 ! ============================================================================
 
@@ -215,11 +222,50 @@ contains
       s%ice_h = max(s%ice_h, 0.0_rp)
 
     end do
-    
+      
     ! update ancillary variables (velocity, etc.)
     ! NOTE: this will require a separate procedure for each flow method.
 
+    ! DEBUG: display numerical and exact ice volume 
+    print *, 'Time [a]: ', t
+    print *, 'Step [a]: ', s%step
+    print *, 'Numerical Volume [km3]: ', &
+      volume(s%ice_h, p%dx, p%dy)/(1000._rp**3)
+    print *, 'Exact Volume [km3]    : ', &
+      volume(s%ice_h_soln, p%dx, p%dy)/(1000._rp**3)
+
   end subroutine update_ice
+
+
+  ! ---------------------------------------------------------------------------
+  ! FUNC: compute ice volume using trapezoidal rule (ref [1], eq. 31) and
+  !   compensated summation (Kahan algorithm), ignore ghost points
+  ! ---------------------------------------------------------------------------
+  function volume(thk, dx, dy) result(vol)
+    
+    real(rp), intent(in) :: thk(:,:) ! ice thickness, [m]
+    real(rp), intent(in) :: dx, dy ! grid spacing, [m]
+    real(rp) :: vol ! ice volume, [m3]
+
+    integer :: i, j
+    real(rp) :: thk_sum, wrk1, wrk2, corr
+
+    thk_sum = 0.0_rp
+    corr = 0.0_rp
+    do j = 2, size(thk, 2)-1
+      do i = 2, size(thk, 1)-1
+        wrk1 = thk(i,j)-corr
+        wrk2 = thk_sum+wrk1
+        corr = (wrk2-thk_sum)-wrk1
+        thk_sum = wrk2
+      end do
+    end do
+
+    vol = thk_sum*dx*dy
+
+    return
+
+  end function
 
 
 end module ice

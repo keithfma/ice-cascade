@@ -126,7 +126,7 @@ contains
     
     ! solve
     rm = r0*tp**beta ! current margin radius
-    where (r .lt. rm)
+    where (r .le. rm)
       s%ice_h_soln = c1*(1-(c2*r)**e1)**e2
     elsewhere
       s%ice_h_soln = 0.0_rp
