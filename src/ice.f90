@@ -24,10 +24,12 @@ use param, only: param_type
 use state, only: state_type
 use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice 
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
-use ice_bueler_isothermal_a, only: init_bueler_isothermal_a, &
-  solve_bueler_isothermal_a
-use ice_hindmarsh2_explicit, only: init_hindmarsh2_explicit, &
-  flow_hindmarsh2_explicit
+use ice_flow_hindmarsh2_explicit, only: &
+  init_hindmarsh2_explicit, flow_hindmarsh2_explicit
+use ice_soln_bueler_isothermal_a, only: &
+  init_bueler_isothermal_a, solve_bueler_isothermal_a
+use ice_soln_bueler_isothermal_b, only: &
+  init_bueler_isothermal_b, solve_bueler_isothermal_b
 
 implicit none
 private
@@ -168,6 +170,11 @@ contains
         call init_bueler_isothermal_a(p, s)
         solve_ice => solve_bueler_isothermal_a
 
+      case('bueler_isothermal_b')
+        on_ice_soln = .true.
+        call init_bueler_isothermal_b(p, s)
+        solve_ice => solve_bueler_isothermal_b
+
       case default
         print *, "Invalid name for glacier exact solution: " // trim(p%ice_soln_name)
         stop 
@@ -189,7 +196,7 @@ contains
     real(rp) :: t, dt
 
     t = 0.0_rp
-    do while (t .lt. p%time_step) 
+    do while (t .lt. s%step) 
 
       ! init grids
       call nbc(s)
@@ -200,7 +207,7 @@ contains
 
       ! ice flow procedure
       dt = flow(p, s)
-      dt = min(dt, p%time_step-t) ! trim last step
+      dt = min(dt, s%step-t) ! trim last step
 
       ! update
       t = t+dt

@@ -15,3 +15,4 @@ to_delete
 *.nc
 src/old_climate.f90
 test/bueler_isothermal_a/hindmarsh2_explicit
+test/bueler_isothermal_b/hindmarsh2_explicit

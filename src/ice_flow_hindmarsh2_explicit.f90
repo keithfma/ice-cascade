@@ -35,7 +35,7 @@
 ! 
 ! =============================================================================
 
-module ice_hindmarsh2_explicit
+module ice_flow_hindmarsh2_explicit
 
 use kinds, only: rp
 use param, only: param_type
@@ -151,28 +151,6 @@ contains
   end function flow_hindmarsh2_explicit
 
 
-end module ice_hindmarsh2_explicit
+end module ice_flow_hindmarsh2_explicit
 
 
-!
-!      ! timestep
-!      dt = p%dx*p%dy/(8.0_dp*dif_max) ! stable
-!      dt = min(dt, p%time_step-t) ! trimmed
-!
-!      ! update thickness
-!      thck(iw:ie, js:jn) = thck(iw:ie, js:jn)+dt*(s%ice_h_dot+s%ice_q_surf)
-!      thck = max(thck, 0.0_rp)
-!      surf(iw:ie, js:jn) = thck(iw:ie, js:jn)+s%topo
-!      
-!      ! increment time
-!      t = t+dt
-!   
-!    end do
-!    ! end time stepping 
-!
-!    ! velocities
-!
-!    ! copy out shared variables
-!    s%ice_h = thck(iw:ie, js:jn)
-!
-!  end subroutine update_hindmarsh2_explicit

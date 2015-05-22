@@ -22,7 +22,8 @@ public :: state_type, init_state
   ! TYPE: shared state variables
   ! ---------------------------------------------------------------------------
   type state_type
-    real(rp) :: time_now ! current model time, [a]
+    real(rp) :: now ! current model time, [a]
+    real(rp) :: step ! current model time step, [a]
     real(rp), allocatable :: x(:) ! x coordinate vector, [m]
     real(rp), allocatable :: y(:) ! y coordinate vector, [m]
     real(rp), allocatable :: topo(:,:) ! bedrock elevation, [m above sea level]
@@ -76,7 +77,8 @@ contains
     allocate(s%ice_vs(p%nx, p%ny))
 
     ! set initial values (some are overwritten by read_vars)
-    s%time_now = p%time_start
+    s%now = p%time_start
+    s%step = p%time_step
     s%x = 0.0_rp
     s%y = 0.0_rp
     s%topo = 0.0_rp

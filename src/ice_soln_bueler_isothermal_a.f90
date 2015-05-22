@@ -23,7 +23,7 @@
 !
 ! =============================================================================
 
-module ice_bueler_isothermal_a
+module ice_soln_bueler_isothermal_a
 
 use kinds, only: rp
 use param, only: param_type
@@ -128,4 +128,4 @@ contains
   end subroutine solve_bueler_isothermal_a
 
 
-end module ice_bueler_isothermal_a
+end module ice_soln_bueler_isothermal_a

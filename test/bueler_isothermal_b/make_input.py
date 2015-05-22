@@ -41,8 +41,8 @@ A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 ti = t0
 tf = t0+25.e3 # [a]
-dt = 1000. # model time step
-tw = 25000. # output steps
+dt = 100. # model time step
+tw = np.linspace(ti, tf, 25) # output steps
 lxy = 1.1*R0*(tf/t0)**beta # domain dimensions (final radius + 10%)
 
 # main function
@@ -56,7 +56,7 @@ def main(filename, nxy):
   rr = np.sqrt(xx**2+yy**2)
   mask = np.where(rr/R0 <= 1)
   ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
-  ice_h_soln[mask] = H0*(1.-rr[mask]/R0)**(3./7.)
+  ice_h_soln[mask] = H0*(1.-(rr[mask]/R0)**(4./3.))**(3./7.)
   
   # create and open new input file
   file = ict.new_input(filename, nxy, nxy)
@@ -77,7 +77,8 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
-  file.climate_name = 'predefined'
+  file.climate_name = 'constant_ice'
+  file.climate_param__var = [0.]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,mirror,mirror'

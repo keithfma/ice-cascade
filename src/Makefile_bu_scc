@@ -26,13 +26,15 @@ kinds.f90 \
 param.f90 \
 state.f90 \
 io.f90 \
-ice/bc_no_ice.f90 \
-ice/bc_mirror.f90 \
-ice/bueler_isothermal_a.f90 \
-ice/hindmarsh2_explicit.f90 \
-ice/ice.f90 \
-climate/bueler_isothermal_a.f90 \
-climate/climate.f90 \
+ice_bc_no_ice.f90 \
+ice_bc_mirror.f90 \
+ice_soln_bueler_isothermal_a.f90 \
+ice_soln_bueler_isothermal_b.f90 \
+ice_flow_hindmarsh2_explicit.f90 \
+ice.f90 \
+climate_bueler_isothermal_a.f90 \
+climate_constant_ice.f90 \
+climate.f90 \
 main.f90
 
 OBJ = $(patsubst %.f90, %.o, $(SRC))
