@@ -54,7 +54,6 @@ contains
     type(state_type), intent(in) :: s
 
     integer :: i, j
-    real(rp) :: x, y
 
     ! expect exactly 3 parameters
     if (size(p%ice_soln_param) .ne. 3) then
@@ -89,13 +88,11 @@ contains
       stop 
     end if
 
-    ! radial distance from SW corner, ignoring ghost points, (2,2)
+    ! compute distance from x = 0, y = 0
     allocate(r(p%nx, p%ny))
     do j = 1, p%ny
       do i = 1, p%nx
-        x = s%x(i)-s%x(2)
-        y = s%y(j)-s%y(2)
-        r(i,j) = sqrt(x*x+y*y)
+        r(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
       end do
     end do
 

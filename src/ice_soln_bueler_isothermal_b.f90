@@ -57,7 +57,6 @@ contains
     type(state_type), intent(in) :: s
 
     integer :: i, j
-    real(rp) :: x, y
 
     ! expect exactly 5 parameters
     if (size(p%ice_soln_param) .ne. 5) then
