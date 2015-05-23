@@ -94,13 +94,11 @@ contains
       stop
     end if
 
-    ! radial distance from SW corner, ignoring ghost points, (2,2)
+    ! compute distance from x = 0, y = 0
     allocate(r(p%nx, p%ny))
     do j = 1, p%ny
       do i = 1, p%nx
-        x = s%x(i)-s%x(2)
-        y = s%y(j)-s%y(2)
-        r(i,j) = sqrt(x*x+y*y)
+        r(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
       end do
     end do
 
@@ -115,22 +113,34 @@ contains
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
 
-    real(rp) :: c1, c2, e1, e2, rm, tp
+    real(rp) :: hd, rm
 
-    ! compute some constants
-    tp = s%now/t0 
-    c1 = h0*tp**(-alpha)
-    c2 = tp**(-beta)/r0
-    e1 = 4.0_rp/3.0_rp
-    e2 = 3.0_rp/7.0_rp
+    hd = h0*(s%now/t0)**(-alpha)
+    rm = r0*(s%now/t0)**beta
     
-    ! solve
-    rm = r0*tp**beta ! current margin radius
     where (r .le. rm)
-      s%ice_h_soln = c1*(1-(c2*r)**e1)**e2
+      s%ice_h_soln = hd*(1.0_rp-(r/rm)**(4.0_rp/3.0_rp))**(3.0_rp/7.0_rp)
     elsewhere
       s%ice_h_soln = 0.0_rp
     end where
+
+    ! OLD
+    !real(rp) :: c1, c2, e1, e2, rm, tp
+
+    !! compute some constants
+    !tp = s%now/t0 
+    !c1 = h0*tp**(-alpha)
+    !c2 = tp**(-beta)/r0
+    !e1 = 4.0_rp/3.0_rp
+    !e2 = 3.0_rp/7.0_rp
+    !
+    !! solve
+    !rm = r0*tp**beta ! current margin radius
+    !where (r .le. rm)
+    !  s%ice_h_soln = c1*(1-(c2*r)**e1)**e2
+    !elsewhere
+    !  s%ice_h_soln = 0.0_rp
+    !end where
 
   end subroutine solve_bueler_isothermal_b
 
