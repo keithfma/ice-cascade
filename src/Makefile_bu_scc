@@ -27,6 +27,7 @@ param.f90 \
 state.f90 \
 io.f90 \
 ice_bc_no_ice.f90 \
+ice_bc_no_flux.f90 \
 ice_bc_mirror.f90 \
 ice_soln_bueler_isothermal_a.f90 \
 ice_soln_bueler_isothermal_b.f90 \

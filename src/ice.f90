@@ -30,6 +30,7 @@ use kinds, only: rp
 use param, only: param_type
 use state, only: state_type
 use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice 
+use ice_bc_no_flux, only: nbc_no_flux, ebc_no_flux, sbc_no_flux, wbc_no_flux 
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
 use ice_flow_hindmarsh2_explicit, only: &
   init_hindmarsh2_explicit, flow_hindmarsh2_explicit
@@ -134,6 +135,12 @@ contains
           if (i .eq. 3) sbc => sbc_no_ice
           if (i .eq. 4) wbc => wbc_no_ice
 
+        case ('no_flux')
+          if (i .eq. 1) nbc => nbc_no_flux 
+          if (i .eq. 2) ebc => ebc_no_flux
+          if (i .eq. 3) sbc => sbc_no_flux
+          if (i .eq. 4) wbc => wbc_no_flux
+
         case ('mirror')
           if (i .eq. 1) nbc => nbc_mirror 
           if (i .eq. 2) ebc => ebc_mirror
@@ -226,13 +233,13 @@ contains
     ! update ancillary variables (velocity, etc.)
     ! NOTE: this will require a separate procedure for each flow method.
 
-    ! DEBUG: display numerical and exact ice volume 
-    print *, 'Time [a]: ', t
-    print *, 'Step [a]: ', s%step
-    print *, 'Numerical Volume [km3]: ', &
-      volume(s%ice_h, p%dx, p%dy)/(1000._rp**3)
-    print *, 'Exact Volume [km3]    : ', &
-      volume(s%ice_h_soln, p%dx, p%dy)/(1000._rp**3)
+    !! DEBUG: display numerical and exact ice volume 
+    !print *, 'Time [a]: ', t
+    !print *, 'Step [a]: ', s%step
+    !print *, 'Numerical Volume [km3]: ', &
+    !  volume(s%ice_h, p%dx, p%dy)/(1000._rp**3)
+    !print *, 'Exact Volume [km3]    : ', &
+    !  volume(s%ice_h_soln, p%dx, p%dy)/(1000._rp**3)
 
   end subroutine update_ice
 

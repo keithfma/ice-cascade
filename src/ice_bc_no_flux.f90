@@ -1,89 +1,89 @@
 ! =============================================================================
 ! Boundary condition for the glacier dynamics model component of ice-cascade
 !
-! Description: Ghost points at model boundaries are mirror images across the
-!   domain edge points for both ice thickness and topography (and by
-!   consequence, ice flux as well). Selected for 'ice_bc_name__nesw' parameters
-!   that are set to 'mirror'. Subroutines conform to the template defined in
-!   ice.f90
+! Description: No ice flux across model boundary. This is accomplished by
+!   forcing the surface gradient at boundary points to zero. The ghost point
+!   topography and ice thickness are set equal to the adjacent interior point.
+!   Selected for 'ice_bc_name__nesw' parameters that are set to 'no_flux'.
+!   Subroutines conform to the template defined in ice.f90
 !
 !   Public: 
-!     nbc_mirror 
-!     ebc_mirror 
-!     sbc_mirror
-!     wbc_mirror
+!     nbc_no_flux 
+!     ebc_no_flux 
+!     sbc_no_flux
+!     wbc_no_flux
 !
 !   Private: none
 !
 ! =============================================================================
 
-module ice_bc_mirror
+module ice_bc_no_flux
 
 use kinds, only: rp
 use state, only: state_type
 
 implicit none
 private
-public :: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror
+public :: nbc_no_flux, ebc_no_flux, sbc_no_flux, wbc_no_flux
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to north edge, (:,end)
+  ! SUB: apply no_flux BC to north edge, (:,end)
   ! ---------------------------------------------------------------------------
-  subroutine nbc_mirror(s)
+  subroutine nbc_no_flux(s)
 
     type(state_type), intent(inout) :: s
     integer :: n
 
     n = size(s%topo, 2)
-    s%topo(:, n) = s%topo(:, n-2)
-    s%ice_h(:, n) = s%ice_h(:, n-2)
+    s%topo(:, n) = s%topo(:, n-1)
+    s%ice_h(:, n) = s%ice_h(:, n-1)
 
-  end subroutine nbc_mirror
+  end subroutine nbc_no_flux
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to east edge, (end,:)
+  ! SUB: apply no_flux BC to east edge, (end,:)
   ! ---------------------------------------------------------------------------
-  subroutine ebc_mirror(s)
+  subroutine ebc_no_flux(s)
 
     type(state_type), intent(inout) :: s
     integer :: n
 
     n = size(s%topo, 1)
-    s%topo(n,:) = s%topo(n-2,:)
-    s%ice_h(n,:) = s%ice_h(n-2,:)
+    s%topo(n,:) = s%topo(n-1,:)
+    s%ice_h(n,:) = s%ice_h(n-1,:)
 
-  end subroutine ebc_mirror
+  end subroutine ebc_no_flux
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to south edge, (:,1)
+  ! SUB: apply no_flux BC to south edge, (:,1)
   ! ---------------------------------------------------------------------------
-  subroutine sbc_mirror(s)
+  subroutine sbc_no_flux(s)
 
     type(state_type), intent(inout) :: s
 
-    s%topo(:,1) = s%topo(:,3)
-    s%ice_h(:,1) = s%ice_h(:,3)
+    s%topo(:,1) = s%topo(:,2)
+    s%ice_h(:,1) = s%ice_h(:,2)
 
-  end subroutine sbc_mirror
+  end subroutine sbc_no_flux
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to west edge, (1,:)
+  ! SUB: apply no_flux BC to west edge, (1,:)
   ! ---------------------------------------------------------------------------
-  subroutine wbc_mirror(s)
+  subroutine wbc_no_flux(s)
 
     type(state_type), intent(inout) :: s
 
-    s%topo(1,:) = s%topo(3,:)
-    s%ice_h(1,:) = s%ice_h(3,:)
+    s%topo(1,:) = s%topo(2,:)
+    s%ice_h(1,:) = s%ice_h(2,:)
 
-  end subroutine wbc_mirror
+  end subroutine wbc_no_flux
 
 
-end module ice_bc_mirror
+end module ice_bc_no_flux

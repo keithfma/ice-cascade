@@ -83,7 +83,8 @@ def main(filename, nxy):
   file.climate_param__var = [0.]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
-  file.ice_bc_name__nesw = 'no_ice,no_ice,mirror,mirror'
+  #file.ice_bc_name__nesw = 'no_ice,no_ice,mirror,mirror'
+  file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_b'
   file.ice_soln_param__var = [alpha, beta, H0, R0, t0]
   file.write_ice_h = 1
