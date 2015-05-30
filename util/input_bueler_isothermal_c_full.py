@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 #
-# Generate ICE-CASCADE input file for Test B in [1]. This 'full' variant
+# Generate ICE-CASCADE input file for Test C in [1]. This 'full' variant
 # computes the whole ice cap, as opposed to only the northeast quadrant as in
-# [1] Grid spacing is an (optional) command line argument to facilitate grid
+# [1]. Grid spacing is an (optional) command line argument to facilitate grid
 # refinement experiments. To simplify calculation of 'dome' errors, the number
 # of gridpoints must be odd so that the origin lies at a grid point.
-
 #
 # Usage:
-#   ./make_input_bueler_isothermal_b filename nxy
+#   ./make_input_bueler_isothermal_c filename nxy
 #
 # Arguments:
 #   filename = name of generated input file (optional)
@@ -32,29 +31,32 @@ import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
 
-# parameters for Bueler test B (see table 3, and equation 10)
-alpha = 1./9. # [1] 
-beta = 1./18. # [1]
+# parameters for Bueler test C (see table 3, and equation 10)
+alpha = -1. # [1] 
+beta = 2. # [1]
 H0 = 3600. # [m]
 R0 = 750000. # [m]
-t0 = 422.45 # [a]
+t0 = 15208. # [a]
 g = 9.81 # acceleration of gravity, [m/s2]
 rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
-ti = t0
-tf = t0+25.e3 # [a]
+ti = 0.
+tf = t0 # [a]
 dt = 100. # model time step
 tw = np.linspace(ti, tf, 25) # output steps
 lxy = 1.1*R0*(tf/t0)**beta # domain dimensions (final radius + 10%)
+descr = ('Benchmark case with exact solution (Bueler et al 2005, test C).'
+  'Isothermal, non-sliding, transient ice cap with surface ice flux'
+  'proportional to ice thickness.')
 
 # main function
 def main(filename, nxy):
 
   # confirm that nxy is odd and greater than 1
   if (nxy%2 == 0) or (nxy < 3):
-    print 'Invalid value for input parameter nxy'
+    print 'Invalid value for input parameter nxy, must be odd'
     sys.exit()
   
   # coordinate grid
@@ -67,7 +69,7 @@ def main(filename, nxy):
   # exact solution (eq 10 with t = ti)
   Hd = H0*(ti/t0)**(-alpha)
   Rm = R0*(ti/t0)**beta
-  mask = np.where(rr <= Rm)
+  mask = np.where(rr < Rm)
   ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
   ice_h_soln[mask] = Hd*(1.-(rr[mask]/Rm)**(4./3.))**(3./7.)
   
@@ -75,9 +77,7 @@ def main(filename, nxy):
   file = ict.new_input(filename, nxy, nxy)
   
   # define parameters and variables 
-  file.descr = '''Benchmark case with exact solution (Bueler et al 2005, test
-    B). Isothermal, non-sliding, transient ice cap with zero surface ice
-    flux.'''
+  file.descr = descr
   file.nx__1 = nxy
   file.ny__1 = nxy
   file.lx__m = lxy
@@ -90,19 +90,18 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
-  file.climate_name = 'constant_ice'
+  file.climate_name = 'bueler_isothermal_c'
   file.climate_param__var = [0.]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_ice,no_ice'
-  file.ice_soln_name = 'bueler_isothermal_b'
+  file.ice_soln_name = 'bueler_isothermal_c'
   file.ice_soln_param__var = [alpha, beta, H0, R0, t0]
   file.write_ice_h = 1
   file.write_ice_h_dot = 1
   file.write_ice_h_soln = 1 
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
-  file.variables['ice_q_surf'][:,:] = np.zeros((nxy, nxy), dtype = np.float64)
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
   
@@ -113,7 +112,7 @@ if __name__ == '__main__':
 
   # defaults
   nxy = 51 
-  filename = 'bueler_isothermal_b_full_in_'+str(nxy)+'.nc' 
+  filename = 'bueler_isothermal_c_full_in_'+str(nxy)+'.nc' 
   
   # parse input arguments
   if len(sys.argv) == 2:
