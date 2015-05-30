@@ -18,6 +18,8 @@ use state, only: state_type
 use climate_constant_ice, only: init_constant_ice
 use climate_bueler_isothermal_a, only: &
   init_bueler_isothermal_a, update_bueler_isothermal_a
+use climate_bueler_isothermal_c, only: &
+  init_bueler_isothermal_c, update_bueler_isothermal_c
 
 implicit none
 private
@@ -68,6 +70,11 @@ contains
       on_climate = .true.
       call  init_bueler_isothermal_a(p, s)
       update_climate => update_bueler_isothermal_a
+
+    case('bueler_isothermal_c')
+      on_climate = .true.
+      call  init_bueler_isothermal_c(p, s)
+      update_climate => update_bueler_isothermal_c
     
     case default
       print *, 'Invalid name for climate method: ' // trim(p%climate_name)
