@@ -48,6 +48,8 @@ tf = t0+25.e3 # [a]
 dt = 100. # model time step
 tw = np.linspace(ti, tf, 25) # output steps
 lxy = 1.1*R0*(tf/t0)**beta # domain dimensions (final radius + 10%)
+descr = ('Benchmark case with exact solution (Bueler et al 2005, test B).'
+  'Isothermal, non-sliding, transient ice cap with zero surface ice flux.')
 
 # main function
 def main(filename, nxy):
@@ -75,9 +77,7 @@ def main(filename, nxy):
   file = ict.new_input(filename, nxy, nxy)
   
   # define parameters and variables 
-  file.descr = '''Benchmark case with exact solution (Bueler et al 2005, test
-    B). Isothermal, non-sliding, transient ice cap with zero surface ice
-    flux.'''
+  file.descr = descr
   file.nx__1 = nxy
   file.ny__1 = nxy
   file.lx__m = lxy

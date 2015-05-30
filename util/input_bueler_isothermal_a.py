@@ -41,6 +41,9 @@ ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step, should be irrelevant
 tw = 25000. # output steps
+descr = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
+  'Isothermal, non-sliding, steady state with fixed margin position and'
+  'constant, positive surface ice flux.')
 
 # main function
 def main(filename, nxy):
@@ -60,9 +63,7 @@ def main(filename, nxy):
   file = ict.new_input(filename, nxy, nxy)
   
   # define parameters and variables 
-  file.descr = ''''Benchmark case with exact solution (Bueler et al 2005, test A).
-    Isothermal, non-sliding, steady state with fixed margin position and constant,
-    positive surface ice flux.'''
+  file.descr = descr
   file.nx__1 = nxy
   file.ny__1 = nxy
   file.lx__m = lxy
