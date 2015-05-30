@@ -41,12 +41,12 @@ do while (s%now .lt. p%time_finish)
   step_lim = min(p%time_write(n), p%time_finish)-s%now
   if (step_lim .lt. s%step) s%step = step_lim
 
+  ! Increment time
+  s%now = s%now+s%step
+
   ! Update model state 
   if (on_climate) call update_climate(p, s)
   if (on_ice) call update_ice(p, s)
-
-  ! Increment time
-  s%now = s%now+s%step
 
   ! Apply erosion/deposition/isostasy
 

@@ -40,7 +40,7 @@ public :: init_bueler_isothermal_a, update_bueler_isothermal_a
   real(rp) :: M0 ! constant positive surface ice flux [m_ice/a]
   real(rp) :: L ! fixed ice cap radius [m]
   real(rp) :: Mn ! arbitrarily large negative iceflux outside icecap 
-  real(rp), allocatable :: r(:,:) ! distance from corner [m]
+  real(rp), allocatable :: r(:,:) ! distance from origin [m]
 
 
 contains
