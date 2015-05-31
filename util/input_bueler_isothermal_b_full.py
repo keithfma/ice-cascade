@@ -56,7 +56,7 @@ def main(filename, nxy):
 
   # confirm that nxy is odd and greater than 1
   if (nxy%2 == 0) or (nxy < 3):
-    print 'Invalid value for input parameter nxy'
+    print 'Invalid value for input parameter nxy, must be odd'
     sys.exit()
   
   # coordinate grid

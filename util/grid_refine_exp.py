@@ -14,6 +14,8 @@
 #       bueler_isothermal_a
 #       bueler_isothermal_b
 #       bueler_isothermal_b_full
+#       bueler_isothermal_c
+#       bueler_isothermal_c_full
 #
 #   nxy = String, optional, default is '32,64'. A list of the grid sizes to
 #     use, as comma separated values in single quotes, e.g. '16,32,64'
@@ -39,7 +41,8 @@ import matplotlib.pyplot as plt
 import input_bueler_isothermal_a 
 import input_bueler_isothermal_b 
 import input_bueler_isothermal_b_full 
-
+import input_bueler_isothermal_c 
+import input_bueler_isothermal_c_full 
 
 # fit power law
 def fit_power_law(x, y):
@@ -136,6 +139,14 @@ if __name__ == '__main__':
   elif name == 'bueler_isothermal_b_full':
     make_input = input_bueler_isothermal_b_full.main
     title = 'Bueler et al 2005, Test B, Full Ice Cap'
+
+  elif name == 'bueler_isothermal_c':
+    make_input = input_bueler_isothermal_c.main
+    title = 'Bueler et al 2005, Test C'
+ 
+  elif name == 'bueler_isothermal_c_full':
+    make_input = input_bueler_isothermal_c_full.main
+    title = 'Bueler et al 2005, Test C, Full Ice Cap'
 
   else:
     print 'Invalid test name.'
