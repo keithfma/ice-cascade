@@ -102,11 +102,11 @@ contains
     do j = 1, p%ny
       do i = 1, p%nx
         rr(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
+        ss(i,j) = rr(i,j)/L
       end do
     end do
 
     ! compute steady component of ice thickness solution
-    ss = rr/L
     where (ss .lt. 1.0_rp)
       hs = h0/(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)*&
            (4.0_rp/3.0_rp*ss - 1.0_rp/3.0_rp + (1.0_rp-ss)**(4.0_rp/3.0_rp) - &

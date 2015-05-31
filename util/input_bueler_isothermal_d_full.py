@@ -36,6 +36,7 @@ H0 = 3600. # [m]
 L = 750000. # [m]
 Cp = 200. # [m]
 Tp = 5000. # [a]
+q0 = -0.1 # [m/a]
 g = 9.81 # acceleration of gravity, [m/s2]
 rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
@@ -95,9 +96,9 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
+  file.climate_name = 'bueler_isothermal_d'
+  file.climate_param__var = [H0, L, Cp, Tp, q0, A]
   # DEBUG
-  file.climate_name = 'constant_ice'
-  file.climate_param__var = [0.]
   file.ice_name = 'none'
   # END DEBUG
   file.ice_param__var = [A]
