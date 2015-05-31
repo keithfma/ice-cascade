@@ -122,7 +122,7 @@ contains
     hd = h0*(s%now/t0)**(-alpha)
     rm = r0*(s%now/t0)**beta
     
-    where (r .le. rm)
+    where (r .lt. rm)
       s%ice_h_soln = hd*(1.0_rp-(r/rm)**(4.0_rp/3.0_rp))**(3.0_rp/7.0_rp)
     elsewhere
       s%ice_h_soln = 0.0_rp

@@ -135,7 +135,11 @@ contains
     end where
 
     ! surface ice flux, proportional to exact ice thickness
-    s%ice_q_surf = (5.0_rp/s%now)*h
+    if (s%now .gt. 0.0_rp) then
+      s%ice_q_surf = (5.0_rp/s%now)*h
+    else
+      s%ice_q_surf = 0.0_rp
+    end if
 
   end subroutine update_bueler_isothermal_c
 
