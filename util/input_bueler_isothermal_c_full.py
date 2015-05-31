@@ -44,7 +44,7 @@ A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 # general parameters
 ti = 0.
 tf = t0 # [a]
-dt = 100. # model time step
+dt = 1. # model time step
 tw = np.linspace(ti, tf, 25) # output steps
 lxy = 1.1*R0*(tf/t0)**beta # domain dimensions (final radius + 10%)
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test C).'
