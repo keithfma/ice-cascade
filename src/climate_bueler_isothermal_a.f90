@@ -35,27 +35,28 @@ public :: init_bueler_isothermal_a, update_bueler_isothermal_a
 
 
   ! ---------------------------------------------------------------------------
-  ! VARS: set in init_bueler_isothermal_a 
-  ! ---------------------------------------------------------------------------
   real(rp) :: M0 ! constant positive surface ice flux [m_ice/a]
   real(rp) :: L ! fixed ice cap radius [m]
   real(rp) :: Mn ! arbitrarily large negative iceflux outside icecap 
   real(rp), allocatable :: r(:,:) ! distance from origin [m]
+  !
+  ! ABOUT: reusable variables, set in init_bueler_isothermal_a 
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: check parameters and initialize variables, once only
-  ! ---------------------------------------------------------------------------
   subroutine init_bueler_isothermal_a(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, once only
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
-    real(rp) :: x, y
 
     ! expect exactly 2 parameters
     if (size(p%climate_param) .ne. 2) then
@@ -83,13 +84,10 @@ contains
       stop 
     end if
 
-    ! radial distance from SW corner, ignoring ghost points, (2,2)
-    allocate(r(p%nx, p%ny))
+    ! compute distance from x = 0, y = 0
     do j = 1, p%ny
       do i = 1, p%nx
-        x = s%x(i)-s%x(2)
-        y = s%y(j)-s%y(2)
-        r(i,j) = sqrt(x*x+y*y)
+        r(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
       end do
     end do
 
@@ -97,12 +95,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: get climate at current time
-  ! ---------------------------------------------------------------------------
   subroutine update_bueler_isothermal_a(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! SUB: get climate at current time
+  ! ---------------------------------------------------------------------------
 
     where (r .lt. L)
       s%ice_q_surf = M0

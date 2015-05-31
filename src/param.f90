@@ -18,8 +18,6 @@ private
 public :: param_type, init_param
 
   ! --------------------------------------------------------------------------- 
-  ! TYPE: shared parameters
-  ! ---------------------------------------------------------------------------
   type param_type
     character(len=500) :: input_file ! input file name
     character(len=500) :: output_file ! output file name
@@ -57,17 +55,21 @@ public :: param_type, init_param
     logical :: write_ice_uvs 
     logical :: write_ice_h_soln
   end type param_type
+  !
+  ! ABOUT: shared parameters
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: check for sane parameters and add ghost points
-  ! ---------------------------------------------------------------------------
   subroutine init_param(p)
-
+  !
     type(param_type), intent(inout) :: p
+  !
+  ! ABOUT: check for sane parameters and add ghost points
+  ! ---------------------------------------------------------------------------
 
     integer :: i
 

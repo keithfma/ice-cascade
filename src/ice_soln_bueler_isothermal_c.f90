@@ -37,26 +37,28 @@ private
 public :: init_bueler_isothermal_c, solve_bueler_isothermal_c
 
   ! ---------------------------------------------------------------------------
-  ! VARS: set in init_bueler_isothermal_c
-  ! ---------------------------------------------------------------------------
   real(rp) :: alpha ! constant exponent, [1]
   real(rp) :: beta ! constant exponent, [1]
   real(rp) :: h0 ! ice cap dome height at initial time, [m]
   real(rp) :: r0 ! ice cap radius at initial time, [m]
   real(rp) :: t0 ! initial time, [a]
   real(rp), allocatable :: r(:,:) ! distance from origin [m]
+  !
+  ! ABOUT: set in init_bueler_isothermal_c
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------  
-  ! SUB: check parameters and initialize variables, once only
-  ! ---------------------------------------------------------------------------
   subroutine init_bueler_isothermal_c(p, s)
-  
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, once only
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
 
@@ -107,12 +109,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: get solution
-  ! ---------------------------------------------------------------------------
   subroutine solve_bueler_isothermal_c(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: get solution
+  ! ---------------------------------------------------------------------------
 
     real(rp) :: hd, rm
 

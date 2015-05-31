@@ -35,26 +35,28 @@ private
 public :: init_bueler_isothermal_b, solve_bueler_isothermal_b
 
   ! ---------------------------------------------------------------------------
-  ! VARS: set in init_bueler_isothermal_a
-  ! ---------------------------------------------------------------------------
   real(rp) :: alpha ! constant exponent, [1]
   real(rp) :: beta ! constant exponent, [1]
   real(rp) :: h0 ! ice cap dome height at initial time, [m]
   real(rp) :: r0 ! ice cap radius at initial time, [m]
   real(rp) :: t0 ! initial time, [a]
   real(rp), allocatable :: r(:,:) ! distance from corner [m]
+  !
+  ! ABOUT: reused variables, set in init_bueler_isothermal_a
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------  
-  ! SUB: check parameters and initialize variables, once only
-  ! ---------------------------------------------------------------------------
   subroutine init_bueler_isothermal_b(p, s)
-  
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, once only
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
 
@@ -105,12 +107,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: get solution
-  ! ---------------------------------------------------------------------------
   subroutine solve_bueler_isothermal_b(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: get solution
+  ! ---------------------------------------------------------------------------
 
     real(rp) :: hd, rm
 
@@ -122,24 +125,6 @@ contains
     elsewhere
       s%ice_h_soln = 0.0_rp
     end where
-
-    ! OLD
-    !real(rp) :: c1, c2, e1, e2, rm, tp
-
-    !! compute some constants
-    !tp = s%now/t0 
-    !c1 = h0*tp**(-alpha)
-    !c2 = tp**(-beta)/r0
-    !e1 = 4.0_rp/3.0_rp
-    !e2 = 3.0_rp/7.0_rp
-    !
-    !! solve
-    !rm = r0*tp**beta ! current margin radius
-    !where (r .le. rm)
-    !  s%ice_h_soln = c1*(1-(c2*r)**e1)**e2
-    !elsewhere
-    !  s%ice_h_soln = 0.0_rp
-    !end where
 
   end subroutine solve_bueler_isothermal_b
 

@@ -47,23 +47,17 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
 
 
   ! ---------------------------------------------------------------------------
-  ! TEMPLATE: common form for the bc functions
-  ! ---------------------------------------------------------------------------
   abstract interface 
     subroutine bc_tmpl(s)
       import :: state_type ! use special types
       type(state_type), intent(inout) :: s   
     end subroutine bc_tmpl 
   end interface
-
-
-  ! ---------------------------------------------------------------------------
-  ! TEMPLATE: common form for the numerical ice flow routine
   !
-  !   Description: flow routines compute a numerical approximation to the ice
-  !     flow equations, including sliding, temperature, and hydrology, where
-  !     applicable. They MUST set the value of the ice_h_dot variable, and may
-  !     set the value of other state variables as well.
+  ! ABOUT: Template, common form for the bc functions
+  ! ---------------------------------------------------------------------------
+
+
   ! ---------------------------------------------------------------------------
   abstract interface 
     function flow_tmpl(p, s) result(dt)
@@ -73,10 +67,16 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
       real(rp) :: dt ! timestep
     end function flow_tmpl 
   end interface
-
-
+  !
+  ! ABOUT: Template, common form for the numerical ice flow routine
+  !
+  !   Flow routines compute a numerical approximation to the ice flow equations,
+  !   including sliding, temperature, and hydrology, where applicable. They MUST
+  !   set the value of the ice_h_dot variable, and may set the value of other
+  !   state variables as well.
   ! ---------------------------------------------------------------------------
-  ! TEMPLATE: common form for the exact solution subroutines
+
+
   ! ---------------------------------------------------------------------------
   abstract interface 
     subroutine solve_tmpl(p, s)
@@ -85,10 +85,11 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
       type(state_type), intent(inout) :: s ! state vars
     end subroutine solve_tmpl 
   end interface
-
-
+  !
+  ! ABOUT: Template, common form for the exact solution subroutines
   ! ---------------------------------------------------------------------------
-  ! PROCEDURES & VARS: set in init_ice 
+
+
   ! ---------------------------------------------------------------------------
   logical :: on_ice ! enable/disable model
   logical :: on_ice_soln ! enable/disable exact solution
@@ -98,10 +99,8 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
   procedure(bc_tmpl), pointer :: wbc ! apply west BC, sets (1,:)
   procedure(flow_tmpl), pointer :: flow ! ice model method
   procedure(solve_tmpl), pointer :: solve_ice ! exact solution  
-
-
-  ! ---------------------------------------------------------------------------
-  ! VARS: global variables
+  !
+  ! ABOUT: Shared procedures and variables, set in init_ice 
   ! ---------------------------------------------------------------------------
 
 
@@ -109,12 +108,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize procedures and vars
-  ! ---------------------------------------------------------------------------
   subroutine init_ice(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: initialize procedures and vars
+  ! ---------------------------------------------------------------------------
 
     character(len=100), dimension(4) :: bc_names
     integer :: comma(3), i
@@ -206,12 +206,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: run ice model for one timestep
-  ! ---------------------------------------------------------------------------
   subroutine update_ice(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: run ice model for one timestep
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j ! debug
     real(rp) :: t, dt
@@ -252,14 +253,15 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! FUNC: compute ice volume using trapezoidal rule (ref [1], eq. 31) and
-  !   compensated summation (Kahan algorithm), ignore ghost points
-  ! ---------------------------------------------------------------------------
   function volume(thk, dx, dy) result(vol)
-    
+  ! 
     real(rp), intent(in) :: thk(:,:) ! ice thickness, [m]
     real(rp), intent(in) :: dx, dy ! grid spacing, [m]
     real(rp) :: vol ! ice volume, [m3]
+  !  
+  ! ABOUT: compute ice volume using trapezoidal rule (ref [1], eq. 31) and
+  !   compensated summation (Kahan algorithm), ignore ghost points
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
     real(rp) :: thk_sum, wrk1, wrk2, corr

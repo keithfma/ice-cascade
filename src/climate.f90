@@ -27,8 +27,6 @@ public :: on_climate, init_climate, update_climate
 
 
   ! ---------------------------------------------------------------------------
-  ! TEMPLATE: commom form for climate methods
-  ! ---------------------------------------------------------------------------
   abstract interface
     subroutine update_tmpl(p, s) 
       import :: param_type, state_type
@@ -36,24 +34,29 @@ public :: on_climate, init_climate, update_climate
       type(state_type), intent(inout) :: s
     end subroutine update_tmpl
   end interface
-
-
+  !
+  ! ABOUT: Template, commom form for climate methods
   ! ---------------------------------------------------------------------------
-  ! PROCEDURES & VARS: set in init_climate
+
+
   ! ---------------------------------------------------------------------------
   logical :: on_climate ! enable/disable model
   procedure(update_tmpl), pointer :: update_climate ! selected climate model
+  !
+  ! ABOUT: Shared procedures and variables, set in init_climate
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
   ! ---------------------------------------------------------------------------
-  ! SUB: initialize procedures and vars
-  ! ---------------------------------------------------------------------------
   subroutine init_climate(p, s)
 
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: initialize procedures and vars
+  ! ---------------------------------------------------------------------------
 
     ! select update procedure
     select case (p%climate_name)

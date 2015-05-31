@@ -85,7 +85,6 @@ def main(filename, nxy):
   file.ice_soln_param__var = [M0, L, A]
   file.write_ice_q_surf = 1
   file.write_ice_h = 1
-  file.write_ice_h_dot = 1
   file.write_ice_h_soln = 1 
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy

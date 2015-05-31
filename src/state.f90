@@ -19,8 +19,6 @@ private
 public :: state_type, init_state
 
   ! --------------------------------------------------------------------------- 
-  ! TYPE: shared state variables
-  ! ---------------------------------------------------------------------------
   type state_type
     real(rp) :: now ! current model time, [a]
     real(rp) :: step ! current model time step, [a]
@@ -43,18 +41,22 @@ public :: state_type, init_state
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
   end type state_type
+  !
+  ! ABOUT: shared state variables
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: allocate and initialize variables
-  ! ---------------------------------------------------------------------------
   subroutine init_state(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: allocate and initialize variables
+  ! ---------------------------------------------------------------------------
 
     ! allocate arrays
     allocate(s%x(p%nx))

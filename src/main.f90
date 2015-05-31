@@ -31,7 +31,7 @@ call init_ice(p, s)
 call init_climate(p, s)
 
 ! init output file
-call write_file(p)
+call write_file(p, s)
 
 ! Start loop
 n = 1

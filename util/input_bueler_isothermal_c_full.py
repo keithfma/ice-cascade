@@ -98,8 +98,8 @@ def main(filename, nxy):
   file.ice_soln_name = 'bueler_isothermal_c'
   file.ice_soln_param__var = [alpha, beta, H0, R0, t0]
   file.write_ice_h = 1
-  file.write_ice_h_dot = 1
   file.write_ice_h_soln = 1 
+  file.write_ice_q_surf = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
   file.variables['ice_h'][:,:] = ice_h_soln

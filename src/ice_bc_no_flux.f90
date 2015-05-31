@@ -31,11 +31,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply no_flux BC to north edge, (:,end)
-  ! ---------------------------------------------------------------------------
   subroutine nbc_no_flux(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply no_flux BC to north edge, (:,end)
+  ! ---------------------------------------------------------------------------
+  
     integer :: n
 
     n = size(s%topo, 2)
@@ -46,11 +48,13 @@ contains
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply no_flux BC to east edge, (end,:)
-  ! ---------------------------------------------------------------------------
   subroutine ebc_no_flux(s)
-
+  !
     type(state_type), intent(inout) :: s
+  ! 
+  ! ABOUT: apply no_flux BC to east edge, (end,:)
+  ! ---------------------------------------------------------------------------
+
     integer :: n
 
     n = size(s%topo, 1)
@@ -61,11 +65,12 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply no_flux BC to south edge, (:,1)
-  ! ---------------------------------------------------------------------------
   subroutine sbc_no_flux(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply no_flux BC to south edge, (:,1)
+  ! ---------------------------------------------------------------------------
 
     s%topo(:,1) = s%topo(:,2)
     s%ice_h(:,1) = s%ice_h(:,2)
@@ -74,11 +79,12 @@ contains
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply no_flux BC to west edge, (1,:)
-  ! ---------------------------------------------------------------------------
   subroutine wbc_no_flux(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply no_flux BC to west edge, (1,:)
+  ! ---------------------------------------------------------------------------
 
     s%topo(1,:) = s%topo(2,:)
     s%ice_h(1,:) = s%ice_h(2,:)

@@ -47,23 +47,25 @@ public :: init_hindmarsh2_explicit, flow_hindmarsh2_explicit
 
 
   ! ---------------------------------------------------------------------------
-  ! VARS: set in init_hindmarsh2_explicit
-  ! ---------------------------------------------------------------------------
   real(rp) :: A
   real(rp) :: gam
   real(rp), allocatable :: qx(:,:), qy(:,:)
+  !
+  ! ABOUT: reusable variables, set in init_hindmarsh2_explicit
+  ! ---------------------------------------------------------------------------
 
 
 contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: check parameters and intializae variables, only once
-  ! ---------------------------------------------------------------------------
   subroutine init_hindmarsh2_explicit(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and intializae variables, only once
+  ! ---------------------------------------------------------------------------
 
     ! expect exactly 1 parameter
     if (size(p%ice_param) .ne. 1) then
@@ -91,12 +93,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! FUNC: compute ice thickness rate-of-change, return stable timestep
-  ! ---------------------------------------------------------------------------
   function flow_hindmarsh2_explicit(p, s) result(dt)
-    
+  ! 
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: compute ice thickness rate-of-change, return stable timestep
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
     real(rp) :: c1, c2, D, Dmax, dsurf_dx_mid, dsurf_dy_mid, dt, ice_h_mid
@@ -146,7 +149,6 @@ contains
       end do
 
     dt = p%dx*p%dy/(8.0_rp*Dmax) ! stable
-    !dt = 1.0_rp ! DEBUG
 
   end function flow_hindmarsh2_explicit
 

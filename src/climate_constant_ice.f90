@@ -26,12 +26,13 @@ public :: init_constant_ice
 contains
 
   ! ---------------------------------------------------------------------------
-  ! SUB: check parameters and initialize variables, only once
-  ! ---------------------------------------------------------------------------
   subroutine init_constant_ice(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, only once
+  ! ---------------------------------------------------------------------------
 
     ! expect exactly 1 parameter
     if (size(p%climate_param) .ne. 1) then

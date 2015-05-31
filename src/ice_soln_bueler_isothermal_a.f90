@@ -34,24 +34,25 @@ private
 public :: init_bueler_isothermal_a, solve_bueler_isothermal_a
 
   ! ---------------------------------------------------------------------------
-  ! VARS: set in init_bueler_isothermal_a
-  ! ---------------------------------------------------------------------------
   real(rp) :: M0 ! constant positive surface ice flux [m_ice/a]
   real(rp) :: L ! fixed ice cap radius [m]
   real(rp) :: A ! constant ice deformation factor [Pa^-3 a^-1]
   real(rp), allocatable :: r(:,:) ! distance from corner [m]
-
+  !
+  ! ABOUT: reused vairables, set in init_bueler_isothermal_a
+  ! ---------------------------------------------------------------------------
 
 contains
 
 
   ! ---------------------------------------------------------------------------  
-  ! SUB: check parameters and initialize variables, once only
-  ! ---------------------------------------------------------------------------
   subroutine init_bueler_isothermal_a(p, s)
-  
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, once only
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
 
@@ -100,12 +101,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: get solution
-  ! ---------------------------------------------------------------------------
   subroutine solve_bueler_isothermal_a(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: get solution
+  ! ---------------------------------------------------------------------------
 
     integer :: i, j
     real(rp) :: c1, c2, gam

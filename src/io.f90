@@ -33,12 +33,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Error handling for required netcdf actions 
-  !---------------------------------------------------------------------------
   subroutine req(str, e)
-    
+  ! 
     character(len=*), intent(in) :: str
     integer, intent (in) :: e
+  !
+  ! ABOUT: Error handling for required netcdf actions 
+  !---------------------------------------------------------------------------
 
     if(e .ne. nf90_noerr) then
       print *, str, trim(nf90_strerror(e))
@@ -49,12 +50,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Error handling for optional netcdf actions 
-  !---------------------------------------------------------------------------
   subroutine opt(str, e)
-    
+  ! 
     character(len=*), intent(in) :: str
     integer, intent (in) :: e
+  !
+  ! ABOUT: Error handling for optional netcdf actions 
+  !---------------------------------------------------------------------------
 
     if(e .ne. nf90_noerr) then
       print *, '(optional) ', str, trim(nf90_strerror(e))
@@ -64,13 +66,15 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! FUNC: max value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
   function maxval_intr(array) result(val)
-    
+  !
     real(rp), intent(in) :: array(:,:)
-    integer :: n1, n2
     real(rp) :: val
+  !
+  ! ABOUT: max value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
 
     n1 = size(array,1)
     n2 = size(array,2)
@@ -80,13 +84,15 @@ contains
   
   
   ! ---------------------------------------------------------------------------
-  ! FUNC: min value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
   function minval_intr(array) result(val)
-    
+  !
     real(rp), intent(in) :: array(:,:)
-    integer :: n1, n2
     real(rp) :: val
+  !
+  ! ABOUT: min value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
 
     n1 = size(array,1)
     n2 = size(array,2)
@@ -96,13 +102,15 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! FUNC: mean value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
   function meanval_intr(array) result(val)
-    
+  ! 
     real(rp), intent(in) :: array(:,:)
-    integer :: n1, n2
     real(rp) :: val 
+  !
+  ! ABOUT: mean value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
 
     n1 = size(array,1)
     n2 = size(array,2)
@@ -112,11 +120,12 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Read input parameters from file
-  ! ---------------------------------------------------------------------------
   subroutine read_param(p)
-
+  !
     type(param_type), intent(out) :: p
+  !
+  ! ABOUT: Read input parameters from file
+  ! ---------------------------------------------------------------------------
     
     integer :: ncid, e, n, tf
 
@@ -268,14 +277,16 @@ contains
 
 
   !----------------------------------------------------------------------------
-  ! SUB: Read initial variables from netcdf file
-  !   unspecified variables retain the default value (0)
-  !   note that the state variable arrays include ghost points at boundaries
-  ! ---------------------------------------------------------------------------
   subroutine read_var(p, s)
-
+  !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: Read initial variables from netcdf filei
+  !
+  !   Unspecified variables retain the default value (0) State variable arrays
+  !   include ghost points at boundaries, while input arrays do not.
+  ! ---------------------------------------------------------------------------
 
     integer :: e, ncid, varid
     
@@ -382,12 +393,16 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Create output netcdf file
-  !   Note that ghost points at grid boundaries are not written
-  ! ---------------------------------------------------------------------------
-  subroutine write_file(p)
-
+  subroutine write_file(p, s)
+  !
     type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
+  !
+  ! ABOUT: Create output netcdf file
+  !
+  !   Note that state variables include ghost points at grid boundaries, but
+  !   output grids do not. 
+  ! ---------------------------------------------------------------------------
 
     logical :: shuf
     integer :: chunk(3), deflate, e, ncid, tf, tid, vid, xid, yid
@@ -609,7 +624,16 @@ contains
     end if
 
     ! populate coordinate variables
-    ! TO DO
+    e = nf90_enddef(ncid)
+    call req('write_file: exit definition mode: ', e)
+
+    e = nf90_inq_varid(ncid, 'x', vid)
+    e = nf90_put_var(ncid, vid, s%x(2:p%nx-1))
+    call req('write_file: populate x coordinate: ', e)
+
+    e = nf90_inq_varid(ncid, 'y', vid)
+    e = nf90_put_var(ncid, vid, s%y(2:p%ny-1))
+    call req('write_file: populate y coordinate: ', e)
 
     ! close file
     e = nf90_close(ncid)
@@ -618,12 +642,13 @@ contains
   end subroutine write_file
 
   ! ---------------------------------------------------------------------------
-  ! SUB: Append model state to output netcdf
-  ! ---------------------------------------------------------------------------
   subroutine write_step(p, s)
-    
+  !  
     type(param_type), intent(inout) :: p
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: Append model state to output netcdf
+  ! ---------------------------------------------------------------------------
 
     integer :: e, n, ncid, tid, vid
 
@@ -721,12 +746,13 @@ contains
   end subroutine write_step
 
   ! --------------------------------------------------------------------------
-  ! SUB: print model status update to stdout
-  ! --------------------------------------------------------------------------
   subroutine write_status(p, s)
-    
+  ! 
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
+  !
+  ! ABOUT: print model status update to stdout
+  ! --------------------------------------------------------------------------
 
       print "('TIME [a]                         : ', EN12.3)", s%now 
 

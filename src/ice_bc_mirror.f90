@@ -31,11 +31,13 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to north edge, (:,end)
-  ! ---------------------------------------------------------------------------
   subroutine nbc_mirror(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply mirror BC to north edge, (:,end)
+  ! ---------------------------------------------------------------------------
+
     integer :: n
 
     n = size(s%topo, 2)
@@ -46,11 +48,13 @@ contains
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to east edge, (end,:)
-  ! ---------------------------------------------------------------------------
   subroutine ebc_mirror(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply mirror BC to east edge, (end,:)
+  ! ---------------------------------------------------------------------------
+
     integer :: n
 
     n = size(s%topo, 1)
@@ -61,11 +65,12 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to south edge, (:,1)
-  ! ---------------------------------------------------------------------------
   subroutine sbc_mirror(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: apply mirror BC to south edge, (:,1)
+  ! ---------------------------------------------------------------------------
 
     s%topo(:,1) = s%topo(:,3)
     s%ice_h(:,1) = s%ice_h(:,3)
@@ -74,11 +79,12 @@ contains
   
 
   ! ---------------------------------------------------------------------------
-  ! SUB: apply mirror BC to west edge, (1,:)
-  ! ---------------------------------------------------------------------------
   subroutine wbc_mirror(s)
-
+  !
     type(state_type), intent(inout) :: s
+  !  
+  ! ABOUT: apply mirror BC to west edge, (1,:)
+  ! ---------------------------------------------------------------------------
 
     s%topo(1,:) = s%topo(3,:)
     s%ice_h(1,:) = s%ice_h(3,:)
