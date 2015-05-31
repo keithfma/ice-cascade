@@ -2,7 +2,8 @@
 ! Climate method
 !
 ! Description: Constant surface ice flux set using a single input parameter, all
-!   other climate variables are ignored.
+!   other climate variables are ignored. Invoked if climate_name is set to
+!   constant_ice.
 !
 ! Parameters:
 !   (1) constant (in space and time) surface ice flux [m_ice/a]

@@ -44,7 +44,7 @@ A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 ti = 0. # [a]
 tf = ti+5.*Tp # [a]
 dt = 1. # model time step
-tw = np.linspace(ti, tf, 25) # output steps
+tw = np.linspace(ti, tf, 50) # output steps
 lxy = 1.1*L # domain dimensions (final radius + 10%)
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test D).'
   'Isothermal, non-sliding, transient ice cap with oscillating surface ice '
@@ -95,12 +95,14 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
-  file.climate_name = 'bueler_isothermal_d'
-  #file.climate_param__var = [0.]
-  file.ice_name = 'hindmarsh2_explicit'
+  # DEBUG
+  file.climate_name = 'constant_ice'
+  file.climate_param__var = [0.]
+  file.ice_name = 'none'
+  # END DEBUG
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_ice,no_ice'
-  file.ice_soln_name = 'bueler_isothermal_c'
+  file.ice_soln_name = 'bueler_isothermal_d'
   file.ice_soln_param__var = [H0, L, Cp, Tp]
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 

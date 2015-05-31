@@ -1,7 +1,7 @@
 ! =============================================================================
 ! Ice exact solution for Bueler et al 2005 test C (see ref [1])
 !
-! Description: Test B is a transient, isothermal ice cap with time-dependent
+! Description: Test C is a transient, isothermal ice cap with time-dependent
 !   positive surface ice flux. Surface ice flux is proportional to ice thickness
 !   and dome height increases linearly with time. The procedures in this module
 !   setup and compute this transient solution. Enabled if ice_soln_name is

@@ -81,7 +81,7 @@ def main(filename, nxy):
   file.time_step__a = dt
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_c'
-  file.climate_param__var = [0.]
+  file.climate_param__var = [alpha, beta, H0, R0, t0]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'

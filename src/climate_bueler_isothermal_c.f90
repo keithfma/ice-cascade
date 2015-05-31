@@ -65,18 +65,18 @@ contains
     integer :: i, j
 
     ! expect exactly 5 parameters
-    if (size(p%ice_soln_param) .ne. 5) then
+    if (size(p%climate_param) .ne. 5) then
       print *, 'Invalid ice solution parameters: bueler_isothermal_c requires &
                &exactly 5 parameters.'
       stop
     end if
 
     ! rename parameters
-    alpha = p%ice_soln_param(1)
-    beta = p%ice_soln_param(2)
-    h0 = p%ice_soln_param(3)
-    r0 = p%ice_soln_param(4)
-    t0 = p%ice_soln_param(5)
+    alpha = p%climate_param(1)
+    beta = p%climate_param(2)
+    h0 = p%climate_param(3)
+    r0 = p%climate_param(4)
+    t0 = p%climate_param(5)
 
     ! h0 must be positive
     if (h0 .le. 0.0_rp) then

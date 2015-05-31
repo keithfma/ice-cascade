@@ -40,6 +40,8 @@ use ice_soln_bueler_isothermal_b, only: &
   init_bueler_isothermal_b, solve_bueler_isothermal_b
 use ice_soln_bueler_isothermal_c, only: &
   init_bueler_isothermal_c, solve_bueler_isothermal_c
+use ice_soln_bueler_isothermal_d, only: &
+  init_bueler_isothermal_d, solve_bueler_isothermal_d
 
 implicit none
 private
@@ -195,6 +197,11 @@ contains
         on_ice_soln = .true.
         call init_bueler_isothermal_c(p, s)
         solve_ice => solve_bueler_isothermal_c
+
+      case('bueler_isothermal_d')
+        on_ice_soln = .true.
+        call init_bueler_isothermal_d(p, s)
+        solve_ice => solve_bueler_isothermal_d
 
       case default
         print *, "Invalid name for glacier exact solution: " // trim(p%ice_soln_name)
