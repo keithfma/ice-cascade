@@ -22,7 +22,7 @@
 ! 
 ! Public: init_bueler_isothermal_c, update_bueler_isothermal_c
 !
-! Private: 
+! Private: alpha, beta, h0, r0, t0, r, h 
 !
 ! =============================================================================
 

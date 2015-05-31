@@ -20,6 +20,8 @@ use climate_bueler_isothermal_a, only: &
   init_bueler_isothermal_a, update_bueler_isothermal_a
 use climate_bueler_isothermal_c, only: &
   init_bueler_isothermal_c, update_bueler_isothermal_c
+use climate_bueler_isothermal_d, only: &
+  init_bueler_isothermal_d, update_bueler_isothermal_d
 
 implicit none
 private
@@ -78,6 +80,11 @@ contains
       on_climate = .true.
       call  init_bueler_isothermal_c(p, s)
       update_climate => update_bueler_isothermal_c
+    
+    case('bueler_isothermal_d')
+      on_climate = .true.
+      call  init_bueler_isothermal_d(p, s)
+      update_climate => update_bueler_isothermal_d
     
     case default
       print *, 'Invalid name for climate method: ' // trim(p%climate_name)
