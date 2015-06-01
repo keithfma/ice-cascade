@@ -102,6 +102,7 @@ def main(filename, nxy):
   file.write_ice_q_surf = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
+  file.variables['topo'][:,:] = 0.
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
   
