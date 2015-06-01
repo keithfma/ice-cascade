@@ -40,6 +40,8 @@ public :: state_type, init_state
     real(rp), allocatable :: ice_vd(:,:) ! ice deformation velocity, y-dir, [m/a]
     real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_a(:,:) ! ice deformation coeff, [Pa^-3 a^-1]
+    real(rp), allocatable :: ice_as(:,:) ! ice sliding coeff, [CHECK UNITS]
   end type state_type
   !
   ! ABOUT: shared state variables
@@ -77,6 +79,9 @@ contains
     allocate(s%ice_vd(p%nx, p%ny))
     allocate(s%ice_us(p%nx, p%ny))
     allocate(s%ice_vs(p%nx, p%ny))
+    allocate(s%ice_vs(p%nx, p%ny))
+    allocate(s%ice_a(p%nx, p%ny))
+    allocate(s%ice_as(p%nx, p%ny))
 
     ! set initial values (some are overwritten by read_vars)
     s%now = p%time_start
@@ -99,6 +104,8 @@ contains
     s%ice_vd = 0.0_rp
     s%ice_us = 0.0_rp
     s%ice_vs = 0.0_rp
+    s%ice_a = 0.0_rp
+    s%ice_as = 0.0_rp
 
   end subroutine init_state
 
