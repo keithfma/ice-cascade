@@ -98,9 +98,7 @@ def main(filename, nxy):
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_d'
   file.climate_param__var = [H0, L, Cp, Tp, q0, A]
-  # DEBUG
-  file.ice_name = 'none'
-  # END DEBUG
+  file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_ice,no_ice'
   file.ice_soln_name = 'bueler_isothermal_d'

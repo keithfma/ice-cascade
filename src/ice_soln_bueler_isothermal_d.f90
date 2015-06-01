@@ -137,7 +137,8 @@ contains
   elsewhere
     pp = 0.0_rp
   end where
-
+  
+  ! combine steady and unsteady components of the solution
   s%ice_h_soln = hs+pp
 
   end subroutine solve_bueler_isothermal_d

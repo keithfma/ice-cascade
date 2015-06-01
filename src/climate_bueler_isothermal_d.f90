@@ -44,9 +44,16 @@ public :: init_bueler_isothermal_d, update_bueler_isothermal_d
   real(rp) :: cp ! amplitude of perturbation, [m] 
   real(rp) :: A ! isothermal ice deformation parameter [Pa-3 a-1]
   real(rp) :: q0 ! surface ice flux beyond the exact margin, [m/a]
+  real(rp) :: gam ! gamma, combined ice flow constant
+  real(rp) :: pi ! pi, duh
   real(rp), allocatable :: rr(:,:) ! distance from origin [m]
   real(rp), allocatable :: ss(:,:) ! normalized distance from origin, [m]
-  real(rp), allocatable :: qs(:,:) ! steady component of surf ice flux, [m/a]
+  real(rp), allocatable :: qqs(:,:) ! steady component of surf ice flux, [m/a]
+  real(rp), allocatable :: qqc(:,:) ! unsteady component of surf ice flux, [m/a]
+  real(rp), allocatable :: gg(:,:), gg_p(:,:), gg_pp(:,:) ! see [1], appendix
+  real(rp), allocatable :: xx(:,:), xx_p(:,:), xx_pp(:,:) ! see [1], appendix
+  real(rp), allocatable :: hhs(:,:), hhs_p(:,:), hhs_pp(:,:) ! see [1], appendix
+  real(rp), allocatable :: hhp(:,:), hhp_p(:,:), hhp_pp(:,:) ! see [1], appendix
   !
   ! ABOUT: set in init_bueler_isothermal_d
   ! ---------------------------------------------------------------------------
@@ -65,8 +72,9 @@ contains
   ! ---------------------------------------------------------------------------
 
     integer :: i, j
-    real(rp) :: gam, C, sij
+    real(rp) :: C 
 
+    
     ! expect exactly 4 parameters
     if (size(p%climate_param) .ne. 6) then
       print *, 'Invalid climate parameters: bueler_isothermal_d requires &
@@ -113,7 +121,12 @@ contains
     ! allocate grids
     allocate(rr(p%nx, p%ny))
     allocate(ss(p%nx, p%ny))
-    allocate(qs(p%nx, p%ny))
+    allocate(qqs(p%nx, p%ny))
+    allocate(qqc(p%nx, p%ny)) 
+    allocate(gg(p%nx, p%ny), gg_p(p%nx, p%ny), gg_pp(p%nx, p%ny))
+    allocate(xx(p%nx, p%ny), xx_p(p%nx, p%ny), xx_pp(p%nx, p%ny))
+    allocate(hhs(p%nx, p%ny), hhs_p(p%nx, p%ny), hhs_pp(p%nx, p%ny))
+    allocate(hhp(p%nx, p%ny), hhp_p(p%nx, p%ny), hhp_pp(p%nx, p%ny))
 
     ! compute distance from x = 0, y = 0
     do j = 1, p%ny
@@ -122,28 +135,66 @@ contains
         ss(i,j) = rr(i,j)/L
       end do
     end do
+  
+    ! constants
+    pi = 4.0_rp*atan(1.0_rp)
+    gam = 2.0_rp/5.0_rp*A*(p%rhoi*p%grav)**3 
 
-    ! compute steady component of surface ice flux
-    gam = 2.0_rp/5.0_rp*A*(p%rhoi*p%grav)**3.0_rp 
-    C = gam*h0**8.0_rp/(4.0_rp/3.0_rp*L)**3.0_rp
-    do j = 1, p%ny
-      do i = 1, p%nx
+    ! steady component of surface ice flux
+    C = gam*(h0**8)/(4.0_rp/3.0_rp*L)**3
 
-        sij = ss(i,j)
-        if (sij .eq. 0.0_rp) then
-          qs(i,j) = 2.0_rp*C/L
-        elseif (sij .eq. 1.0_rp) then
-          qs(i,j) = -C/L
-        elseif ((sij .gt. 0.0_rp) .and. (sij .lt. 1.0_rp)) then
-          qs(i,j) = C/(L*sij)* &
-            (sij**(1.0_rp/3.0_rp)+(1.0_rp-sij)**(1.0_rp/3.0_rp)-1.0_rp)**2.0_rp * &
-            (2.0_rp*sij**(1.0_rp/3.0_rp)+(1.0_rp-sij)**(-2.0_rp/3.0_rp)*(1.0_rp-2.0_rp*sij)-1.0_rp)
-        else
-          qs(i,j) = q0 
-        end if
+    where (ss .eq. 0.0_rp)
+      qqs = 2.0_rp*C/L
+    end where
+  
+    where ((ss .gt. 0.0_rp) .and. (ss .lt. 1.0_rp))
+      qqs = C/(L*ss)* &
+            (ss**(1.0_rp/3.0_rp)+(1.0_rp-ss)**(1.0_rp/3.0_rp)-1.0_rp)**2 * &
+            (2.0_rp*ss**(1.0_rp/3.0_rp)+(1.0_rp-ss)**(-2.0_rp/3.0_rp)*(1.0_rp-2.0_rp*ss)-1.0_rp)
+    end where
+    
+    where (ss .eq. 1.0_rp)
+      qqs = -C/L
+    end where
 
-      end do
-    end do 
+    where (ss .gt. 1.0_rp)
+      qqs = q0 
+    end where
+
+    ! constant parts of the unsteady component of surface ice flux
+
+    gg = cos(pi*(rr-0.6_rp/L)/(0.6_rp*L))**2
+
+    gg_p = -pi/(0.6_rp*L)*sin(pi*(rr-0.6_rp*L)/(0.3_rp*L))
+
+    gg_pp = (-pi**2)/(0.18_rp*L**2)*cos(pi*(rr-0.6_rp*L)/(0.3_rp*L))
+
+    xx = 0.0_rp
+    where (ss .lt. 1.0_rp)
+      xx = 4.0_rp/3.0_rp*ss-1.0_rp/3.0_rp+(1.0_rp-ss)**(4.0_rp/3.0_rp) - &
+           ss**(4.0_rp/3.0_rp)
+    end where
+
+    xx_p = 0.0_rp
+    where (ss .lt. 1.0_rp)
+      xx_p = -4.0_rp/(3.0_rp*L)*(ss**(1.0_rp/3.0_rp) + &
+             (1.0_rp-ss)**(1.0_rp/3.0_rp)-1.0_rp)
+    end where
+
+    xx_pp = 0.0_rp
+    where (ss .lt. 1.0_rp)
+      xx_pp = -4.0_rp/(9.0_rp*L**2)*(ss**(-2.0_rp/3.0_rp) - &
+              (1.0_rp-ss)**(-2.0_rp/3.0_rp))
+    end where
+
+    hhs = h0*(2.0_rp/3.0_rp)**(-3.0_rp/8.0_rp)*xx**(3.0_rp/8.0_rp)
+
+    hhs_p = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
+            xx**(-5.0_rp/8.0_rp)*xx_p
+
+    hhs_pp = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
+             ((-5.0_rp/8.0_rp)*xx**(-13.0_rp/8.0_rp)*xx_p**2 + &
+             xx**(-5.0_rp/8.0_rp)*xx_pp)
 
   end subroutine init_bueler_isothermal_d
 
@@ -157,8 +208,31 @@ contains
   ! ABOUT: Get climate at current time
   ! ---------------------------------------------------------------------------
 
-  ! DEBUG
-  s%ice_q_surf = qs
+    real(rp) :: sinval, t
+
+    ! constants
+    t = s%now
+    sinval = sin(2.0_rp*pi*t/tp)
+
+    ! compute unsteady component of surface ice flux
+    hhp = hhs
+    where ((0.3_rp .lt. ss) .and. (ss .lt. 0.9_rp))
+      hhp = hhs+cp*sinval*cos(pi*(rr-0.6_rp*L)/(0.6_rp*L))**2
+    end where
+
+    hhp_p = hhs_p+cp*sinval*gg_p
+
+    hhp_pp = hhs_pp+cp*sinval*gg_pp
+
+    qqc = 0.0_rp
+    where ((0.3_rp .lt. ss) .and. (ss .lt. 0.9_rp))
+      qqc = 2.0_rp*pi*cp/tp*gg*cos(2.0_rp*pi*t/tp) - qqs - &
+            gam*(hhp**4)*(hhp_p**2)*(1.0_rp/rr*hhp*hhp_p + &
+            5.0_rp*(hhp_p**2)+3.0_rp*hhp*hhp_pp)
+    end where
+
+    ! combine steady and unsteady components of surface ice flux
+    s%ice_q_surf = qqs+qqc
 
   end subroutine update_bueler_isothermal_d
 
