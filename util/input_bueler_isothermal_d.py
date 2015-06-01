@@ -60,9 +60,7 @@ def main(filename, nxy):
     sys.exit()
   
   # coordinate grid
-  dxy = 2.*lxy/float(nxy-1)
-  nhalf = (nxy-1)/2
-  xy = dxy*np.arange(-nhalf, nhalf+1, 1, dtype = np.float64) 
+  (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
   (xx, yy) = np.meshgrid(xy, xy)
   rr = np.sqrt(xx**2+yy**2)
   
@@ -100,7 +98,7 @@ def main(filename, nxy):
   file.climate_param__var = [H0, L, Cp, Tp, q0, A]
   file.ice_name = 'hindmarsh2_explicit'
   file.ice_param__var = [A]
-  file.ice_bc_name__nesw = 'no_ice,no_ice,no_ice,no_ice'
+  file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_d'
   file.ice_soln_param__var = [H0, L, Cp, Tp]
   file.write_ice_h = 1
