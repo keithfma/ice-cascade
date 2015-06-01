@@ -107,12 +107,11 @@ contains
     end do
 
     ! compute steady component of ice thickness solution
+    hs = 0.0_rp
     where (ss .lt. 1.0_rp)
       hs = h0/(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)*&
            (4.0_rp/3.0_rp*ss - 1.0_rp/3.0_rp + (1.0_rp-ss)**(4.0_rp/3.0_rp) - &
            ss**(4.0_rp/3.0_rp))**(3.0_rp/8.0_rp)
-    elsewhere
-      hs = 0.0_rp
     end where
 
   end subroutine init_bueler_isothermal_d
@@ -132,10 +131,9 @@ contains
   pi = 4.0_rp*atan(1.0_rp)
 
   ! compute unsteady component of ice thickness
+  pp = 0.0_rp
   where ((ss .gt. 0.3_rp) .and. (ss .lt. 0.9_rp))
-    pp = cp*sin(2.0_rp*pi*s%now/tp)*cos(pi*(rr-0.6_rp*L)/(0.6_rp*L))**2.0_rp
-  elsewhere
-    pp = 0.0_rp
+    pp = cp*sin(2.0_rp*pi*s%now/tp)*cos(pi*(rr-0.6_rp*L)/(0.6_rp*L))**2
   end where
   
   ! combine steady and unsteady components of the solution
