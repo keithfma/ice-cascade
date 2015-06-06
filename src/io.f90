@@ -14,7 +14,7 @@
 !
 ! Public: read_param, read_var, write_file, write_step, write_status
 !
-! Private: req, opt, maxval_intr, minval_intr, meanval_intr
+! Private: get_var_1, get_var_2, req, opt, maxval_intr, minval_intr, meanval_intr
 !   
 ! ============================================================================
 
@@ -34,17 +34,64 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  function get_var_2(netcdf_id, var_name, n1, n2, req) result (var_data)
+  function get_var_1(netcdf_id, var_name, n, required) result (var_data)
   !
     integer, intent(in) :: netcdf_id ! handle for open netcdf file
     character(len=*), intent(in) :: var_name ! name of variable in netcdf file
-    integer, intent(in) :: n1 ! dim 1 for output
-    integer, intent(in) :: n2 ! dim 2 for output
-    logical, intent(in) :: req ! variable is required (T) or optional (F)
+    integer, intent(in) :: n ! length of output
+    logical, intent(in) :: required ! variable is required (T) or optional (F)
+    real(rp), allocatable :: var_data(:)
+  !
+  ! ABOUT: Read vector from netcdf file, handle read errors and null variables
+  ! ---------------------------------------------------------------------------
+
+    integer :: err, var_id
+
+    ! allocate ouput variable
+    allocate(var_data(n))
+
+    ! find and read variable
+    err = nf90_inq_varid(netcdf_id, trim(var_name), var_id)
+    if (err .eq. nf90_noerr) err = nf90_get_var(netcdf_id, var_id, var_data)
+
+    ! handle errors and missing vars
+    if (err .ne. nf90_noerr) then
+      print *, trim(nf90_strerror(err))
+      if (required) then
+        print *, 'required variable ('//trim(var_name)//') is not readable, stopping'
+        stop 
+      else
+        print *, 'optional variable ('//trim(var_name)//') is not readable, set to 0.0'
+        var_data = 0.0_rp
+      end if
+    end if
+
+    ! handle null/dummy vars (all NAN indicates the var should not be read)
+    if (all(ieee_is_nan(var_data))) then
+      if (required) then
+        print *, 'required variable ('//trim(var_name)//') is null, stopping'
+        stop 
+      else
+        print *, 'optional variable ('//trim(var_name)//') is null, set to 0.0'
+        var_data = 0.0_rp
+      end if
+    end if
+      
+    return
+
+  end function get_var_1
+
+
+  ! ---------------------------------------------------------------------------
+  function get_var_2(netcdf_id, var_name, n1, n2, required) result (var_data)
+  !
+    integer, intent(in) :: netcdf_id ! handle for open netcdf file
+    character(len=*), intent(in) :: var_name ! name of variable in netcdf file
+    integer, intent(in) :: n1, n2 ! dimensions for output
+    logical, intent(in) :: required ! variable is required (T) or optional (F)
     real(rp), allocatable :: var_data(:, :)
   !
-  ! ABOUT: Read 2D grid from netcdf file, handle errors and check for NaNs
-  !   (which indicate a null input variable to be ignored)
+  ! ABOUT: Read 2D grid from netcdf file, handle read errors and null variables
   ! ---------------------------------------------------------------------------
 
     integer :: err, var_id
@@ -58,26 +105,31 @@ contains
 
     ! handle errors and missing vars
     if (err .ne. nf90_noerr) then
-      print *, 'get_var_2: '//trim(nf90_strerror(err))//'('//trim(var_name)//')'
-      if (req) then
+      print *, trim(nf90_strerror(err))
+      if (required) then
+        print *, 'required variable ('//trim(var_name)//') is not readable, stopping'
         stop 
       else
-        print *, 'optional variable not readable, set to 0.0 ('//trim(var_name)//')'
+        print *, 'optional variable ('//trim(var_name)//') is not readable, set to 0.0'
         var_data = 0.0_rp
       end if
     end if
 
     ! handle null/dummy vars (all NAN indicates the var should not be read)
-    print *, var_data
-    print *, all(ieee_is_nan(var_data))
     if (all(ieee_is_nan(var_data))) then
-      print *, 'optional variable is null, set to 0.0 ('//trim(var_name)//')'
-      var_data = 0.0_rp
+      if (required) then
+        print *, 'required variable ('//trim(var_name)//') is null, stopping'
+        stop 
+      else
+        print *, 'optional variable ('//trim(var_name)//') is null, set to 0.0'
+        var_data = 0.0_rp
+      end if
     end if
       
     return
 
   end function get_var_2
+
 
   ! ---------------------------------------------------------------------------
   subroutine req(str, e)
@@ -346,93 +398,57 @@ contains
     call req('read vars: open file: ', e)
 
     ! Read variables
-    e = nf90_inq_varid(ncid, 'x', varid)
-    call req('read_vars: x: ', e)
-    e = nf90_get_var(ncid, varid, s%x(2:p%nx-1))
-    call req('read_vars: x: ', e)
+    s%x(2:p%nx-1) = get_var_1(ncid, 'x', p%nx-2, .true.) 
 
-    e = nf90_inq_varid(ncid, 'y', varid)
-    call req('read_vars: y: ', e)
-    e = nf90_get_var(ncid, varid, s%y(2:p%ny-1))
-    call req('read_vars: y: ', e)
+    s%y(2:p%ny-1) = get_var_1(ncid, 'y', p%ny-2, .true.) 
 
-    e = nf90_inq_varid(ncid, 'topo', varid)
-    call opt('read_vars: topo: ', e)
-    e = nf90_get_var(ncid, varid, s%topo(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: topo: ', e)
+    s%topo(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'topo', p%nx-2, p%ny-2, .false.)
 
     s%topo_dot_ice(2:p%nx-1,2:p%ny-1) = &
       get_var_2(ncid, 'topo_dot_ice', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'surf', varid)
-    call opt('read_vars: surf: ', e)
-    e = nf90_get_var(ncid, varid, s%surf(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: surf: ', e)
+    s%surf(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'surf', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'temp_surf', varid)
-    call opt('read_vars: temp_surf: ', e)
-    e = nf90_get_var(ncid, varid, s%temp_surf(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: temp_surf: ', e)
+    s%temp_surf(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'temp_surf', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'temp_ice', varid)
-    call opt('read_vars: temp_ice: ', e)
-    e = nf90_get_var(ncid, varid, s%temp_ice(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: temp_ice: ', e)
-    
-    e = nf90_inq_varid(ncid, 'temp_base', varid)
-    call opt('read_vars: temp_base: ', e)
-    e = nf90_get_var(ncid, varid, s%temp_base(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: temp_base: ', e)
+    s%temp_ice(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'temp_ice', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'precip', varid)
-    call opt('read_vars: precip: ', e)
-    e = nf90_get_var(ncid, varid, s%precip(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: precip: ', e)
+    s%temp_base(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'temp_base', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'runoff', varid)
-    call opt('read_vars: runoff: ', e)
-    e = nf90_get_var(ncid, varid, s%runoff(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: runoff: ', e)
+    s%precip(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'precip', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_q_surf', varid)
-    call opt('read_vars: ice_q_surf: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_q_surf(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_q_surf: ', e)
+    s%runoff(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'runoff', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_h', varid)
-    call opt('read_vars: ice_h: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_h(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_h: ', e)
+    s%ice_q_surf(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_q_surf', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_h_dot', varid)
-    call opt('read_vars: ice_h_dot: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_h_dot(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_h_dot: ', e)
+    s%ice_h(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_h', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_h_soln', varid)
-    call opt('read_vars: ice_h_soln: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_h_soln(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_h_soln: ', e)
+    s%ice_h_dot(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_h_dot', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_ud', varid)
-    call opt('read_vars: ice_ud: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_ud(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_ud: ', e)
+    s%ice_h_soln(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_h_soln', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_vd', varid)
-    call opt('read_vars: ice_vd: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_vd(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_vd: ', e)
+    s%ice_ud(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_ud', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_us', varid)
-    call opt('read_vars: ice_us: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_us(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_us: ', e)
+    s%ice_vd(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_vd', p%nx-2, p%ny-2, .false.)
 
-    e = nf90_inq_varid(ncid, 'ice_vs', varid)
-    call opt('read_vars: ice_vs: ', e)
-    e = nf90_get_var(ncid, varid, s%ice_vs(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: ice_vs: ', e)
+    s%ice_us(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_us', p%nx-2, p%ny-2, .false.)
+
+    s%ice_vs(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_vs', p%nx-2, p%ny-2, .false.)
 
     ! Close file
     e = nf90_close(ncid)
