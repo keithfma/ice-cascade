@@ -51,8 +51,8 @@ public :: param_type, init_param
     logical :: write_ice_q_surf 
     logical :: write_ice_h 
     logical :: write_ice_h_dot
-    logical :: write_ice_uvd 
-    logical :: write_ice_uvs 
+    logical :: write_ice_uv_defm 
+    logical :: write_ice_uv_slid 
     logical :: write_ice_h_soln
   end type param_type
   !

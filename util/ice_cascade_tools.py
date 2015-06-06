@@ -48,8 +48,8 @@ def new_input(filename, nx, ny):
   file.write_ice_h = 0
   file.write_ice_h_dot = 0
   file.write_ice_h_soln = 0
-  file.write_ice_uvd = 0
-  file.write_ice_uvs = 0
+  file.write_ice_uv_defm = 0
+  file.write_ice_uv_slid = 0
 
   # create dimensions
   file.createDimension('x', size = nx)
@@ -125,23 +125,33 @@ def new_input(filename, nx, ny):
   var[:,:] = np.nan
   var.long_name = 'ice_thickness_exact_solution'
   var.units = 'm'
+
+  var = file.createVariable('ice_a_defm', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
+  var.long_name = 'ice_deformation_coefficient'
+  var.units = '1_Pa3_a'
+
+  var = file.createVariable('ice_a_slid', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
+  var.long_name = 'ice_sliding_coefficient'
+  var.units = 'TBD'
   
-  var = file.createVariable('ice_ud', np.float64, dimensions = ('x', 'y'))
+  var = file.createVariable('ice_u_defm', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan
   var.long_name = 'ice_deformation_velocity_x_dir'
   var.units = 'm_a'
 
-  var = file.createVariable('ice_vd', np.float64, dimensions = ('x', 'y'))
+  var = file.createVariable('ice_v_defm', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan
   var.long_name = 'ice_deformation_velocity_y_dir'
   var.units = 'm_a'
   
-  var = file.createVariable('ice_us', np.float64, dimensions = ('x', 'y'))
+  var = file.createVariable('ice_u_slid', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan
   var.long_name = 'ice_sliding_velocity_x_dir'
   var.units = 'm_a'
 
-  var = file.createVariable('ice_vs', np.float64, dimensions = ('x', 'y'))
+  var = file.createVariable('ice_v_slid', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan
   var.long_name = 'ice_sliding_velocity_y_dir'
   var.units = 'm_a'

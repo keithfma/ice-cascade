@@ -356,13 +356,13 @@ contains
     call req('read_param: write_ice_h_dot: ', e)
     p%write_ice_h_dot = (tf .eq. 1)
 
-    e = nf90_get_att(ncid, nf90_global, 'write_ice_uvd', tf)
-    call req('read_param: write_ice_uvd: ', e)
-    p%write_ice_uvd = (tf .eq. 1)
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_uv_defm', tf)
+    call req('read_param: write_ice_uv_defm: ', e)
+    p%write_ice_uv_defm = (tf .eq. 1)
 
-    e = nf90_get_att(ncid, nf90_global, 'write_ice_uvs', tf)
-    call req('read_param: write_ice_uvs: ', e)
-    p%write_ice_uvs = (tf .eq. 1)
+    e = nf90_get_att(ncid, nf90_global, 'write_ice_uv_slid', tf)
+    call req('read_param: write_ice_uv_slid: ', e)
+    p%write_ice_uv_slid = (tf .eq. 1)
 
     e = nf90_get_att(ncid, nf90_global, 'write_ice_h_soln', tf)
     call req('read_param: write_ice_h_soln: ', e)
@@ -438,17 +438,17 @@ contains
     s%ice_h_soln(2:p%nx-1,2:p%ny-1) = &
       get_var_2(ncid, 'ice_h_soln', p%nx-2, p%ny-2, .false.)
 
-    s%ice_ud(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_ud', p%nx-2, p%ny-2, .false.)
+    s%ice_u_defm(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_u_defm', p%nx-2, p%ny-2, .false.)
 
-    s%ice_vd(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_vd', p%nx-2, p%ny-2, .false.)
+    s%ice_v_defm(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_v_defm', p%nx-2, p%ny-2, .false.)
 
-    s%ice_us(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_us', p%nx-2, p%ny-2, .false.)
+    s%ice_u_slid(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_u_slid', p%nx-2, p%ny-2, .false.)
 
-    s%ice_vs(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_vs', p%nx-2, p%ny-2, .false.)
+    s%ice_v_slid(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'ice_v_slid', p%nx-2, p%ny-2, .false.)
 
     ! Close file
     e = nf90_close(ncid)
@@ -553,11 +553,11 @@ contains
     tf = merge(1, 0, p%write_ice_h_dot)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_h_dot', tf)
 
-    tf = merge(1, 0, p%write_ice_uvd)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_uvd', tf)
+    tf = merge(1, 0, p%write_ice_uv_defm)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_uv_defm', tf)
 
-    tf = merge(1, 0, p%write_ice_uvs)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_uvs', tf)
+    tf = merge(1, 0, p%write_ice_uv_slid)
+    e = nf90_put_att(ncid, nf90_global, 'write_ice_uv_slid', tf)
 
     tf = merge(1, 0, p%write_ice_h_soln)
     e = nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', tf)
@@ -657,7 +657,7 @@ contains
      	e = nf90_put_att(ncid, vid, 'units', 'm_a')
     end if
 
-    if (p%write_ice_uvd) then
+    if (p%write_ice_uv_defm) then
      	e = nf90_def_var(ncid, 'ice_ud', rp_nc, [xid, yid, tid], vid, &
         chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
      	e = nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_velocity_x')
@@ -669,7 +669,7 @@ contains
      	e = nf90_put_att(ncid, vid, 'units', 'm_a')
     end if
 
-    if (p%write_ice_uvs) then
+    if (p%write_ice_uv_slid) then
      	e = nf90_def_var(ncid, 'ice_us', rp_nc, [xid, yid, tid], vid, &
         chunksizes = chunk, shuffle = shuf, deflate_level = deflate )
      	e = nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_velocity_x')
@@ -789,20 +789,20 @@ contains
       e = nf90_put_var(ncid, vid, s%ice_h_soln(2:p%nx-1,2:p%ny-1), [1, 1, n])
     end if
     
-    if (p%write_ice_uvd) then
-      e = nf90_inq_varid(ncid, 'ice_ud', vid)
-      e = nf90_put_var(ncid, vid, s%ice_ud(2:p%nx-1,2:p%ny-1), [1, 1, n])
+    if (p%write_ice_uv_defm) then
+      e = nf90_inq_varid(ncid, 'ice_u_defm', vid)
+      e = nf90_put_var(ncid, vid, s%ice_u_defm(2:p%nx-1,2:p%ny-1), [1, 1, n])
       
-      e = nf90_inq_varid(ncid, 'ice_vd', vid)
-      e = nf90_put_var(ncid, vid, s%ice_vd(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      e = nf90_inq_varid(ncid, 'ice_v_defm', vid)
+      e = nf90_put_var(ncid, vid, s%ice_v_defm(2:p%nx-1,2:p%ny-1), [1, 1, n])
     end if
     
-    if (p%write_ice_uvs) then
-      e = nf90_inq_varid(ncid, 'ice_us', vid)
-      e = nf90_put_var(ncid, vid, s%ice_us(2:p%nx-1,2:p%ny-1), [1, 1, n])
+    if (p%write_ice_uv_slid) then
+      e = nf90_inq_varid(ncid, 'ice_u_slid', vid)
+      e = nf90_put_var(ncid, vid, s%ice_u_slid(2:p%nx-1,2:p%ny-1), [1, 1, n])
     
-      e = nf90_inq_varid(ncid, 'ice_vs', vid)
-      e = nf90_put_var(ncid, vid, s%ice_vs(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      e = nf90_inq_varid(ncid, 'ice_v_slid', vid)
+      e = nf90_put_var(ncid, vid, s%ice_v_slid(2:p%nx-1,2:p%ny-1), [1, 1, n])
     end if
 
     ! close file
@@ -898,26 +898,26 @@ contains
         minval_intr(s%ice_h_dot)
     end if
 
-    if (p%write_ice_uvd) then
-      print "('ICE_UD (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_ud), &
-        meanval_intr(s%ice_ud)/size(s%ice_ud), &
-        minval_intr(s%ice_ud)
-      print "('ICE_VD (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_vd), &
-        meanval_intr(s%ice_vd), &
-        minval_intr(s%ice_vd)
+    if (p%write_ice_uv_defm) then
+      print "('ICE_U_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_u_defm), &
+        meanval_intr(s%ice_u_defm)/size(s%ice_u_defm), &
+        minval_intr(s%ice_u_defm)
+      print "('ICE_V_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_v_defm), &
+        meanval_intr(s%ice_v_defm), &
+        minval_intr(s%ice_v_defm)
     end if
 
-    if (p%write_ice_uvs) then
-      print "('ICE_US (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_us), &
-        meanval_intr(s%ice_us), &
-        minval_intr(s%ice_us)
-      print "('ICE_VS (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_vs), &
-        meanval_intr(s%ice_vs), &
-        minval_intr(s%ice_vs)
+    if (p%write_ice_uv_slid) then
+      print "('ICE_U_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_u_slid), &
+        meanval_intr(s%ice_u_slid), &
+        minval_intr(s%ice_u_slid)
+      print "('ICE_V_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_v_slid), &
+        meanval_intr(s%ice_v_slid), &
+        minval_intr(s%ice_v_slid)
     end if
 
     if (p%write_ice_h_soln) then
