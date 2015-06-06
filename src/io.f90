@@ -24,6 +24,7 @@ use kinds, only: rp, rp_nc
 use param, only: param_type
 use state, only: state_type
 use netcdf
+use ieee_arithmetic, only: ieee_is_nan
 
 implicit none
 private
@@ -31,6 +32,52 @@ public :: read_param, read_var, write_file, write_step, write_status
 
 contains
 
+
+  ! ---------------------------------------------------------------------------
+  function get_var_2(netcdf_id, var_name, n1, n2, req) result (var_data)
+  !
+    integer, intent(in) :: netcdf_id ! handle for open netcdf file
+    character(len=*), intent(in) :: var_name ! name of variable in netcdf file
+    integer, intent(in) :: n1 ! dim 1 for output
+    integer, intent(in) :: n2 ! dim 2 for output
+    logical, intent(in) :: req ! variable is required (T) or optional (F)
+    real(rp), allocatable :: var_data(:, :)
+  !
+  ! ABOUT: Read 2D grid from netcdf file, handle errors and check for NaNs
+  !   (which indicate a null input variable to be ignored)
+  ! ---------------------------------------------------------------------------
+
+    integer :: err, var_id
+
+    ! allocate ouput variable
+    allocate(var_data(n1, n2))
+
+    ! find and read variable
+    err = nf90_inq_varid(netcdf_id, trim(var_name), var_id)
+    if (err .eq. nf90_noerr) err = nf90_get_var(netcdf_id, var_id, var_data)
+
+    ! handle errors and missing vars
+    if (err .ne. nf90_noerr) then
+      print *, 'get_var_2: '//trim(nf90_strerror(err))//'('//trim(var_name)//')'
+      if (req) then
+        stop 
+      else
+        print *, 'optional variable not readable, set to 0.0 ('//trim(var_name)//')'
+        var_data = 0.0_rp
+      end if
+    end if
+
+    ! handle null/dummy vars (all NAN indicates the var should not be read)
+    print *, var_data
+    print *, all(ieee_is_nan(var_data))
+    if (all(ieee_is_nan(var_data))) then
+      print *, 'optional variable is null, set to 0.0 ('//trim(var_name)//')'
+      var_data = 0.0_rp
+    end if
+      
+    return
+
+  end function get_var_2
 
   ! ---------------------------------------------------------------------------
   subroutine req(str, e)
@@ -289,7 +336,11 @@ contains
   ! ---------------------------------------------------------------------------
 
     integer :: e, ncid, varid
-    
+    real(rp), allocatable :: buffer(:,:)
+   
+    ! Allocate read buffer for interior points only
+    allocate(buffer(p%nx-2, p%ny-2))
+
     ! Open file
     e = nf90_open(p%input_file, nf90_nowrite, ncid)
     call req('read vars: open file: ', e)
@@ -310,10 +361,8 @@ contains
     e = nf90_get_var(ncid, varid, s%topo(2:p%nx-1,2:p%ny-1))
     call opt('read_vars: topo: ', e)
 
-    e = nf90_inq_varid(ncid, 'topo_dot_ice', varid)
-    call opt('read_vars: topo_dot_ice: ', e)
-    e = nf90_get_var(ncid, varid, s%topo_dot_ice(2:p%nx-1,2:p%ny-1))
-    call opt('read_vars: topo_dot_ice: ', e)
+    s%topo_dot_ice(2:p%nx-1,2:p%ny-1) = &
+      get_var_2(ncid, 'topo_dot_ice', p%nx-2, p%ny-2, .false.)
 
     e = nf90_inq_varid(ncid, 'surf', varid)
     call opt('read_vars: surf: ', e)
