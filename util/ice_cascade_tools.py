@@ -50,6 +50,8 @@ def new_input(filename, nx, ny):
   file.write_ice_h_soln = 0
   file.write_ice_uv_defm = 0
   file.write_ice_uv_slid = 0
+  file.write_ice_a_defm = 0
+  file.write_ice_a_slid = 0
 
   # create dimensions
   file.createDimension('x', size = nx)
@@ -134,7 +136,7 @@ def new_input(filename, nx, ny):
   var = file.createVariable('ice_a_slid', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan
   var.long_name = 'ice_sliding_coefficient'
-  var.units = 'TBD'
+  var.units = 'm_Pa_a'
   
   var = file.createVariable('ice_u_defm', np.float64, dimensions = ('x', 'y'))
   var[:,:] = np.nan

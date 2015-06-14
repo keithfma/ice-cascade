@@ -54,6 +54,8 @@ public :: param_type, init_param
     integer :: write_ice_uv_defm 
     integer :: write_ice_uv_slid 
     integer :: write_ice_h_soln
+    integer :: write_ice_a_defm
+    integer :: write_ice_a_slid
   end type param_type
   !
   ! ABOUT: shared parameters

@@ -131,6 +131,8 @@ contains
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_uv_defm', p%write_ice_uv_defm));
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_uv_slid', p%write_ice_uv_slid));
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_h_soln', p%write_ice_h_soln));
+    call req(nf90_get_att(ncid, nf90_global, 'write_ice_a_defm', p%write_ice_a_defm));
+    call req(nf90_get_att(ncid, nf90_global, 'write_ice_a_slid', p%write_ice_a_slid));
 
     ! Close file
     call req(nf90_close(ncid))
@@ -214,6 +216,12 @@ contains
     call opt(nf90_inq_varid(ncid, 'ice_v_slid', varid))
     call opt(nf90_get_var(ncid, varid, s%ice_v_slid(2:p%nx-1,2:p%ny-1)))
 
+    call opt(nf90_inq_varid(ncid, 'ice_a_defm', varid))
+    call opt(nf90_get_var(ncid, varid, s%ice_a_defm(2:p%nx-1,2:p%ny-1)))
+
+    call opt(nf90_inq_varid(ncid, 'ice_a_slid', varid))
+    call opt(nf90_get_var(ncid, varid, s%ice_a_slid(2:p%nx-1,2:p%ny-1)))
+
     ! Close file
     call req(nf90_close(ncid))
 
@@ -277,6 +285,8 @@ contains
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_uv_defm', p%write_ice_uv_defm))
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_uv_slid', p%write_ice_uv_slid))
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', p%write_ice_h_soln))
+    call req(nf90_put_att(ncid, nf90_global, 'write_ice_a_defm', p%write_ice_a_defm))
+    call req(nf90_put_att(ncid, nf90_global, 'write_ice_a_slid', p%write_ice_a_slid))
 
     ! define dimensions
     call req(nf90_def_dim(ncid, 'x', p%nx-2, xid)) 
@@ -386,6 +396,18 @@ contains
      	call req(nf90_def_var(ncid, 'ice_h_soln', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_thickness_solution'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm'))
+    end if
+
+    if (p%write_ice_a_defm .eq. 1) then
+     	call req(nf90_def_var(ncid, 'ice_a_defm', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_coefficient'))
+     	call req(nf90_put_att(ncid, vid, 'units', '1_Pa3_a'))
+    end if
+
+    if (p%write_ice_a_slid .eq. 1) then
+     	call req(nf90_def_var(ncid, 'ice_a_slid', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_coefficient'))
+     	call req(nf90_put_att(ncid, vid, 'units', 'm_Pa_a'))
     end if
 
     ! populate coordinate variables
@@ -502,6 +524,16 @@ contains
       call req(nf90_put_var(ncid, vid, s%ice_v_slid(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
 
+    if (p%write_ice_a_defm .eq. 1) then
+      call req(nf90_inq_varid(ncid, 'ice_a_defm', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_a_defm(2:p%nx-1,2:p%ny-1), [1, 1, n]))
+    end if
+
+    if (p%write_ice_a_slid .eq. 1) then
+      call req(nf90_inq_varid(ncid, 'ice_a_slid', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_a_slid(2:p%nx-1,2:p%ny-1), [1, 1, n]))
+    end if
+
     ! close file
     call req(nf90_close(ncid))
 
@@ -571,71 +603,79 @@ contains
   ! ABOUT: print model status update to stdout
   ! --------------------------------------------------------------------------
 
-    print "('TIME [a]                           : ', EN12.3)", s%now 
+    print "('TIME [a]                               : ', EN12.3)", s%now 
 
     if (p%write_topo .eq. 1)  &
-      print "('TOPO (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('TOPO (max, mean, min) [m]            : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%topo), meanval_intr(s%topo), minval_intr(s%topo)
 
     if (p%write_topo_dot_ice .eq. 1) &
-      print "('TOPO_DOT_ICE (max, mean, min) [m]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('TOPO_DOT_ICE (max, mean, min) [m]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%topo_dot_ice), meanval_intr(s%topo_dot_ice), minval_intr(s%topo_dot_ice)
 
     if (p%write_surf .eq. 1) &
-      print "('SURF (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('SURF (max, mean, min) [m]            : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%surf), meanval_intr(s%surf), minval_intr(s%surf)
 
     if (p%write_temp_surf .eq. 1) &
-      print "('TEMP_SURF (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('TEMP_SURF (max, mean, min) [C]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%temp_surf), meanval_intr(s%temp_surf), minval_intr(s%temp_surf)
 
     if (p%write_temp_base .eq. 1) &
-      print "('TEMP_BASE (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('TEMP_BASE (max, mean, min) [C]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%temp_base), meanval_intr(s%temp_base), minval_intr(s%temp_base)
 
     if (p%write_temp_ice .eq. 1) &
-      print "('TEMP_ICE (max, mean, min) [C]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('TEMP_ICE (max, mean, min) [C]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%temp_ice), meanval_intr(s%temp_ice), minval_intr(s%temp_ice)
 
     if (p%write_precip .eq. 1) &
-      print "('PRECIP (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('PRECIP (max, mean, min) [m/a]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%precip), meanval_intr(s%precip), minval_intr(s%precip)
 
     if (p%write_runoff .eq. 1) &
-      print "('RUNOFF (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('RUNOFF (max, mean, min) [m/a]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%runoff), meanval_intr(s%runoff), minval_intr(s%runoff)
 
     if (p%write_ice_q_surf .eq. 1) &
-      print "('ICE_Q_SURF (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_Q_SURF (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_q_surf), meanval_intr(s%ice_q_surf), minval_intr(s%ice_q_surf)
     
     if (p%write_ice_h .eq. 1) &
-      print "('ICE_H (max, mean, min) [m]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_H (max, mean, min) [m]           : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_h), meanval_intr(s%ice_h), minval_intr(s%ice_h)
 
     if (p%write_ice_h_dot .eq. 1) &
-      print "('ICE_H_DOT (max, mean, min) [m/a] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_H_DOT (max, mean, min) [m/a]     : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_h_dot), meanval_intr(s%ice_h_dot), minval_intr(s%ice_h_dot)
 
     if (p%write_ice_uv_defm .eq. 1) &
-      print "('ICE_U_DEFM (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_U_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_u_defm), meanval_intr(s%ice_u_defm), minval_intr(s%ice_u_defm)
 
     if (p%write_ice_uv_defm .eq. 1) &
-      print "('ICE_V_DEFM (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_V_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_v_defm), meanval_intr(s%ice_v_defm), minval_intr(s%ice_v_defm)
 
     if (p%write_ice_uv_slid .eq. 1) &
-      print "('ICE_U_SLID (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_U_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_u_slid), meanval_intr(s%ice_u_slid), minval_intr(s%ice_u_slid)
 
     if (p%write_ice_uv_slid .eq. 1) &
-      print "('ICE_V_SLID (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_V_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_v_slid), meanval_intr(s%ice_v_slid), minval_intr(s%ice_v_slid)
 
     if (p%write_ice_h_soln .eq. 1) &
-      print "('ICE_H_SOLN (max, mean, min) [m]  : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_H_SOLN (max, mean, min) [m]      : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_h_soln), meanval_intr(s%ice_h_soln), minval_intr(s%ice_h_soln)
+
+    if (p%write_ice_a_defm .eq. 1) &
+      print "('ICE_A_DEFM (max, mean, min) [1/Pa3/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_a_defm), meanval_intr(s%ice_a_defm), minval_intr(s%ice_a_defm)
+
+    if (p%write_ice_a_slid .eq. 1) &
+      print "('ICE_A_SLID (max, mean, min) [1/Pa/a] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_a_slid), meanval_intr(s%ice_a_slid), minval_intr(s%ice_a_slid)
 
     print *, ''
 
