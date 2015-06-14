@@ -40,20 +40,20 @@ public :: param_type, init_param
     real(rp), allocatable :: ice_param(:) ! ice model parameters, [various]
     character(len=100) :: ice_soln_name ! ice model exact solution name
     real(rp), allocatable :: ice_soln_param(:) ! ice solution parameters, [various]
-    logical :: write_topo ! write flag for state var
-    logical :: write_topo_dot_ice ! ' '
-    logical :: write_surf
-    logical :: write_temp_surf 
-    logical :: write_temp_base 
-    logical :: write_temp_ice 
-    logical :: write_precip 
-    logical :: write_runoff 
-    logical :: write_ice_q_surf 
-    logical :: write_ice_h 
-    logical :: write_ice_h_dot
-    logical :: write_ice_uv_defm 
-    logical :: write_ice_uv_slid 
-    logical :: write_ice_h_soln
+    integer :: write_topo ! write flag for state var
+    integer :: write_topo_dot_ice ! ' '
+    integer :: write_surf
+    integer :: write_temp_surf 
+    integer :: write_temp_base 
+    integer :: write_temp_ice 
+    integer :: write_precip 
+    integer :: write_runoff 
+    integer :: write_ice_q_surf 
+    integer :: write_ice_h 
+    integer :: write_ice_h_dot
+    integer :: write_ice_uv_defm 
+    integer :: write_ice_uv_slid 
+    integer :: write_ice_h_soln
   end type param_type
   !
   ! ABOUT: shared parameters
