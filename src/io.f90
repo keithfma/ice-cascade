@@ -5,16 +5,16 @@
 !   format. All the expected parameters MUST be defined as global parameters in
 !   the input file. Missing parameters will cause the program to exit with an
 !   error. All the state variables MAY be defined in the input file, in which
-!   case they are read in as the initial values for these variables. Any issing
+!   case they are read in as the initial values for these variables. Any missing
 !   variables will be set to the default value (0). However, note that the
-!   various model components are run at the initial time, and may overwrite
-!   the supplied input data (e.g. if you provide an intitial temperature in the
+!   various model components are run at the initial time, and may overwrite the
+!   supplied input data (e.g. if you provide an intitial temperature in the
 !   temp_surf variable, but also select a climate model component that sets the
 !   temp_surf variable, the climate procedure takes precedence).
 !
 ! Public: read_param, read_var, write_file, write_step, write_status
 !
-! Private: get_var_1, get_var_2, req, opt, maxval_intr, minval_intr, meanval_intr
+! Private: req, opt, maxval_intr, minval_intr, meanval_intr
 !   
 ! ============================================================================
 
@@ -24,7 +24,6 @@ use kinds, only: rp, rp_nc
 use param, only: param_type
 use state, only: state_type
 use netcdf
-use ieee_arithmetic, only: ieee_is_nan
 
 implicit none
 private
@@ -63,60 +62,6 @@ contains
     end if
 
   end subroutine opt
-
-
-  ! ---------------------------------------------------------------------------
-  function maxval_intr(array) result(val)
-  !
-    real(rp), intent(in) :: array(:,:)
-    real(rp) :: val
-  !
-  ! ABOUT: max value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
-
-    integer :: n1, n2
-
-    n1 = size(array,1)
-    n2 = size(array,2)
-    val = maxval(array(2:n1-1,2:n2-1))
-    
-  end function maxval_intr
-  
-  
-  ! ---------------------------------------------------------------------------
-  function minval_intr(array) result(val)
-  !
-    real(rp), intent(in) :: array(:,:)
-    real(rp) :: val
-  !
-  ! ABOUT: min value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
-
-    integer :: n1, n2
-
-    n1 = size(array,1)
-    n2 = size(array,2)
-    val = minval(array(2:n1-1,2:n2-1))
-    
-  end function minval_intr
-
-
-  ! ---------------------------------------------------------------------------
-  function meanval_intr(array) result(val)
-  ! 
-    real(rp), intent(in) :: array(:,:)
-    real(rp) :: val 
-  !
-  ! ABOUT: mean value of interior points of 2D array of type real(rp)
-  ! ---------------------------------------------------------------------------
-
-    integer :: n1, n2
-
-    n1 = size(array,1)
-    n2 = size(array,2)
-    val = sum(array(2:n1-1,2:n2-1))/((n1-2)*(n2-2))
-    
-  end function meanval_intr
 
 
   ! ---------------------------------------------------------------------------
@@ -457,6 +402,7 @@ contains
 
   end subroutine write_file
 
+
   ! ---------------------------------------------------------------------------
   subroutine write_step(p, s)
   !  
@@ -466,101 +412,156 @@ contains
   ! ABOUT: Append model state to output netcdf
   ! ---------------------------------------------------------------------------
 
-    integer :: e, n, ncid, tid, vid
+    integer :: n, ncid, tid, vid
 
     ! open file
-    e = nf90_open(p%output_file, nf90_write, ncid)
+    call req(nf90_open(p%output_file, nf90_write, ncid))
 
     ! get current step
-    e = nf90_inq_dimid(ncid, 't', tid)
-    e = nf90_inquire_dimension(ncid, tid, len = n)
+    call req(nf90_inq_dimid(ncid, 't', tid))
+    call req(nf90_inquire_dimension(ncid, tid, len = n))
     n = n+1
 
     ! write data
-    e = nf90_inq_varid(ncid, 't', vid)
-    e = nf90_put_var(ncid, vid, s%now, [n] )
+    call req(nf90_inq_varid(ncid, 't', vid))
+    call req(nf90_put_var(ncid, vid, s%now, [n]))
 
     if (p%write_topo .eq. 1) then
-      e = nf90_inq_varid(ncid, 'topo', vid)
-      e = nf90_put_var(ncid, vid, s%topo(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'topo', vid))
+      call req(nf90_put_var(ncid, vid, s%topo(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
 
     if (p%write_topo_dot_ice .eq. 1) then
-      e = nf90_inq_varid(ncid, 'topo_dot_ice', vid)
-      e = nf90_put_var(ncid, vid, s%topo_dot_ice(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'topo_dot_ice', vid))
+      call req(nf90_put_var(ncid, vid, s%topo_dot_ice(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_surf .eq. 1) then
-      e = nf90_inq_varid(ncid, 'surf', vid)
-      e = nf90_put_var(ncid, vid, s%surf(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'surf', vid))
+      call req(nf90_put_var(ncid, vid, s%surf(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
 
     if (p%write_temp_surf .eq. 1) then
-      e = nf90_inq_varid(ncid, 'temp_surf', vid)
-      e = nf90_put_var(ncid, vid, s%temp_surf(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'temp_surf', vid))
+      call req(nf90_put_var(ncid, vid, s%temp_surf(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_temp_ice .eq. 1) then
-      e = nf90_inq_varid(ncid, 'temp_ice', vid)
-      e = nf90_put_var(ncid, vid, s%temp_ice(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'temp_ice', vid))
+      call req(nf90_put_var(ncid, vid, s%temp_ice(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_temp_base .eq. 1) then
-      e = nf90_inq_varid(ncid, 'temp_base', vid)
-      e = nf90_put_var(ncid, vid, s%temp_base(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'temp_base', vid))
+      call req(nf90_put_var(ncid, vid, s%temp_base(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_precip .eq. 1) then
-      e = nf90_inq_varid(ncid, 'precip', vid)
-      e = nf90_put_var(ncid, vid, s%precip(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'precip', vid))
+      call req(nf90_put_var(ncid, vid, s%precip(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_runoff .eq. 1) then
-      e = nf90_inq_varid(ncid, 'runoff', vid)
-      e = nf90_put_var(ncid, vid, s%runoff(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'runoff', vid))
+      call req(nf90_put_var(ncid, vid, s%runoff(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_q_surf .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_q_surf', vid)
-      e = nf90_put_var(ncid, vid, s%ice_q_surf(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_q_surf', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_q_surf(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_h .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_h', vid)
-      e = nf90_put_var(ncid, vid, s%ice_h(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_h', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_h(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_h_dot .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_h_dot', vid)
-      e = nf90_put_var(ncid, vid, s%ice_h_dot(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_h_dot', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_h_dot(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_h_soln .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_h_soln', vid)
-      e = nf90_put_var(ncid, vid, s%ice_h_soln(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_h_soln', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_h_soln(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_uv_defm .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_u_defm', vid)
-      e = nf90_put_var(ncid, vid, s%ice_u_defm(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_u_defm', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_u_defm(2:p%nx-1,2:p%ny-1), [1, 1, n]))
       
-      e = nf90_inq_varid(ncid, 'ice_v_defm', vid)
-      e = nf90_put_var(ncid, vid, s%ice_v_defm(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_v_defm', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_v_defm(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
     
     if (p%write_ice_uv_slid .eq. 1) then
-      e = nf90_inq_varid(ncid, 'ice_u_slid', vid)
-      e = nf90_put_var(ncid, vid, s%ice_u_slid(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_u_slid', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_u_slid(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     
-      e = nf90_inq_varid(ncid, 'ice_v_slid', vid)
-      e = nf90_put_var(ncid, vid, s%ice_v_slid(2:p%nx-1,2:p%ny-1), [1, 1, n])
+      call req(nf90_inq_varid(ncid, 'ice_v_slid', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_v_slid(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
 
     ! close file
-    e = nf90_close(ncid)
+    call req(nf90_close(ncid))
 
   end subroutine write_step
 
+
+  ! ---------------------------------------------------------------------------
+  function maxval_intr(array) result(val)
+  !
+    real(rp), intent(in) :: array(:,:)
+    real(rp) :: val
+  !
+  ! ABOUT: max value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = maxval(array(2:n1-1,2:n2-1))
+    
+  end function maxval_intr
+  
+  
+  ! ---------------------------------------------------------------------------
+  function minval_intr(array) result(val)
+  !
+    real(rp), intent(in) :: array(:,:)
+    real(rp) :: val
+  !
+  ! ABOUT: min value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = minval(array(2:n1-1,2:n2-1))
+    
+  end function minval_intr
+
+
+  ! ---------------------------------------------------------------------------
+  function meanval_intr(array) result(val)
+  ! 
+    real(rp), intent(in) :: array(:,:)
+    real(rp) :: val 
+  !
+  ! ABOUT: mean value of interior points of 2D array of type real(rp)
+  ! ---------------------------------------------------------------------------
+
+    integer :: n1, n2
+
+    n1 = size(array,1)
+    n2 = size(array,2)
+    val = sum(array(2:n1-1,2:n2-1))/((n1-2)*(n2-2))
+    
+  end function meanval_intr
+  
+  
   ! --------------------------------------------------------------------------
   subroutine write_status(p, s)
   ! 
@@ -570,113 +571,71 @@ contains
   ! ABOUT: print model status update to stdout
   ! --------------------------------------------------------------------------
 
-      print "('TIME [a]                         : ', EN12.3)", s%now 
+    print "('TIME [a]                           : ', EN12.3)", s%now 
 
-    if (p%write_topo .eq. 1) then
+    if (p%write_topo .eq. 1)  &
       print "('TOPO (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%topo), &
-        meanval_intr(s%topo), &
-        minval_intr(s%topo)
-    end if
+        maxval_intr(s%topo), meanval_intr(s%topo), minval_intr(s%topo)
 
-    if (p%write_topo_dot_ice .eq. 1) then
+    if (p%write_topo_dot_ice .eq. 1) &
       print "('TOPO_DOT_ICE (max, mean, min) [m]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%topo_dot_ice), &
-        meanval_intr(s%topo_dot_ice), &
-        minval_intr(s%topo_dot_ice)
-    end if
+        maxval_intr(s%topo_dot_ice), meanval_intr(s%topo_dot_ice), minval_intr(s%topo_dot_ice)
 
-    if (p%write_surf .eq. 1) then
+    if (p%write_surf .eq. 1) &
       print "('SURF (max, mean, min) [m]        : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%surf), &
-        meanval_intr(s%surf), &
-        minval_intr(s%surf)
-    end if
+        maxval_intr(s%surf), meanval_intr(s%surf), minval_intr(s%surf)
 
-    if (p%write_temp_surf .eq. 1) then
+    if (p%write_temp_surf .eq. 1) &
       print "('TEMP_SURF (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%temp_surf), &
-        meanval_intr(s%temp_surf), &
-        minval_intr(s%temp_surf)
-    end if
+        maxval_intr(s%temp_surf), meanval_intr(s%temp_surf), minval_intr(s%temp_surf)
 
-    if (p%write_temp_base .eq. 1) then
+    if (p%write_temp_base .eq. 1) &
       print "('TEMP_BASE (max, mean, min) [C]   : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%temp_base), &
-        meanval_intr(s%temp_base), &
-        minval_intr(s%temp_base)
-    end if
+        maxval_intr(s%temp_base), meanval_intr(s%temp_base), minval_intr(s%temp_base)
 
-    if (p%write_temp_ice .eq. 1) then
+    if (p%write_temp_ice .eq. 1) &
       print "('TEMP_ICE (max, mean, min) [C]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%temp_ice), &
-        meanval_intr(s%temp_ice), &
-        minval_intr(s%temp_ice)
-    end if
+        maxval_intr(s%temp_ice), meanval_intr(s%temp_ice), minval_intr(s%temp_ice)
 
-    if (p%write_precip .eq. 1) then
+    if (p%write_precip .eq. 1) &
       print "('PRECIP (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%precip), &
-        meanval_intr(s%precip), &
-        minval_intr(s%precip)
-    end if
+        maxval_intr(s%precip), meanval_intr(s%precip), minval_intr(s%precip)
 
-    if (p%write_runoff .eq. 1) then
+    if (p%write_runoff .eq. 1) &
       print "('RUNOFF (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%runoff), &
-        meanval_intr(s%runoff), &
-        minval_intr(s%runoff)
-    end if
+        maxval_intr(s%runoff), meanval_intr(s%runoff), minval_intr(s%runoff)
 
-    if (p%write_ice_q_surf .eq. 1) then
+    if (p%write_ice_q_surf .eq. 1) &
       print "('ICE_Q_SURF (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_q_surf), &
-        meanval_intr(s%ice_q_surf), &
-        minval_intr(s%ice_q_surf)
-    end if
+        maxval_intr(s%ice_q_surf), meanval_intr(s%ice_q_surf), minval_intr(s%ice_q_surf)
     
-    if (p%write_ice_h .eq. 1) then
+    if (p%write_ice_h .eq. 1) &
       print "('ICE_H (max, mean, min) [m]       : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_h), &
-        meanval_intr(s%ice_h), &
-        minval_intr(s%ice_h)
-    end if
+        maxval_intr(s%ice_h), meanval_intr(s%ice_h), minval_intr(s%ice_h)
 
-    if (p%write_ice_h_dot .eq. 1) then
+    if (p%write_ice_h_dot .eq. 1) &
       print "('ICE_H_DOT (max, mean, min) [m/a] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_h_dot), &
-        meanval_intr(s%ice_h_dot), &
-        minval_intr(s%ice_h_dot)
-    end if
+        maxval_intr(s%ice_h_dot), meanval_intr(s%ice_h_dot), minval_intr(s%ice_h_dot)
 
-    if (p%write_ice_uv_defm .eq. 1) then
-      print "('ICE_U_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_u_defm), &
-        meanval_intr(s%ice_u_defm)/size(s%ice_u_defm), &
-        minval_intr(s%ice_u_defm)
-      print "('ICE_V_DEFM (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_v_defm), &
-        meanval_intr(s%ice_v_defm), &
-        minval_intr(s%ice_v_defm)
-    end if
+    if (p%write_ice_uv_defm .eq. 1) &
+      print "('ICE_U_DEFM (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_u_defm), meanval_intr(s%ice_u_defm), minval_intr(s%ice_u_defm)
 
-    if (p%write_ice_uv_slid .eq. 1) then
-      print "('ICE_U_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_u_slid), &
-        meanval_intr(s%ice_u_slid), &
-        minval_intr(s%ice_u_slid)
-      print "('ICE_V_SLID (max, mean, min) [m/a]    : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_v_slid), &
-        meanval_intr(s%ice_v_slid), &
-        minval_intr(s%ice_v_slid)
-    end if
+    if (p%write_ice_uv_defm .eq. 1) &
+      print "('ICE_V_DEFM (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_v_defm), meanval_intr(s%ice_v_defm), minval_intr(s%ice_v_defm)
 
-    if (p%write_ice_h_soln .eq. 1) then
+    if (p%write_ice_uv_slid .eq. 1) &
+      print "('ICE_U_SLID (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_u_slid), meanval_intr(s%ice_u_slid), minval_intr(s%ice_u_slid)
+
+    if (p%write_ice_uv_slid .eq. 1) &
+      print "('ICE_V_SLID (max, mean, min) [m/a]: ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+        maxval_intr(s%ice_v_slid), meanval_intr(s%ice_v_slid), minval_intr(s%ice_v_slid)
+
+    if (p%write_ice_h_soln .eq. 1) &
       print "('ICE_H_SOLN (max, mean, min) [m]  : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
-        maxval_intr(s%ice_h_soln), &
-        meanval_intr(s%ice_h_soln), &
-        minval_intr(s%ice_h_soln)
-    end if
+        maxval_intr(s%ice_h_soln), meanval_intr(s%ice_h_soln), minval_intr(s%ice_h_soln)
 
     print *, ''
 
