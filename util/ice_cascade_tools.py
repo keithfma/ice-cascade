@@ -57,12 +57,12 @@ def new_input(filename, nx, ny):
 
   # write initial state variables as variables
   var = file.createVariable('x', np.float64, dimensions = ('x'))
-  var[:] = np.zeros(nx, dtype = np.float64) 
+  var[:] = np.nan
   var.long_name = 'x_coordinate'
   var.units = 'm'
  
   var = file.createVariable('y', np.float64, dimensions = ('y'))
-  var[:] = np.zeros(ny, dtype = np.float64) 
+  var[:] = np.nan
   var.long_name = 'y_coordinate'
   var.units = 'm'
 
