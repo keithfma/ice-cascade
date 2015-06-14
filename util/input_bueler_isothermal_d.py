@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 #
-# Generate ICE-CASCADE input file for test D in [1]. This 'full' variant
-# computes the whole ice cap, as opposed to only the northeast quadrant as in
-# [1]. Grid spacing is an (optional) command line argument to facilitate grid
-# refinement experiments. To simplify calculation of 'dome' errors, the number
-# of gridpoints must be odd so that the origin lies at a grid point.
+# Generate ICE-CASCADE input file for test D in [1]. Grid spacing is an
+# (optional) command line argument to facilitate grid refinement experiments. To
+# simplify calculation of 'dome' errors, the number of gridpoints must be odd so
+# that the origin lies at a grid point.
 #
 # Usage:
 #   ./make_input_bueler_isothermal_d filename nxy
@@ -16,6 +15,7 @@
 # Dependencies:
 #   ice_cascade_tools
 #   netcdf4
+#   numpy
 #
 # References:
 #
@@ -31,7 +31,7 @@ import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
 
-# parameters for Bueler test C (see table 3, and equation 10)
+# parameters for Bueler test D 
 H0 = 3600. # [m]
 L = 750000. # [m]
 Cp = 200. # [m]
@@ -53,11 +53,6 @@ descr = ('Benchmark case with exact solution (Bueler et al 2005, test D).'
 
 # main function
 def main(filename, nxy):
-
-  # confirm that nxy is odd and greater than 1
-  if (nxy%2 == 0) or (nxy < 3):
-    print 'Invalid value for input parameter nxy, must be odd'
-    sys.exit()
   
   # coordinate grid
   (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
@@ -113,11 +108,13 @@ def main(filename, nxy):
   # finalize
   file.close()
 
+
+# run as script
 if __name__ == '__main__':
 
   # defaults
   nxy = 51 
-  filename = 'bueler_isothermal_c_full_in_'+str(nxy)+'.nc' 
+  filename = 'bueler_isothermal_d_in_'+str(nxy)+'.nc' 
   
   # parse input arguments
   if len(sys.argv) == 2:
