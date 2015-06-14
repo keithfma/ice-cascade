@@ -30,26 +30,27 @@ implicit none
 private
 public :: read_param, read_var, write_file, write_step, write_status
 
+  interface get_var
+    module procedure get_var_1
+    module procedure get_var_2
+  end interface get_var
+
 contains
 
 
   ! ---------------------------------------------------------------------------
-  function get_var_1(netcdf_id, var_name, n, required) result (var_data)
+  subroutine get_var_1(netcdf_id, var_name, var_data, required) 
   !
     integer, intent(in) :: netcdf_id ! handle for open netcdf file
     character(len=*), intent(in) :: var_name ! name of variable in netcdf file
-    integer, intent(in) :: n ! length of output
+    real(rp), intent(out) :: var_data(:) ! data buffer
     logical, intent(in) :: required ! variable is required (T) or optional (F)
-    real(rp), allocatable :: var_data(:)
   !
   ! ABOUT: Read vector from netcdf file, handle read errors and null variables
   ! ---------------------------------------------------------------------------
 
     integer :: err, var_id
 
-    ! allocate ouput variable
-    allocate(var_data(n))
-
     ! find and read variable
     err = nf90_inq_varid(netcdf_id, trim(var_name), var_id)
     if (err .eq. nf90_noerr) err = nf90_get_var(netcdf_id, var_id, var_data)
@@ -79,26 +80,22 @@ contains
       
     return
 
-  end function get_var_1
+  end subroutine get_var_1
 
 
   ! ---------------------------------------------------------------------------
-  function get_var_2(netcdf_id, var_name, n1, n2, required) result (var_data)
+  subroutine get_var_2(netcdf_id, var_name, var_data, required) 
   !
     integer, intent(in) :: netcdf_id ! handle for open netcdf file
     character(len=*), intent(in) :: var_name ! name of variable in netcdf file
-    integer, intent(in) :: n1, n2 ! dimensions for output
+    real(rp), intent(out) :: var_data(:, :)
     logical, intent(in) :: required ! variable is required (T) or optional (F)
-    real(rp), allocatable :: var_data(:, :)
   !
   ! ABOUT: Read 2D grid from netcdf file, handle read errors and null variables
   ! ---------------------------------------------------------------------------
 
     integer :: err, var_id
 
-    ! allocate ouput variable
-    allocate(var_data(n1, n2))
-
     ! find and read variable
     err = nf90_inq_varid(netcdf_id, trim(var_name), var_id)
     if (err .eq. nf90_noerr) err = nf90_get_var(netcdf_id, var_id, var_data)
@@ -128,7 +125,7 @@ contains
       
     return
 
-  end function get_var_2
+  end subroutine get_var_2
 
 
   ! ---------------------------------------------------------------------------
@@ -244,16 +241,14 @@ contains
     call req(nf90_open(p%input_file, nf90_nowrite, ncid))
 
     ! Allocate vector attributes
-    call req( nf90_inquire_attribute(ncid, glb, 'time_write__a', len = n) )
+    call req(nf90_inquire_attribute(ncid, glb, 'time_write__a', len = n))
     allocate(p%time_write(n))
-    call req( nf90_inquire_attribute(ncid, glb, 'climate_param__var', len = n) )
+    call req(nf90_inquire_attribute(ncid, glb, 'climate_param__var', len = n))
     allocate(p%climate_param(n))
-    call req( nf90_inquire_attribute(ncid, glb, 'ice_param__var', len = n) )
+    call req(nf90_inquire_attribute(ncid, glb, 'ice_param__var', len = n))
     allocate(p%ice_param(n))
-    call req( nf90_inquire_attribute(ncid, glb, 'ice_soln_param__var', len = n) )
+    call req(nf90_inquire_attribute(ncid, glb, 'ice_soln_param__var', len = n))
     allocate(p%ice_soln_param(n))
-
-    ! Allocate vector attributes
 
     ! Read parameters from global attributes
     call req(nf90_get_att(ncid, glb, 'nx__1', p%nx))
@@ -318,57 +313,24 @@ contains
     call req(nf90_open(p%input_file, nf90_nowrite, ncid))
 
     ! Read variables
-    s%x(2:p%nx-1) = get_var_1(ncid, 'x', p%nx-2, .true.) 
-
-    s%y(2:p%ny-1) = get_var_1(ncid, 'y', p%ny-2, .true.) 
-
-    s%topo(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'topo', p%nx-2, p%ny-2, .false.)
-
-    s%topo_dot_ice(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'topo_dot_ice', p%nx-2, p%ny-2, .false.)
-
-    s%surf(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'surf', p%nx-2, p%ny-2, .false.)
-
-    s%temp_surf(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'temp_surf', p%nx-2, p%ny-2, .false.)
-
-    s%temp_ice(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'temp_ice', p%nx-2, p%ny-2, .false.)
-
-    s%temp_base(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'temp_base', p%nx-2, p%ny-2, .false.)
-
-    s%precip(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'precip', p%nx-2, p%ny-2, .false.)
-
-    s%runoff(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'runoff', p%nx-2, p%ny-2, .false.)
-
-    s%ice_q_surf(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_q_surf', p%nx-2, p%ny-2, .false.)
-
-    s%ice_h(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_h', p%nx-2, p%ny-2, .false.)
-
-    s%ice_h_dot(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_h_dot', p%nx-2, p%ny-2, .false.)
-
-    s%ice_h_soln(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_h_soln', p%nx-2, p%ny-2, .false.)
-
-    s%ice_u_defm(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_u_defm', p%nx-2, p%ny-2, .false.)
-
-    s%ice_v_defm(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_v_defm', p%nx-2, p%ny-2, .false.)
-
-    s%ice_u_slid(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_u_slid', p%nx-2, p%ny-2, .false.)
-
-    s%ice_v_slid(2:p%nx-1,2:p%ny-1) = &
-      get_var_2(ncid, 'ice_v_slid', p%nx-2, p%ny-2, .false.)
+    call get_var(ncid, 'x', s%x(2:p%nx-1), .true.) 
+    call get_var(ncid, 'y', s%y(2:p%ny-1), .true.) 
+    call get_var(ncid, 'topo', s%topo(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'topo_dot_ice', s%topo_dot_ice(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'surf', s%surf(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'temp_surf', s%temp_surf(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'temp_ice', s%temp_ice(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'temp_base', s%temp_base(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'precip', s%precip(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'runoff', s%runoff(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_q_surf', s%ice_q_surf(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_h', s%ice_h(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_h_dot', s%ice_h_dot(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_h_soln', s%ice_h_soln(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_u_defm', s%ice_u_defm(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_v_defm', s%ice_v_defm(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_u_slid', s%ice_u_slid(2:p%nx-1,2:p%ny-1), .false.)
+    call get_var(ncid, 'ice_v_slid', s%ice_v_slid(2:p%nx-1,2:p%ny-1), .false.)
 
     ! Close file
     call req(nf90_close(ncid))
@@ -389,50 +351,53 @@ contains
   ! ---------------------------------------------------------------------------
 
     logical :: shuf
-    integer :: chunk(3), deflate, e, ncid, tf, tid, vid, xid, yid
+    integer :: chunk(3), deflate, e, glb, ncid, tf, tid, vid, xid, yid
 
     ! define compression and chunking parameters 
     chunk = [p%nx-2, p%ny-2, 1] ! x, y, t
     deflate = 1 ! compression, 0 = none, 9 = max, best value is 1
     shuf = .true.
 
+    ! define shorthand variables
+    glb = nf90_global
+
     ! create new file
     call req(nf90_create(p%output_file, nf90_netcdf4, ncid))
 
     ! write parameters as global attributes
-    e = nf90_put_att(ncid, nf90_global, 'nx__1', p%nx-2)
-    e = nf90_put_att(ncid, nf90_global, 'ny__1', p%ny-2)
-    e = nf90_put_att(ncid, nf90_global, 'lx__m', p%lx)
-    e = nf90_put_att(ncid, nf90_global, 'ly__m', p%ly)
-    e = nf90_put_att(ncid, nf90_global, 'dx__m', p%dx)
-    e = nf90_put_att(ncid, nf90_global, 'dy__m', p%dy)
-    e = nf90_put_att(ncid, nf90_global, 'rhoi__kg_m3', p%rhoi)
-    e = nf90_put_att(ncid, nf90_global, 'grav__m_s2', p%grav)
-    e = nf90_put_att(ncid, nf90_global, 'time_start__a', p%time_start )
-    e = nf90_put_att(ncid, nf90_global, 'time_finish__a', p%time_finish)
-    e = nf90_put_att(ncid, nf90_global, 'time_step__a', p%time_step)
-    e = nf90_put_att(ncid, nf90_global, 'time_write__a', p%time_write)
-    e = nf90_put_att(ncid, nf90_global, 'climate_name', p%climate_name)
-    e = nf90_put_att(ncid, nf90_global, 'climate_param__var', p%climate_param)
-    e = nf90_put_att(ncid, nf90_global, 'ice_name', p%ice_name)
-    e = nf90_put_att(ncid, nf90_global, 'ice_param__var', p%ice_param)
-    e = nf90_put_att(ncid, nf90_global, 'ice_bc_name__nesw', p%ice_bc_name)
-    e = nf90_put_att(ncid, nf90_global, 'ice_soln_name', p%ice_soln_name)
-    e = nf90_put_att(ncid, nf90_global, 'ice_soln_param__var', p%ice_soln_param)
-    e = nf90_put_att(ncid, nf90_global, 'write_topo', p%write_topo)
-    e = nf90_put_att(ncid, nf90_global, 'write_topo_dot_ice', p%write_topo_dot_ice)
-    e = nf90_put_att(ncid, nf90_global, 'write_surf', p%write_surf)
-    e = nf90_put_att(ncid, nf90_global, 'write_temp_surf', p%write_temp_surf)
-    e = nf90_put_att(ncid, nf90_global, 'write_temp_ice', p%write_temp_ice)
-    e = nf90_put_att(ncid, nf90_global, 'write_temp_base', p%write_temp_base)
-    e = nf90_put_att(ncid, nf90_global, 'write_precip', p%write_precip)
-    e = nf90_put_att(ncid, nf90_global, 'write_runoff', p%write_runoff)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_q_surf', p%write_ice_q_surf)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_h', p%write_ice_h)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_h_dot', p%write_ice_h_dot)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_uv_defm', p%write_ice_uv_defm)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_uv_slid', p%write_ice_uv_slid)
-    e = nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', p%write_ice_h_soln)
+    call req(nf90_put_att(ncid, glb, 'nx__1', p%nx-2))
+    call req(nf90_put_att(ncid, glb, 'ny__1', p%ny-2))
+    call req(nf90_put_att(ncid, glb, 'lx__m', p%lx))
+    call req(nf90_put_att(ncid, glb, 'ly__m', p%ly))
+    call req(nf90_put_att(ncid, glb, 'dx__m', p%dx))
+    call req(nf90_put_att(ncid, glb, 'dy__m', p%dy))
+    call req(nf90_put_att(ncid, glb, 'rhoi__kg_m3', p%rhoi))
+    call req(nf90_put_att(ncid, glb, 'grav__m_s2', p%grav))
+    call req(nf90_put_att(ncid, glb, 'time_start__a', p%time_start ))
+    call req(nf90_put_att(ncid, glb, 'time_finish__a', p%time_finish))
+    call req(nf90_put_att(ncid, glb, 'time_step__a', p%time_step))
+    call req(nf90_put_att(ncid, glb, 'time_write__a', p%time_write))
+    call req(nf90_put_att(ncid, glb, 'climate_name', p%climate_name))
+    call req(nf90_put_att(ncid, glb, 'climate_param__var', p%climate_param))
+    call req(nf90_put_att(ncid, glb, 'ice_name', p%ice_name))
+    call req(nf90_put_att(ncid, glb, 'ice_param__var', p%ice_param))
+    call req(nf90_put_att(ncid, glb, 'ice_bc_name__nesw', p%ice_bc_name))
+    call req(nf90_put_att(ncid, glb, 'ice_soln_name', p%ice_soln_name))
+    call req(nf90_put_att(ncid, glb, 'ice_soln_param__var', p%ice_soln_param))
+    call req(nf90_put_att(ncid, glb, 'write_topo', p%write_topo))
+    call req(nf90_put_att(ncid, glb, 'write_topo_dot_ice', p%write_topo_dot_ice))
+    call req(nf90_put_att(ncid, glb, 'write_surf', p%write_surf))
+    call req(nf90_put_att(ncid, glb, 'write_temp_surf', p%write_temp_surf))
+    call req(nf90_put_att(ncid, glb, 'write_temp_ice', p%write_temp_ice))
+    call req(nf90_put_att(ncid, glb, 'write_temp_base', p%write_temp_base))
+    call req(nf90_put_att(ncid, glb, 'write_precip', p%write_precip))
+    call req(nf90_put_att(ncid, glb, 'write_runoff', p%write_runoff))
+    call req(nf90_put_att(ncid, glb, 'write_ice_q_surf', p%write_ice_q_surf))
+    call req(nf90_put_att(ncid, glb, 'write_ice_h', p%write_ice_h))
+    call req(nf90_put_att(ncid, glb, 'write_ice_h_dot', p%write_ice_h_dot))
+    call req(nf90_put_att(ncid, glb, 'write_ice_uv_defm', p%write_ice_uv_defm))
+    call req(nf90_put_att(ncid, glb, 'write_ice_uv_slid', p%write_ice_uv_slid))
+    call req(nf90_put_att(ncid, glb, 'write_ice_h_soln', p%write_ice_h_soln))
 
     ! define dimensions
     e = nf90_def_dim(ncid, 'x', p%nx-2, xid) 
