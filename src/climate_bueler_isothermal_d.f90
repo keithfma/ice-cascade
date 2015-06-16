@@ -74,7 +74,6 @@ contains
     integer :: i, j
     real(rp) :: C 
 
-    
     ! expect exactly 4 parameters
     if (size(p%climate_param) .ne. 6) then
       print *, 'Invalid climate parameters: bueler_isothermal_d requires &

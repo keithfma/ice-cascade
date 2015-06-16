@@ -14,7 +14,7 @@
 !   (5) r1: minimum radius of sliding region [m]
 !   (6) r2: maximum radius of sliding region [m]
 !   (7) th1: minimum angle of sliding region [radians] 
-!   (8) th1: maximum angle of sliding region [radians] 
+!   (8) th2: maximum angle of sliding region [radians] 
 !
 ! References:
 !   [1] Bueler, E., Lingle, C. S., Kallen-Brown, J. A., Covey, D. N., & Bowman,
@@ -49,6 +49,7 @@ public :: init_bueler_isothermal_e, update_bueler_isothermal_e
   real(rp) :: gam ! gamma, combined ice flow constant
   real(rp) :: cv ! combined constant, see [1] appendix
   real(rp), allocatable :: rr(:,:) ! distance from origin [m]
+  real(rp), allocatable :: thth(:,:) ! angle from positive x-axis [radians]
   real(rp), allocatable :: ww(:,:) ! combined constant, see [1] appendix 
   real(rp), allocatable :: hhv(:,:), hhv_p(:,:), hhv_pp(:,:) ! see [1] appendix
   real(rp), allocatable :: mm(:,:), mm_p(:,:) ! see [1] appendix
@@ -108,21 +109,86 @@ contains
       stop 
     end if
 
+    ! m_max must be positive
+    if (m_max .le. 0.0_rp) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               &a positive m_max'
+      stop 
+    end if
+
+    ! r1 must be positive
+    if (r1 .le. 0.0_rp) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               &a positive r1'
+      stop 
+    end if
+
+    ! r2 must be positive
+    if (r2 .le. 0.0_rp) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               &a positive r2'
+      stop 
+    end if
+
+    ! th1 must be positive
+    if (th1 .le. 0.0_rp) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               &a positive th1'
+      stop 
+    end if
+
+    ! th2 must be positive
+    if (th2 .le. 0.0_rp) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               &a positive th2'
+      stop 
+    end if
+
+    ! r2 must be larger than r1
+    if (r2 .le. r1) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               & that r1 < r2'
+      stop 
+    end if
+
+    ! th2 must be larger than th1
+    if (th2 .le. th1) then
+      print *, 'Invalid climate parameter: bueler_isothermal_e requires &
+               & that th1 < th2'
+      stop 
+    end if
+
     ! allocate grids
-    allocate(rr(p%nx, p%ny))
-    allocate(ww(p%nx, p%ny))
+    allocate(rr(p%nx, p%ny), thth(p%nx, p%ny), ww(p%nx, p%ny))
+    allocate(hhv(p%nx, p%ny), hhv_p(p%nx, p%ny), hhv_pp(p%nx, p%ny))
+    allocate(mm(p%nx, p%ny), mm_p(p%nx, p%ny))
 
     ! pre-compute constants
     gam = 2.0_rp/5.0_rp*A*(p%rhoi*p%grav)**3.0_rp
     cv = (4.0_rp*M0/gam)**(1.0_rp/8.0_rp)
-
-    ! compute distance from x = 0, y = 0
     do j = 1, p%ny
       do i = 1, p%nx
         rr(i,j) = sqrt(s%x(i)*s%x(i)+s%y(j)*s%y(j))
         ww(i,j) = L**(4.0_rp/3.0_rp)-rr(i,j)**(4.0_rp/3.0_rp)
+        thth(i,j) = atan2(s%y(j), s%x(i))
       end do
     end do
+    hhv = cv*ww**(3.0_rp/8.0_rp)
+    hhv_p = -0.5_rp*cv*rr**(1.0_rp/3.0_rp)*ww**(-5.0_rp/8.0_rp)
+    hhv_pp = -cv/6.0_rp*ww**(-13.0_rp/8.0_rp) * &
+             (rr**(2.0_rp/3.0_rp)*ww+(5.0-rp/2.0_rp)*rr**(2.0_rp/3.0_rp))
+    mm = 0.0_rp
+    mm_p = 0.0_rp
+    where ((rr .gt. r1) .and. (rr .lt. r2) .and. &
+           (thth .gt. th1) .and. (thth .lt. th2))
+      mm = m_max* &
+           4.0_rp*(rr-r1)*(r2-rr)/(r2-r1)**2 * &
+           4.0_rp*(thth-th1)*(th2-thth)/(th2-th1)**2
+      mm_p = m_max* &
+             4.0_rp*(thth-th1)*(th2-thth)/(th2-th1)**2 * &
+             4.0_rp*(r1+r2-2*rr)/(r2-r1)**2
+    end where
+
 
 
   end subroutine init_bueler_isothermal_e
