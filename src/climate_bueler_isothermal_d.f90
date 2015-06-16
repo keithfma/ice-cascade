@@ -2,10 +2,10 @@
 ! Climate methods for Bueler et al 2005 test D (see ref [1])
 !
 ! Description: Test D is a transient, isothermal ice cap with oscilliatory
-!   surface ice flux in an annular band. The solution is the sum of a
-!   steady-state case and a pertubation, designed such that the margin remains
-!   fixed. The procedures in this module setup and compute this transient
-!   solution. Enabled if ice_soln_name is 'bueler_isothermal_d'
+! surface ice flux in an annular band. The solution is the sum of a steady-state
+! case and a pertubation, designed such that the margin remains fixed. The
+! procedures in this module setup and compute the surface ice flux for this
+! transient solution. Enabled if climate_name is 'bueler_isothermal_d'
 !
 ! Parameters:
 !   (1) h0: ice cap dome height, [m]

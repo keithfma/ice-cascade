@@ -39,6 +39,7 @@ ice.f90 \
 climate_bueler_isothermal_a.f90 \
 climate_bueler_isothermal_c.f90 \
 climate_bueler_isothermal_d.f90 \
+climate_bueler_isothermal_e.f90 \
 climate_constant_ice.f90 \
 climate.f90 \
 main.f90
