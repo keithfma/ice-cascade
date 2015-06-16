@@ -101,8 +101,8 @@ def main(filename, nxy):
   file.ice_name = 'none'
   file.ice_param__var = []
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
-  file.ice_soln_name = 'none'
-  file.ice_soln_param__var = []
+  file.ice_soln_name = 'bueler_isothermal_e'
+  file.ice_soln_param__var = [M0, L, A]
   file.write_ice_q_surf = 1
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 
