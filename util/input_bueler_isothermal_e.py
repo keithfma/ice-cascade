@@ -70,7 +70,7 @@ def main(filename, nxy):
   mask = np.logical_and(mask, thth > th1)
   mask = np.logical_and(mask, thth < th2)
   mumu = np.zeros((nxy, nxy), dtype = np.float64)
-  mumu[mask] = 1.*( (4.*(rr[mask]-r1)*(r2-rr[mask])/((r2-r1)**2)) * 
+  mumu[mask] = mumax.*( (4.*(rr[mask]-r1)*(r2-rr[mask])/((r2-r1)**2)) * 
                      (4.*(thth[mask]-th1)*(th2-thth[mask])/((th2-th1)**2)) )
 
   # exact solution
@@ -96,8 +96,8 @@ def main(filename, nxy):
   file.time_finish__a = tf
   file.time_step__a = dt
   file.time_write__a = tw 
-  file.climate_name = 'none'
-  file.climate_param__var = []
+  file.climate_name = 'bueler_isothermal_e'
+  file.climate_param__var = [M0, L, A, mumax, r1, r2, th1, th2]
   file.ice_name = 'none'
   file.ice_param__var = []
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
