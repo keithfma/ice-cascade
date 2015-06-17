@@ -70,7 +70,7 @@ def main(filename, nxy):
   mask = np.logical_and(mask, thth > th1)
   mask = np.logical_and(mask, thth < th2)
   mumu = np.zeros((nxy, nxy), dtype = np.float64)
-  mumu[mask] = mumax.*( (4.*(rr[mask]-r1)*(r2-rr[mask])/((r2-r1)**2)) * 
+  mumu[mask] = mumax*( (4.*(rr[mask]-r1)*(r2-rr[mask])/((r2-r1)**2)) * 
                      (4.*(thth[mask]-th1)*(th2-thth[mask])/((th2-th1)**2)) )
 
   # exact solution

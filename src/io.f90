@@ -164,9 +164,13 @@ contains
     ! Read variables
     call req(nf90_inq_varid(ncid, 'x', varid))
     call req(nf90_get_var(ncid, varid, s%x(2:p%nx-1))) 
+    s%x(1) = s%x(2)-p%dx
+    s%x(p%nx) = s%x(p%nx-1)+p%dx
 
     call req(nf90_inq_varid(ncid, 'y', varid))
     call req(nf90_get_var(ncid, varid, s%y(2:p%ny-1))) 
+    s%y(1) = s%y(2)-p%dy
+    s%y(p%ny) = s%y(p%ny-1)+p%dy
     
     call req(nf90_inq_varid(ncid, 'topo', varid))
     call req(nf90_get_var(ncid, varid, s%topo(2:p%nx-1,2:p%ny-1)))
