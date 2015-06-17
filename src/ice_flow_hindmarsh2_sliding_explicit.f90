@@ -40,3 +40,53 @@
 ! Public: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
 ! 
 ! =============================================================================
+
+module ice_flow_hindmarsh2_sliding_explicit
+
+use kinds, only: rp
+use param, only: param_type
+use state, only: state_type
+
+implicit none
+private
+public :: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  !
+  ! ABOUT: reusable variables, set in init_hindmarsh2_sliding_explicit
+  ! ---------------------------------------------------------------------------
+
+
+contains
+
+
+  ! ---------------------------------------------------------------------------
+  subroutine init_hindmarsh2_sliding_explicit(p, s)
+  !
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and intializae variables, only once
+  ! ---------------------------------------------------------------------------
+
+  end subroutine init_hindmarsh2_sliding_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  function flow_hindmarsh2_sliding_explicit(p, s) result(dt)
+  ! 
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: compute ice thickness rate-of-change, return stable timestep
+  ! ---------------------------------------------------------------------------
+    
+    real(rp) :: dt
+
+  end function flow_hindmarsh2_sliding_explicit
+
+
+end module ice_flow_hindmarsh2_sliding_explicit
+
+
