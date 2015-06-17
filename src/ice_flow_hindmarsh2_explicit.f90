@@ -30,8 +30,6 @@
 !   doi:10.1007/978-3-662-04439-1_13
 !
 ! Public: init_hindmarsh2_explicit, flow_hindmarsh2_explicit
-!
-! Private: A, gam, qx, qy
 ! 
 ! =============================================================================
 
