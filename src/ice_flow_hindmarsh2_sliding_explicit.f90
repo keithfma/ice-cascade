@@ -53,6 +53,7 @@ public :: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
 
 
   ! ---------------------------------------------------------------------------
+  real(rp), allocatable :: gam(:,:), qx(:,:), qy(:,:)
   !
   ! ABOUT: reusable variables, set in init_hindmarsh2_sliding_explicit
   ! ---------------------------------------------------------------------------
@@ -69,6 +70,50 @@ contains
   !
   ! ABOUT: check parameters and intializae variables, only once
   ! ---------------------------------------------------------------------------
+
+    ! expect exactly 0 parameters
+    if (size(p%ice_param) .ne. 0) then
+      print *, 'Invalid ice parameters: hindmarsh2_sliding_explicit requires exactly &
+               &0 parameters.'
+      stop
+    end if
+
+    ! warn if ice deformation/sliding coefficient is uniformly zero (unset)
+    if (all(s%ice_a_defm .eq. 0.0_rp)) then
+      print *, 'WARNING: Ice deformation coefficient (ice_a_defm) is &
+               &initialized to 0. If the selected ice model does not update &
+               &this value, there will be no ice deformation.' 
+    end if
+
+    if (all(s%ice_a_slid .eq. 0.0_rp)) then
+      print *, 'WARNING: Ice sliding coefficient (ice_a_slid) is &
+               &initialized to 0. If the selected ice model does not update &
+               &this value, there will be no ice sliding.' 
+    end if
+
+    ! error if ice deformation/sliding coefficient is anywhere negative
+    if (any(s%ice_a_defm .lt. 0.0_rp)) then
+      print *, 'ERROR: Ice deformation coefficient must be non-negative'
+      stop
+    end if
+
+    if (any(s%ice_a_slid .lt. 0.0_rp)) then
+      print *, 'ERROR: Ice sliding coefficient must be non-negative'
+      stop
+    end if
+
+    ! NOTE: DO THE MATH FIRST ---
+    ! Q: How to deal with gamma if it may vary spatially?
+    ! Q: How to deal with spatially variable coefficients in general?
+    ! Q: What is the combined equation for ice flow and sliding?
+
+    ! allocate local parameters 
+    allocate(gam
+    allocate(qx(p%nx-1, p%ny-2)); qx = 0.0_rp
+    allocate(qy(p%nx-2, p%ny-1)); qy = 0.0_rp
+
+    ! pre-compute constants
+    gam = 2.0_rp/5.0_rp*s%ice_defm_a*(p%rhoi*p%grav)**3
 
   end subroutine init_hindmarsh2_sliding_explicit
 
