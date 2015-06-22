@@ -142,8 +142,8 @@ contains
     do j = 2, p%ny-1
       do i = 1, p%nx-1
         h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i+1,j))
-        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i,j+1))
-        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i,j+1))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i+1,j))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i+1,j))
         dsurf_dx_mid = (s%surf(i+1,j)-s%surf(i,j))*div_dx 
         dsurf_dy_mid = (s%surf(i  ,j+1)-s%surf(i  ,j-1)+ &
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
@@ -154,19 +154,21 @@ contains
       end do
     end do
 
-    !! y-direction diffusitivy and ice-flux at midpoints
-    !do j = 1, p%ny-1 
-    !  do i = 2, p%nx-1
-    !    ice_h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i,j+1))
-    !    dsurf_dy_mid = c1*(s%surf(i,j+1)-s%surf(i,j))
-    !    dsurf_dx_mid = c2*(s%surf(i+1,j)-s%surf(i-1,j)+ &
-    !                       s%surf(i+1,j+1)-s%surf(i-1,j+1))
-    !    D = gam*(ice_h_mid**5)*(dsurf_dx_mid*dsurf_dx_mid+ &
-    !                            dsurf_dy_mid*dsurf_dy_mid)
-    !    qy(i-1,j) = -D*dsurf_dy_mid
-    !    Dmax = max(Dmax, D)
-    !  end do
-    !end do
+    ! y-direction diffusitivy and ice-flux at midpoints
+    do j = 1, p%ny-1 
+      do i = 2, p%nx-1
+        h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i,j+1))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i,j+1))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i,j+1))
+        dsurf_dy_mid = (s%surf(i,j+1)-s%surf(i,j))*div_dy
+        dsurf_dx_mid = (s%surf(i+1,j  )-s%surf(i-1,j  )+ &
+                        s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
+        surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
+        D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + c_slid*a_slid_mid*h_mid**2 
+        qy(i-1,j) = -D*dsurf_dy_mid
+        Dmax = max(Dmax, D)
+      end do
+    end do
 
     !  ! thickness rate of change
     !  c1 = -1.0_rp/p%dx
