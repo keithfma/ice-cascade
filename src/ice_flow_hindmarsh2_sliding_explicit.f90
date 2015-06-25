@@ -85,19 +85,6 @@ contains
       stop
     end if
 
-    ! warn if ice deformation/sliding coefficient is uniformly zero (unset)
-    if (all(s%ice_a_defm .eq. 0.0_rp)) then
-      print *, 'WARNING: Ice deformation coefficient (ice_a_defm) is &
-               &initialized to 0. If the selected ice model does not update &
-               &this value, there will be no ice deformation.' 
-    end if
-
-    if (all(s%ice_a_slid .eq. 0.0_rp)) then
-      print *, 'WARNING: Ice sliding coefficient (ice_a_slid) is &
-               &initialized to 0. If the selected ice model does not update &
-               &this value, there will be no ice sliding.' 
-    end if
-
     ! error if ice deformation/sliding coefficient is anywhere negative
     if (any(s%ice_a_defm .lt. 0.0_rp)) then
       print *, 'ERROR: Ice deformation coefficient must be non-negative'
@@ -118,8 +105,8 @@ contains
     div_dy = 1.0_rp/p%dy
     div_4dy = 1.0_rp/(4.0_rp*p%dy)
     div_4dx = 1.0_rp/(4.0_rp*p%dx)
-    c_defm = -(2.0_rp/5.0_rp)*(p%rhoi*p%grav)**3
-    c_slid = -p%rhoi*p%grav
+    c_defm = 2.0_rp/5.0_rp*(p%rhoi*p%grav)**3
+    c_slid = p%rhoi*p%grav
 
   end subroutine init_hindmarsh2_sliding_explicit
 
@@ -141,7 +128,7 @@ contains
     ! x-direction diffusitivy and ice-flux at midpoints
     do j = 2, p%ny-1
       do i = 1, p%nx-1
-        h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i+1,j))
+        h_mid = 0.5_rp*(s%ice_h(i,j)+s%ice_h(i+1,j))
         a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i+1,j))
         a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i+1,j))
         dsurf_dx_mid = (s%surf(i+1,j)-s%surf(i,j))*div_dx 
@@ -149,6 +136,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + c_slid*a_slid_mid*h_mid**2 
+        !D = c_defm*a_defm_mid*h_mid**5*surf_grad2
         qx(i,j-1) = -D*dsurf_dx_mid
         Dmax = max(Dmax, D)
       end do
@@ -165,6 +153,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + c_slid*a_slid_mid*h_mid**2 
+        !D = c_defm*a_defm_mid*h_mid**5*surf_grad2
         qy(i-1,j) = -D*dsurf_dy_mid
         Dmax = max(Dmax, D)
       end do
@@ -174,9 +163,12 @@ contains
     do j = 2, p%ny-1
       do i = 2, p%nx-1
         s%ice_h_dot(i,j) = -(qx(i  ,j-1)-qx(i-1,j-1))*div_dx &
-                           -(qy(i-1,j  )-qy(i-1,j-1))*dix_dy
+                           -(qy(i-1,j  )-qy(i-1,j-1))*div_dy
       end do
     end do
+
+    ! stable adaptive timestep
+    dt = p%dx*p%dy/(8.0_rp*Dmax) 
 
   end function flow_hindmarsh2_sliding_explicit
 

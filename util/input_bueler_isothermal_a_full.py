@@ -89,8 +89,10 @@ def main(filename, nxy):
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_a'
   file.climate_param__var = [M0, L]
-  file.ice_name = 'hindmarsh2_explicit'
-  file.ice_param__var = [A]
+  file.ice_name = 'hindmarsh2_sliding_explicit'
+  file.ice_param__var = []
+  #file.ice_name = 'hindmarsh2_explicit'
+  #file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_a'
   file.ice_soln_param__var = [M0, L, A]
@@ -102,6 +104,8 @@ def main(filename, nxy):
   file.variables['topo'][:,:] = 0.
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
+  file.variables['ice_a_defm'][:,:] = A
+  file.variables['ice_a_slid'][:,:] = 0.
   
   # finalize
   file.close()

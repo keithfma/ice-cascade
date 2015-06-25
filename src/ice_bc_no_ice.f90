@@ -1,10 +1,11 @@
 ! =============================================================================
 ! Boundary condition for the glacier dynamics model component of ice-cascade
 !
-! Description: Ghost points at model boundaries are ice-free, topography is
-!   flat, ice deformation and sliding coefficients are set equal to the adjacent
-!   interior points.  Selected for 'ice_bc_name__nesw' parameters that are set
-!   to 'no_ice'.  Subroutines conform to the template defined in ice.f90
+! Description: Points at model boundaries (and ghost points beyond model
+!   boundaries) are ice-free. With these set there is no need to specify
+!   boundary topography, ice deformation coefficients, or sliding coefficients.
+!   Selected for 'ice_bc_name__nesw' parameters that are set to 'no_ice'.
+!   Subroutines conform to the template defined in ice.f90
 !
 ! Public: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice
 !
@@ -34,10 +35,10 @@ contains
     integer :: n
 
     n = size(s%topo, 2)
-    s%topo(:,n) = s%topo(:, n-1)
-    s%ice_h(:,n) = 0.0_rp
-    s%ice_a_defm(:,n) = s%ice_a_defm(:,n-1)
-    s%ice_a_slid(:,n) = s%ice_a_slid(:,n-1)
+    ! s%topo at boundary not used, ghost points not set
+    s%ice_h(:,n-1:n) = 0.0_rp
+    ! s%ice_a_defm at boundary not used, ghost points not set
+    ! s%ice_a_slid at boundary not used, ghost points not set
 
   end subroutine nbc_no_ice
   
@@ -53,10 +54,10 @@ contains
     integer :: n
 
     n = size(s%topo, 1)
-    s%topo(n,:) = s%topo(n-1,:)
-    s%ice_h(n,:) = 0.0_rp
-    s%ice_a_defm(n,:) = s%ice_a_defm(n-1,:)
-    s%ice_a_slid(n,:) = s%ice_a_slid(n-1,:)
+    ! s%topo at boundary not used, ghost points not set
+    s%ice_h(n-1:n,:) = 0.0_rp
+    ! s%ice_a_defm at boundary not used, ghost points not set
+    ! s%ice_a_slid at boundary not used, ghost points not set
 
   end subroutine ebc_no_ice
 
@@ -69,10 +70,10 @@ contains
   ! ABOUT: apply no_ice BC to south edge, (:,1)
   ! ---------------------------------------------------------------------------
 
-    s%topo(:,1) = s%topo(:,2)
-    s%ice_h(:,1) = 0.0_rp
-    s%ice_a_defm(:,1) = s%ice_a_defm(:,2)
-    s%ice_a_slid(:,1) = s%ice_a_slid(:,2)
+    ! s%topo at boundary not used, ghost points not set
+    s%ice_h(:,1:2) = 0.0_rp
+    ! s%ice_a_defm at boundary not used, ghost points not set
+    ! s%ice_a_slid at boundary not used, ghost points not set
 
   end subroutine sbc_no_ice
   
@@ -85,10 +86,10 @@ contains
   ! ABOUT: apply no_ice BC to west edge, (1,:)
   ! ---------------------------------------------------------------------------
 
-    s%topo(1,:) = s%topo(2,:)
-    s%ice_h(1,:) = 0.0_rp
-    s%ice_a_defm(1,:) = s%ice_a_defm(2,:)
-    s%ice_a_slid(1,:) = s%ice_a_slid(2,:)
+    ! s%topo at boundary not used, ghost points not set
+    s%ice_h(1:2,:) = 0.0_rp
+    ! s%ice_a_defm at boundary not used, ghost points not set
+    ! s%ice_a_slid at boundary not used, ghost points not set
 
   end subroutine wbc_no_ice
 
