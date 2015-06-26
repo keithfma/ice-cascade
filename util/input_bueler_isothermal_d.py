@@ -123,7 +123,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it

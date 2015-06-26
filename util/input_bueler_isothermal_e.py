@@ -31,8 +31,6 @@ import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
 
-from matplotlib import pyplot as plt
-
 # parameters for Bueler test E
 M0 = 0.3 # [m/a]
 L = 750000. # [m]
@@ -98,7 +96,7 @@ def main(filename, nxy):
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_e'
   file.climate_param__var = [M0, L, A, mumax, r1, r2, th1, th2]
-  file.ice_name = 'none'
+  file.ice_name = 'hindmarsh2_sliding_explicit'
   file.ice_param__var = []
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_e'
@@ -112,10 +110,11 @@ def main(filename, nxy):
   file.variables['topo'][:,:] = 0.
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
+  file.variables['ice_a_defm'][:,:] = A
   file.variables['ice_a_slid'][:,:] = mumu
 
   # # DEBUG
-  # print mumu
+  # print(mumu)
   # plt.imshow(mumu, 
   #     origin = 'lower', 
   #     extent = (xy[0], xy[-1], xy[0], xy[-1]))
@@ -136,7 +135,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it

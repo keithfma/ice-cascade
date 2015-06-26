@@ -36,7 +36,7 @@ rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
-lxy = L # domain dimensions
+lxy = 1.2*L # domain dimensions (ice cap radius + 20%)
 ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step, should be irrelevant
@@ -80,8 +80,6 @@ def main(filename, nxy):
   file.climate_param__var = [M0, L]
   file.ice_name = 'hindmarsh2_sliding_explicit'
   file.ice_param__var = []
-  #file.ice_name = 'hindmarsh2_explicit'
-  #file.ice_param__var = [A]
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_a'
   file.ice_soln_param__var = [M0, L, A]
@@ -113,7 +111,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it

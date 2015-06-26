@@ -56,7 +56,7 @@ def main(filename, nxy):
 
   # confirm that nxy is odd and greater than 1
   if (nxy%2 == 0) or (nxy < 3):
-    print 'Invalid value for input parameter nxy, must be odd'
+    print('Invalid value for input parameter nxy, must be odd')
     sys.exit()
   
   # coordinate grid
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it
