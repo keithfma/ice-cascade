@@ -34,6 +34,8 @@ use ice_bc_no_flux, only: nbc_no_flux, ebc_no_flux, sbc_no_flux, wbc_no_flux
 use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
 use ice_flow_hindmarsh2_explicit, only: &
   init_hindmarsh2_explicit, flow_hindmarsh2_explicit
+use ice_flow_hindmarsh2_sliding_explicit, only: &
+  init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
 use ice_soln_bueler_isothermal_a, only: &
   init_bueler_isothermal_a, solve_bueler_isothermal_a
 use ice_soln_bueler_isothermal_b, only: &
@@ -42,6 +44,8 @@ use ice_soln_bueler_isothermal_c, only: &
   init_bueler_isothermal_c, solve_bueler_isothermal_c
 use ice_soln_bueler_isothermal_d, only: &
   init_bueler_isothermal_d, solve_bueler_isothermal_d
+use ice_soln_bueler_isothermal_e, only: &
+  init_bueler_isothermal_e, solve_bueler_isothermal_e
 
 implicit none
 private
@@ -170,6 +174,11 @@ contains
         call init_hindmarsh2_explicit(p, s)
         flow => flow_hindmarsh2_explicit 
 
+      case ('hindmarsh2_sliding_explicit')
+        on_ice = .true.
+        call init_hindmarsh2_sliding_explicit(p, s)
+        flow => flow_hindmarsh2_sliding_explicit 
+
       case default
         print *, "Invalid name for glacier flow method: " // trim(p%ice_name)
         stop 
@@ -203,6 +212,11 @@ contains
         call init_bueler_isothermal_d(p, s)
         solve_ice => solve_bueler_isothermal_d
 
+      case('bueler_isothermal_e')
+        on_ice_soln = .true.
+        call init_bueler_isothermal_e(p, s)
+        solve_ice => solve_bueler_isothermal_e
+
       case default
         print *, "Invalid name for glacier exact solution: " // trim(p%ice_soln_name)
         stop 
@@ -232,6 +246,7 @@ contains
       call ebc(s)
       call sbc(s)
       call wbc(s)
+
       s%surf = s%topo+s%ice_h
 
       ! ice flow procedure

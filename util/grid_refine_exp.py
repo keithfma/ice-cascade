@@ -16,6 +16,9 @@
 #       bueler_isothermal_b_full
 #       bueler_isothermal_c
 #       bueler_isothermal_c_full
+#       bueler_isothermal_d
+#       bueler_isothermal_d_full
+#       bueler_isothermal_e
 #
 #   nxy = String, optional, default is '32,64'. A list of the grid sizes to
 #     use, as comma separated values in single quotes, e.g. '16,32,64'
@@ -43,6 +46,9 @@ import input_bueler_isothermal_b
 import input_bueler_isothermal_b_full 
 import input_bueler_isothermal_c 
 import input_bueler_isothermal_c_full 
+import input_bueler_isothermal_d 
+import input_bueler_isothermal_d_full 
+import input_bueler_isothermal_e 
 
 # fit power law
 def fit_power_law(x, y):
@@ -113,7 +119,7 @@ if __name__ == '__main__':
   narg = len(sys.argv)-1
 
   if narg < 1:
-    print 'Missing required input argument "name"'
+    print('Missing required input argument "name"')
     sys.exit(-1)
   name = sys.argv[1]
   
@@ -124,7 +130,7 @@ if __name__ == '__main__':
     dir = sys.argv[3]
 
   if narg >= 4:
-    print 'Too many input arguments.'
+    print('Too many input arguments.')
     sys.exit(-1)
 
   # select test
@@ -148,8 +154,20 @@ if __name__ == '__main__':
     make_input = input_bueler_isothermal_c_full.main
     title = 'Bueler et al 2005, Test C, Full Ice Cap'
 
+  elif name == 'bueler_isothermal_d':
+    make_input = input_bueler_isothermal_d.main
+    title = 'Bueler et al 2005, Test D'
+ 
+  elif name == 'bueler_isothermal_d_full':
+    make_input = input_bueler_isothermal_d_full.main
+    title = 'Bueler et al 2005, Test D, Full Ice Cap'
+
+  elif name == 'bueler_isothermal_e':
+    make_input = input_bueler_isothermal_e.main
+    title = 'Bueler et al 2005, Test E'
+
   else:
-    print 'Invalid test name.'
+    print('Invalid test name.')
     sys.exit(-1)
 
   # create output folder, if needed
@@ -182,7 +200,7 @@ if __name__ == '__main__':
     make_input(input_name, n)
 
     # run model
-    subprocess.call(['ice-cascade', input_name, output_name])
+    subprocess.call(['ice-cascade', input_name, output_name]) 
   
     # read output ice thickness at the final timestep
     file = nc.Dataset(output_name, mode = 'r')
@@ -235,55 +253,55 @@ if __name__ == '__main__':
   report_name = os.path.join(dir, name+'_report.tex')
   with open(report_name, 'w') as f:
     
-    f.write('\documentclass[11pt]{article}\n')
-    f.write('\usepackage[margin=1.0in]{geometry}\n')
-    f.write('\usepackage{graphicx}\n')
-    f.write('\usepackage{placeins}\n')
+    f.write('\\documentclass[11pt]{article}\n')
+    f.write('\\usepackage[margin=1.0in]{geometry}\n')
+    f.write('\\usepackage{graphicx}\n')
+    f.write('\\usepackage{placeins}\n')
     f.write('\\title{Grid Refinement Experiment: '+title+'}\n')
     
     f.write('\\begin{document}\n')
-    f.write('\maketitle\n')
+    f.write('\\maketitle\n')
   
-    f.write('\section{Error Statistics}\n')
+    f.write('\\section{Error Statistics}\n')
   
     f.write('\\begin{table}[h]\n')
     f.write('\\begin{tabular}{rrrrr}\n')
     f.write('$N$ & $\Delta$ & max$|err|$ & mean$|err|$ & $|err|$ dome \\\\\n')
-    f.write('\hline\n')
+    f.write('\\hline\n')
     for i in range(len(nxy)):
       f.write('{0:.0f} & {1:.0f} & {2:.0f} & {3:.0f} & {4:.0f} \\\\\n'.format(
         nxy[i], dx[i], err_abs_max[i], err_abs_mean[i], err_abs_dome[i]))
-    f.write('\hline\n')
-    f.write('\end{tabular}\n')
-    f.write('\end{table}\n')
+    f.write('\\hline\n')
+    f.write('\\end{tabular}\n')
+    f.write('\\end{table}\n')
   
-    f.write('\FloatBarrier\n')
-    f.write('\section{Error Maps}\n')
+    f.write('\\FloatBarrier\n')
+    f.write('\\section{Error Maps}\n')
   
     for n in nxy:
       fig_err_map_name = os.path.join(dir, name+'_err_'+str(n).zfill(pad)+'.pdf')
       f.write('\\begin{figure}[h]\n')
-      f.write('\centering\n')
-      f.write('\centerline{\includegraphics{'+fig_err_map_name+'}}\n')
-      f.write('\end{figure}\n')
+      f.write('\\centering\n')
+      f.write('\\centerline{\includegraphics{'+fig_err_map_name+'}}\n')
+      f.write('\\end{figure}\n')
   
-    f.write('\FloatBarrier\n')
-    f.write('\section{Convergence Rate Estimates}\n')
+    f.write('\\FloatBarrier\n')
+    f.write('\\section{Convergence Rate Estimates}\n')
    
     f.write('\\begin{figure}[h]\n')
-    f.write('\centering\n')
-    f.write('\centerline{\includegraphics{'+fig_err_abs_max_name+'}}\n')
-    f.write('\end{figure}\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+fig_err_abs_max_name+'}}\n')
+    f.write('\\end{figure}\n')
     
     f.write('\\begin{figure}[h]\n')
-    f.write('\centering\n')
-    f.write('\centerline{\includegraphics{'+fig_err_abs_mean_name+'}}\n')
-    f.write('\end{figure}\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+fig_err_abs_mean_name+'}}\n')
+    f.write('\\end{figure}\n')
   
     f.write('\\begin{figure}[h]\n')
-    f.write('\centering\n')
-    f.write('\centerline{\includegraphics{'+fig_err_abs_dome_name+'}}\n')
-    f.write('\end{figure}\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+fig_err_abs_dome_name+'}}\n')
+    f.write('\\end{figure}\n')
     
     f.write('\end{document}\n')
   

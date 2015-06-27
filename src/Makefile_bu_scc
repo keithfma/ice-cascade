@@ -15,7 +15,7 @@ NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
 NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
 
 FORT = pgfortran
-FFLAGS = -c -tp=px-64 -g -O0 -C
+FFLAGS = -c -tp=px-64 -g -O0 -Mbounds -Ktrap=fp -traceback 
 LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),--enable-new-dtags
 DEFS =
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
@@ -33,11 +33,14 @@ ice_soln_bueler_isothermal_a.f90 \
 ice_soln_bueler_isothermal_b.f90 \
 ice_soln_bueler_isothermal_c.f90 \
 ice_soln_bueler_isothermal_d.f90 \
+ice_soln_bueler_isothermal_e.f90 \
 ice_flow_hindmarsh2_explicit.f90 \
+ice_flow_hindmarsh2_sliding_explicit.f90 \
 ice.f90 \
 climate_bueler_isothermal_a.f90 \
 climate_bueler_isothermal_c.f90 \
 climate_bueler_isothermal_d.f90 \
+climate_bueler_isothermal_e.f90 \
 climate_constant_ice.f90 \
 climate.f90 \
 main.f90

@@ -36,10 +36,12 @@ public :: state_type, init_state
     real(rp), allocatable :: ice_h(:,:) ! ice thickness, [m]
     real(rp), allocatable :: ice_h_dot(:,:) ! ice thickness rate-of-change, [m/a]
     real(rp), allocatable :: ice_h_soln(:,:) ! exact solution for ice thickness, [m]
-    real(rp), allocatable :: ice_ud(:,:) ! ice deformation velocity, x-dir, [m/a]
-    real(rp), allocatable :: ice_vd(:,:) ! ice deformation velocity, y-dir, [m/a]
-    real(rp), allocatable :: ice_us(:,:) ! ice sliding velocity, x-dir, [m/a]
-    real(rp), allocatable :: ice_vs(:,:) ! ice sliding velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_u_defm(:,:) ! ice deformation velocity, x-dir, [m/a]
+    real(rp), allocatable :: ice_v_defm(:,:) ! ice deformation velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_u_slid(:,:) ! ice sliding velocity, x-dir, [m/a]
+    real(rp), allocatable :: ice_v_slid(:,:) ! ice sliding velocity, y-dir, [m/a]
+    real(rp), allocatable :: ice_a_defm(:,:) ! ice deformation coeff, [Pa^-3 a^-1]
+    real(rp), allocatable :: ice_a_slid(:,:) ! ice sliding coeff, [m/a/Pa]
   end type state_type
   !
   ! ABOUT: shared state variables
@@ -73,10 +75,12 @@ contains
     allocate(s%ice_h(p%nx, p%ny))
     allocate(s%ice_h_dot(p%nx, p%ny))
     allocate(s%ice_h_soln(p%nx, p%ny))
-    allocate(s%ice_ud(p%nx, p%ny))
-    allocate(s%ice_vd(p%nx, p%ny))
-    allocate(s%ice_us(p%nx, p%ny))
-    allocate(s%ice_vs(p%nx, p%ny))
+    allocate(s%ice_u_defm(p%nx, p%ny))
+    allocate(s%ice_v_defm(p%nx, p%ny))
+    allocate(s%ice_u_slid(p%nx, p%ny))
+    allocate(s%ice_v_slid(p%nx, p%ny))
+    allocate(s%ice_a_defm(p%nx, p%ny))
+    allocate(s%ice_a_slid(p%nx, p%ny))
 
     ! set initial values (some are overwritten by read_vars)
     s%now = p%time_start
@@ -95,10 +99,12 @@ contains
     s%ice_h = 0.0_rp
     s%ice_h_dot = 0.0_rp
     s%ice_h_soln = 0.0_rp
-    s%ice_ud = 0.0_rp
-    s%ice_vd = 0.0_rp
-    s%ice_us = 0.0_rp
-    s%ice_vs = 0.0_rp
+    s%ice_u_defm = 0.0_rp
+    s%ice_v_defm = 0.0_rp
+    s%ice_u_slid = 0.0_rp
+    s%ice_v_slid = 0.0_rp
+    s%ice_a_defm = 0.0_rp
+    s%ice_a_slid = 0.0_rp
 
   end subroutine init_state
 

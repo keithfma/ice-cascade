@@ -84,6 +84,9 @@ contains
       stop 
     end if
 
+    ! allocate grids 
+    allocate(r(p%nx, p%ny))
+
     ! compute distance from x = 0, y = 0
     do j = 1, p%ny
       do i = 1, p%nx

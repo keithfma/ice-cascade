@@ -2,18 +2,12 @@
 ! Boundary condition for the glacier dynamics model component of ice-cascade
 !
 ! Description: Ghost points at model boundaries are mirror images across the
-!   domain edge points for both ice thickness and topography (and by
-!   consequence, ice flux as well). Selected for 'ice_bc_name__nesw' parameters
-!   that are set to 'mirror'. Subroutines conform to the template defined in
-!   ice.f90
+!   domain edge points for ice thickness, topography, deformation coefficients,
+!   and sliding coefficients (and by consequence, ice flux as well). Selected
+!   for 'ice_bc_name__nesw' parameters that are set to 'mirror'. Subroutines
+!   conform to the template defined in ice.f90
 !
-!   Public: 
-!     nbc_mirror 
-!     ebc_mirror 
-!     sbc_mirror
-!     wbc_mirror
-!
-!   Private: none
+!   Public: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror
 !
 ! =============================================================================
 
@@ -43,6 +37,8 @@ contains
     n = size(s%topo, 2)
     s%topo(:, n) = s%topo(:, n-2)
     s%ice_h(:, n) = s%ice_h(:, n-2)
+    s%ice_a_defm(:, n) = s%ice_a_defm(:, n-2)
+    s%ice_a_slid(:, n) = s%ice_a_slid(:, n-2)
 
   end subroutine nbc_mirror
   
@@ -60,6 +56,8 @@ contains
     n = size(s%topo, 1)
     s%topo(n,:) = s%topo(n-2,:)
     s%ice_h(n,:) = s%ice_h(n-2,:)
+    s%ice_a_defm(n,:) = s%ice_a_defm(n-2,:)
+    s%ice_a_slid(n,:) = s%ice_a_slid(n-2,:)
 
   end subroutine ebc_mirror
 
@@ -74,6 +72,8 @@ contains
 
     s%topo(:,1) = s%topo(:,3)
     s%ice_h(:,1) = s%ice_h(:,3)
+    s%ice_a_defm(:,1) = s%ice_a_defm(:,3)
+    s%ice_a_slid(:,1) = s%ice_a_slid(:,3)
 
   end subroutine sbc_mirror
   
@@ -88,6 +88,8 @@ contains
 
     s%topo(1,:) = s%topo(3,:)
     s%ice_h(1,:) = s%ice_h(3,:)
+    s%ice_a_defm(1,:) = s%ice_a_defm(3,:)
+    s%ice_a_slid(1,:) = s%ice_a_slid(3,:)
 
   end subroutine wbc_mirror
 

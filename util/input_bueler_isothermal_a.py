@@ -36,11 +36,11 @@ rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
-lxy = L # domain dimensions
+lxy = 1.2*L # domain dimensions (ice cap radius + 20%)
 ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step, should be irrelevant
-tw = 25000. # output steps
+tw = tf # output steps
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
   'Isothermal, non-sliding, steady state with fixed margin position and'
   'constant, positive surface ice flux.')
@@ -50,10 +50,10 @@ def main(filename, nxy):
   
   # coordinate grid
   (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
-  
-  # exact solution
   (xx, yy) = np.meshgrid(xy, xy)
   rr = np.sqrt(xx**2+yy**2)
+  
+  # exact solution
   gamma = 2.0/5.0*A*(rhoi*g)**3.0
   mask = np.where(rr <= L)
   ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)
@@ -78,18 +78,22 @@ def main(filename, nxy):
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_a'
   file.climate_param__var = [M0, L]
-  file.ice_name = 'hindmarsh2_explicit'
-  file.ice_param__var = [A]
+  file.ice_name = 'hindmarsh2_sliding_explicit'
+  file.ice_param__var = []
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
-  file.ice_soln_name = 'none'
+  file.ice_soln_name = 'bueler_isothermal_a'
   file.ice_soln_param__var = [M0, L, A]
   file.write_ice_q_surf = 1
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 
+  file.write_ice_h_dot = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
+  file.variables['topo'][:,:] = 0.
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
+  file.variables['ice_a_defm'][:,:] = A
+  file.variables['ice_a_slid'][:,:] = 0.
   
   # finalize
   file.close()
@@ -107,7 +111,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it

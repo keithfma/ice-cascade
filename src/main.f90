@@ -36,7 +36,7 @@ call write_file(p, s)
 ! Start loop
 n = 1
 do while (s%now .lt. p%time_finish)
-
+  
   ! truncate time step to hit end or write time exactly
   step_lim = min(p%time_write(n), p%time_finish)-s%now
   if (step_lim .lt. s%step) s%step = step_lim

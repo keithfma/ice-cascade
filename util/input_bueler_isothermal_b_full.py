@@ -2,7 +2,7 @@
 #
 # Generate ICE-CASCADE input file for Test B in [1]. This 'full' variant
 # computes the whole ice cap, as opposed to only the northeast quadrant as in
-# [1] Grid spacing is an (optional) command line argument to facilitate grid
+# [1]. Grid spacing is an (optional) command line argument to facilitate grid
 # refinement experiments. To simplify calculation of 'dome' errors, the number
 # of gridpoints must be odd so that the origin lies at a grid point.
 
@@ -56,7 +56,7 @@ def main(filename, nxy):
 
   # confirm that nxy is odd and greater than 1
   if (nxy%2 == 0) or (nxy < 3):
-    print 'Invalid value for input parameter nxy, must be odd'
+    print('Invalid value for input parameter nxy, must be odd')
     sys.exit()
   
   # coordinate grid
@@ -101,6 +101,7 @@ def main(filename, nxy):
   file.write_ice_h_soln = 1 
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
+  file.variables['topo'][:,:] = 0.
   file.variables['ice_q_surf'][:,:] = np.zeros((nxy, nxy), dtype = np.float64)
   file.variables['ice_h'][:,:] = ice_h_soln
   file.variables['ice_h_soln'][:,:] = ice_h_soln
@@ -121,7 +122,7 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     nxy = int(sys.argv[2])
   if len(sys.argv) > 3:
-    print 'Too many input arguments. Exiting.'
+    print('Too many input arguments. Exiting.')
     sys.exit(-1)
 
   # make it

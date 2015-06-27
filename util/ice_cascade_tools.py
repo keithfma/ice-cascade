@@ -8,9 +8,9 @@ import numpy as np
 import netCDF4 as nc
 
 def new_input(filename, nx, ny):
-  '''Create a new ICE-CASCADE input file with null parameters and state
-  variables, returns an open netCDF4 Dataset object associated with the new
-  file.''' 
+  '''Create a new ICE-CASCADE input file with null values for all required
+  parameters (required) and state variables (required and optional), returns an
+  open netCDF4 Dataset object associated with the new file.''' 
 
   # open file
   file = nc.Dataset(filename, mode = 'w', clobber = True, format = 'NETCDF4')
@@ -48,13 +48,10 @@ def new_input(filename, nx, ny):
   file.write_ice_h = 0
   file.write_ice_h_dot = 0
   file.write_ice_h_soln = 0
-  file.write_ice_uvd = 0
-  file.write_ice_uvs = 0
-
-  # create null arrays
-  zero_x = np.zeros(nx, dtype = np.float64) 
-  zero_y = np.zeros(ny, dtype = np.float64) 
-  zero_xy = np.zeros((nx, ny), dtype = np.float64) 
+  file.write_ice_uv_defm = 0
+  file.write_ice_uv_slid = 0
+  file.write_ice_a_defm = 0
+  file.write_ice_a_slid = 0
 
   # create dimensions
   file.createDimension('x', size = nx)
@@ -62,92 +59,102 @@ def new_input(filename, nx, ny):
 
   # write initial state variables as variables
   var = file.createVariable('x', np.float64, dimensions = ('x'))
-  var[:] = zero_x
+  var[:] = np.nan
   var.long_name = 'x_coordinate'
   var.units = 'm'
  
   var = file.createVariable('y', np.float64, dimensions = ('y'))
-  var[:] = zero_y
+  var[:] = np.nan
   var.long_name = 'y_coordinate'
   var.units = 'm'
 
   var = file.createVariable('topo', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'topography'
   var.units = 'm'
   
   var = file.createVariable('topo_dot_ice', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'topography_rate_of_change_from_ice_erosion_and_deposition'
   var.units = 'm_a'
 
   var = file.createVariable('surf', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'surface_elevation_including_ice'
   var.units = 'm'
 
   var = file.createVariable('temp_surf', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'temperature_at_surface_of_ice_or_bedrock'
   var.units = 'C'
 
   var = file.createVariable('temp_ice', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'mean_ice_temperature'
   var.units = 'C'
 
   var = file.createVariable('temp_base', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'temperature_at_surface_of_bedrock'
   var.units = 'C'
 
   var = file.createVariable('precip', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'precipitation_rate'
   var.units = 'mwater_a'
 
   var = file.createVariable('runoff', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'water_runoff_rate'
   var.units = 'mwater_a'
 
   var = file.createVariable('ice_q_surf', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'surface_ice_flux'
   var.units = 'mice_a'
 
   var = file.createVariable('ice_h', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'ice_thickness'
   var.units = 'm'
 
   var = file.createVariable('ice_h_dot', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'ice_thickness_rate_of_change'
   var.units = 'm_a'
   
   var = file.createVariable('ice_h_soln', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var[:,:] = np.nan
   var.long_name = 'ice_thickness_exact_solution'
   var.units = 'm'
+
+  var = file.createVariable('ice_a_defm', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
+  var.long_name = 'ice_deformation_coefficient'
+  var.units = '1_Pa3_a'
+
+  var = file.createVariable('ice_a_slid', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
+  var.long_name = 'ice_sliding_coefficient'
+  var.units = 'm_Pa_a'
   
-  var = file.createVariable('ice_ud', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var = file.createVariable('ice_u_defm', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
   var.long_name = 'ice_deformation_velocity_x_dir'
   var.units = 'm_a'
 
-  var = file.createVariable('ice_vd', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var = file.createVariable('ice_v_defm', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
   var.long_name = 'ice_deformation_velocity_y_dir'
   var.units = 'm_a'
   
-  var = file.createVariable('ice_us', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var = file.createVariable('ice_u_slid', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
   var.long_name = 'ice_sliding_velocity_x_dir'
   var.units = 'm_a'
 
-  var = file.createVariable('ice_vs', np.float64, dimensions = ('x', 'y'))
-  var[:,:] = zero_xy
+  var = file.createVariable('ice_v_slid', np.float64, dimensions = ('x', 'y'))
+  var[:,:] = np.nan
   var.long_name = 'ice_sliding_velocity_y_dir'
   var.units = 'm_a'
 
