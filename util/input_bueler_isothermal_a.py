@@ -4,11 +4,12 @@
 # (optional) command line argument to facilitate grid refinement experiments.
 #
 # Usage:
-#   ./make_input_bueler_isothermal_a filename nxy
+#   ./make_input_bueler_isothermal_a nxy flow_method filename 
 #
 # Arguments:
-#   filename = name of generated input file (optional)
-#   nxy = num grid points in x- and y-dir (optional)
+#   nxy = num grid points in x- and y-dir
+#   flow_method = name of ice flow method 
+#   filename = name of generated input file
 #
 # Dependencies:
 #   ice_cascade_tools
@@ -99,6 +100,37 @@ def main(filename, nxy):
   file.close()
 
 if __name__ == '__main__':
+
+  # check if user wants help
+  if len(sys.argv) == 2 and sys.argv[1] == '--help':
+    show_help = True
+
+  # check if user needs help
+  elif len(sys.argv) != 4:
+    print('ERROR: Incorrect number of input arguments.')
+    show_help = True
+
+  # parse input arguments
+  else:
+    try:
+      nxy = int(sys.argv[1])
+      flow_method = sys.argv[2]
+      filename = sys.argv[3]
+    except:
+      print('ERROR: Failed to read input arguments.')
+      show_help = True
+
+  # show help and exit, if needed   
+  if show_help:
+    print('''
+      Usage:
+        ./make_input_bueler_isothermal_a nxy flow_method filename 
+
+        nxy = num grid points in x- and y-dir
+        flow_method = name of ice flow method 
+        filename = name of generated input file
+        ''')
+    sys.exit()
 
   # defaults
   nxy = 50 
