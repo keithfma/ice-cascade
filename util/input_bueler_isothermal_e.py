@@ -44,13 +44,13 @@ rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
 
 # general parameters
+lxy = 1.2*L # domain dimensions (final radius + 20%)
 ti = 0. # [a]
 tf = 25000. # [a]
 dt = 100. # model time step
 tw = tf # output steps
-lxy = 1.1*L # domain dimensions (final radius + 10%)
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test E).'
-  'Isothermal, steady-state ice cap with sliding in a ice-stream-like sector'
+  'Isothermal, steady-state ice cap with sliding in a ice-stream-like sector '
   'only.')
 
 # main function
@@ -112,6 +112,9 @@ def main(filename, nxy):
   file.variables['ice_h_soln'][:,:] = ice_h_soln
   file.variables['ice_a_defm'][:,:] = A
   file.variables['ice_a_slid'][:,:] = mumu
+
+  # finalize
+  file.close()
 
   # # DEBUG
   # print(mumu)

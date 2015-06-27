@@ -41,7 +41,7 @@ public :: state_type, init_state
     real(rp), allocatable :: ice_u_slid(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_v_slid(:,:) ! ice sliding velocity, y-dir, [m/a]
     real(rp), allocatable :: ice_a_defm(:,:) ! ice deformation coeff, [Pa^-3 a^-1]
-    real(rp), allocatable :: ice_a_slid(:,:) ! ice sliding coeff, [CHECK UNITS]
+    real(rp), allocatable :: ice_a_slid(:,:) ! ice sliding coeff, [m/a/Pa]
   end type state_type
   !
   ! ABOUT: shared state variables

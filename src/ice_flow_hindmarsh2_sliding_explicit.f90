@@ -136,7 +136,6 @@ contains
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + c_slid*a_slid_mid*h_mid**2 
-        !D = c_defm*a_defm_mid*h_mid**5*surf_grad2
         qx(i,j-1) = -D*dsurf_dx_mid
         Dmax = max(Dmax, D)
       end do
@@ -153,7 +152,6 @@ contains
                         s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + c_slid*a_slid_mid*h_mid**2 
-        !D = c_defm*a_defm_mid*h_mid**5*surf_grad2
         qy(i-1,j) = -D*dsurf_dy_mid
         Dmax = max(Dmax, D)
       end do

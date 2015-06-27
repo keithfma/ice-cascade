@@ -152,11 +152,7 @@ contains
   !   include ghost points at boundaries, while input arrays do not.
   ! ---------------------------------------------------------------------------
 
-    integer :: e, ncid, varid
-    real(rp), allocatable :: buffer(:,:)
-   
-    ! Allocate read buffer for interior points only
-    allocate(buffer(p%nx-2, p%ny-2))
+    integer :: ncid, varid
 
     ! Open file
     call req(nf90_open(p%input_file, nf90_nowrite, ncid))

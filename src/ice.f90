@@ -246,6 +246,7 @@ contains
       call ebc(s)
       call sbc(s)
       call wbc(s)
+
       s%surf = s%topo+s%ice_h
 
       ! ice flow procedure

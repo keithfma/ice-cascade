@@ -40,7 +40,7 @@ lxy = 1.2*L # domain dimensions (ice cap radius + 20%)
 ti = 0. # model start time
 tf = 25000. # model end time
 dt = 100. # model time step, should be irrelevant
-tw = 25000. # output steps
+tw = tf # output steps
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test A).'
   'Isothermal, non-sliding, steady state with fixed margin position and'
   'constant, positive surface ice flux.')
@@ -50,10 +50,10 @@ def main(filename, nxy):
   
   # coordinate grid
   (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
-  
-  # exact solution
   (xx, yy) = np.meshgrid(xy, xy)
   rr = np.sqrt(xx**2+yy**2)
+  
+  # exact solution
   gamma = 2.0/5.0*A*(rhoi*g)**3.0
   mask = np.where(rr <= L)
   ice_h_soln = np.zeros((nxy,nxy), dtype = np.float64)

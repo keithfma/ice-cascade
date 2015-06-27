@@ -200,10 +200,7 @@ if __name__ == '__main__':
     make_input(input_name, n)
 
     # run model
-    print(input_name)
-    print(output_name)
-    subprocess.call(['ice-cascade', input_name, output_name], 
-                    stderr = sys.stdout.fileno() ) #subprocess.STDOUT)
+    subprocess.call(['ice-cascade', input_name, output_name]) 
   
     # read output ice thickness at the final timestep
     file = nc.Dataset(output_name, mode = 'r')
