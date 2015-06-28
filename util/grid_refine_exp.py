@@ -4,7 +4,7 @@
 # known exact solutions. The program provides utilities to setup, run, and
 # analyze one of the included test cases. 
 #
-# Usage: ./grid_refine_exp.py test_name flow_name outdir nxy
+# Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
 #
 # Command line arguments:
 #
@@ -29,7 +29,7 @@
 #       hindmarsh2_explicit
 #       hindmarsh2_sliding_explicit
 #
-#   outdir = String. Path where the experiment output should be saved.
+#   out_dir = String. Path where the experiment output should be saved.
 #
 #   nxy = String. A list of the grid sizes to use, as comma separated values in
 #     single quotes, e.g. '16,32,64'
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
   # select test
   if test_name == 'bueler_isothermal_a':
-    create_intput_file = test_bueler_isothermal_a.create
+    create_input_file = test_bueler_isothermal_a.create
     title_str = 'Bueler et al 2005, Test A'
 
 #  elif name == 'bueler_isothermal_a_full':
@@ -239,89 +239,76 @@ if __name__ == '__main__':
   for n in nxy:
 
     # generate names
-    input_file_name  = test_name+'_'+str(n).zfill(digits)+'_in.nc'
-    output_file_name = test_name+'_'+str(n).zfill(digits)+'_out.nc'
-    errmap_file_name = test_name+'_'+str(n).zfill(digits)+'_fig_errmap.pdf'
+    input_file  = test_name+'_'+str(n).zfill(digits)+'_in.nc'
+    output_file = test_name+'_'+str(n).zfill(digits)+'_out.nc'
+    errmap_file = test_name+'_'+str(n).zfill(digits)+'_fig_errmap.pdf'
     
     # names -> paths
-    input_file_path = os.path.join(out_dir, input_file_name)
-    output_file_path = os.path.join(out_dir, output_file_name)
-    errmap_file_path = os.path.join(out_dir, errmap_file_name)
+    input_path = os.path.join(out_dir, input_file)
+    output_path = os.path.join(out_dir, output_file)
+    errmap_path = os.path.join(out_dir, errmap_file)
 
-    # DEBUG
-    print(input_file_path)
-    print(output_file_path)
-    print(errmap_file_path)
+    # run model
+    create_input_file(n, flow_name, input_path)
+    subprocess.call(['ice-cascade', input_path, output_path]) 
+  
+    # read output ice thickness at the final timestep
+    file = nc.Dataset(output_path, mode = 'r')
+    nt = file.variables['t'].size
+    dx.append(file.dx__m)
+    h.append(file.variables['ice_h'][nt-1,:,:])
+    h_soln.append(file.variables['ice_h_soln'][nt-1,:,:])
+    file.close()
+  
+    # compute error, including map and scalar statistics
+    mask = np.logical_or(np.greater(h[-1], 0.), np.greater(h_soln[-1], 0.)) 
+    err.append(h_soln[-1]-h[-1])
+    err_abs.append(abs(err[-1]))
+    err_abs_max.append(err_abs[-1].max())
+    err_abs_mean.append(np.mean(err_abs[-1][mask]))
+    idome, jdome = np.unravel_index(h_soln[-1].argmax(), h_soln[-1].shape)
+    err_abs_dome.append(err_abs[-1][idome,jdome])
 
-#    # create input files using external routines
-#    make_input(input_name, n)
-#
-#    # run model
-#    subprocess.call(['ice-cascade', input_name, output_name]) 
-#  
-#    # read output ice thickness at the final timestep
-#    file = nc.Dataset(output_name, mode = 'r')
-#    nt = file.variables['t'].size
-#    dx.append(file.dx__m)
-#    h.append(file.variables['ice_h'][nt-1,:,:])
-#    h_soln.append(file.variables['ice_h_soln'][nt-1,:,:])
-#    file.close()
-#  
-#    # compute error, including map and scalar statistics
-#    mask = np.logical_or(np.greater(h[-1], 0.), np.greater(h_soln[-1], 0.)) 
-#    err.append(h_soln[-1]-h[-1])
-#    err_abs.append(abs(err[-1]))
-#    err_abs_max.append(err_abs[-1].max())
-#    err_abs_mean.append(np.mean(err_abs[-1][mask]))
-#    idome, jdome = np.unravel_index(h_soln[-1].argmax(), h_soln[-1].shape)
-#    err_abs_dome.append(err_abs[-1][idome,jdome])
-#
-#    # plot difference map
-#    plot_map(err[-1], dx[-1]/1000.)
-#    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx[-1]))
-#    plt.savefig(errmap_file_path)
-#    plt.close()
+    # plot difference map
+    plot_map(err[-1], dx[-1]/1000.)
+    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx[-1]))
+    plt.savefig(errmap_path)
+    plt.close()
 
   # generate names
-  errplt_mean_file_name = test_name+'_fig_errplt_mean.pdf'
-  errplt_max_file_name  = test_name+'_fig_errplt_max.pdf'
-  errplt_dome_file_name = test_name+'_fig_errplt_dome.pdf'
-  report_file_name = test_name+'_report.tex'
+  errplt_mean_file = test_name+'_fig_errplt_mean.pdf'
+  errplt_max_file  = test_name+'_fig_errplt_max.pdf'
+  errplt_dome_file = test_name+'_fig_errplt_dome.pdf'
+  report_file = test_name+'_report.tex'
   
   # names -> paths
-  errplt_mean_file_path = os.path.join(out_dir, errplt_mean_file_name)
-  errplt_max_file_path  = os.path.join(out_dir, errplt_max_file_name)
-  errplt_dome_file_path = os.path.join(out_dir, errplt_dome_file_name)
-  report_file_path = os.path.join(out_dir, report_file_name)
+  errplt_mean_path = os.path.join(out_dir, errplt_mean_file)
+  errplt_max_path  = os.path.join(out_dir, errplt_max_file)
+  errplt_dome_path = os.path.join(out_dir, errplt_dome_file)
+  report_path = os.path.join(out_dir, report_file)
 
-  # DEBUG
-  print(errplt_mean_file_path)
-  print(errplt_max_file_path)
-  print(errplt_dome_file_path)
-  print(report_file_path)
+  # plot mean absolute error
+  plot_data(nxy, err_abs_mean)
+  plt.title('Mean Absolute Error')
+  plt.ylabel('Mean absolute error')
+  plt.savefig(errplt_mean_path)
+  plt.close()
 
-#  # plot mean absolute error
-#  plot_data(nxy, err_abs_mean)
-#  plt.title('Mean Absolute Error')
-#  plt.ylabel('Mean absolute error')
-#  plt.savefig(fig_err_abs_mean_name)
-#  plt.close()
-#
-#  # plot max absolute error
-#  plot_data(nxy, err_abs_max)
-#  plt.title('Max Absolute Error')
-#  plt.ylabel('max absolute error')
-#  plt.savefig(fig_err_abs_max_name)
-#  plt.close()
-#
-#  # plot dome absolute error
-#  plot_data(nxy, err_abs_dome)
-#  plt.title('Dome Absolute Error')
-#  plt.ylabel('dome absolute error')
-#  plt.savefig(fig_err_abs_dome_name)
-#  plt.close()
-#  
-#  # create latex report including figures and tabulared scalars
+  # plot max absolute error
+  plot_data(nxy, err_abs_max)
+  plt.title('Max Absolute Error')
+  plt.ylabel('max absolute error')
+  plt.savefig(errplt_max_path)
+  plt.close()
+
+  # plot dome absolute error
+  plot_data(nxy, err_abs_dome)
+  plt.title('Dome Absolute Error')
+  plt.ylabel('dome absolute error')
+  plt.savefig(errplt_dome_path)
+  plt.close()
+  
+  # create latex report including figures and tabulared scalars
 #  with open(report_name, 'w') as f:
 #    
 #    f.write('\\documentclass[11pt]{article}\n')
