@@ -19,6 +19,7 @@
 # Dependencies:
 #   ice_cascade_tools
 #   netcdf4
+#   numpy
 #
 # References:
 #
@@ -34,7 +35,7 @@ import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
 
-# parameters for Bueler test A 
+# define parameters
 M0 = 0.3 # surface ice flux, [m_ice/a] 
 L = 7.5e5 # ice cap radius, [m]
 g = 9.81 # acceleration of gravity, [m/s2]

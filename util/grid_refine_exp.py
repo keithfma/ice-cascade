@@ -53,7 +53,7 @@ import matplotlib.pyplot as plt
 import test_bueler_isothermal_a 
 import test_bueler_isothermal_a_full 
 import test_bueler_isothermal_b 
-#import input_bueler_isothermal_b_full 
+import test_bueler_isothermal_b_full 
 #import input_bueler_isothermal_c 
 #import input_bueler_isothermal_c_full 
 #import input_bueler_isothermal_d 
@@ -169,7 +169,6 @@ def read_args():
   return (test_name, flow_name, outdir, nxy)
 
 
-
 # setup and run experiment
 if __name__ == '__main__':
 
@@ -189,9 +188,9 @@ if __name__ == '__main__':
     create_input_file = test_bueler_isothermal_b.create
     title_str = 'Bueler et al 2005, Test B'
  
-  #elif name == 'bueler_isothermal_b_full':
-  #  make_input = input_bueler_isothermal_b_full.main
-  #  title = 'Bueler et al 2005, Test B, Full Ice Cap'
+  elif test_name == 'bueler_isothermal_b_full':
+    create_input_file = test_bueler_isothermal_b_full.create
+    title_str = 'Bueler et al 2005, Test B, Full Ice Cap'
 
   #elif name == 'bueler_isothermal_c':
   #  make_input = input_bueler_isothermal_c.main
