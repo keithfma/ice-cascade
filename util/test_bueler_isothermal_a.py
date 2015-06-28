@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 #
-# Generate ICE-CASCADE input file for Test A in (1). Grid spacing is an
-# (optional) command line argument to facilitate grid refinement experiments.
+# Generate ICE-CASCADE input file for Test A in (1). Required input arguments
+# are the number of grid points in both dimensions, the name of the ice flow
+# method (see the parameter supported_flow_methods for possible values) and the
+# name of the generated input file. 
 #
 # Usage:
-#   ./make_input_bueler_isothermal_a nxy flow_method filename 
+#   ./test_bueler_isothermal_a nxy flow_method filename 
 #
 # Arguments:
 #   nxy = num grid points in x- and y-dir
@@ -22,7 +24,7 @@
 #   isothermal ice sheets. Journal of Glaciology, 51(173), 291-306.
 #   doi:10.3189/172756505781829449
 #
-# Keith Ma, April 2015
+# Keith Ma, June 2015
 
 import sys
 import numpy as np
@@ -52,6 +54,11 @@ supported_flow_methods = [
 def create(nxy, flow, name):
   '''Create input NETCDF file called "name" for the bueler_isothermal_a test
   case with "nxy" points in each dimension, using the ice flow method "flow"''' 
+
+  # check for sane arguments
+  if flow not in supported_flow_methods:
+    print('ERROR: flow method not supported (' + flow + ')')
+    sys.exit()
   
   # coordinate grid
   (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
@@ -67,7 +74,7 @@ def create(nxy, flow, name):
   # create and open new input file
   file = ict.new_input(name, nxy, nxy)
   
-  # write variables common to all ice flow methods
+  # write data common to all ice flow methods
   file.descr = descr
   file.nx__1 = nxy
   file.ny__1 = nxy
@@ -114,8 +121,4 @@ def create(nxy, flow, name):
 if __name__ == '__main__':
 
   (n, flow, name) = ict.test_read_args()
-  if flow in supported_flow_methods:
-    create(n, flow, name)
-  else:
-    print('ERROR: flow method not supported (' + flow + ')')
-    sys.exit()
+  create(n, flow, name)
