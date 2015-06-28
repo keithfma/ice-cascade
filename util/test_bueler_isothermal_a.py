@@ -16,6 +16,7 @@
 # Dependencies:
 #   ice_cascade_tools
 #   netcdf4
+#   numpy
 #
 # References:
 #

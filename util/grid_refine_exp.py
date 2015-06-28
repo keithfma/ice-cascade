@@ -52,7 +52,7 @@ import matplotlib.pyplot as plt
 
 import test_bueler_isothermal_a 
 import test_bueler_isothermal_a_full 
-#import input_bueler_isothermal_b 
+import test_bueler_isothermal_b 
 #import input_bueler_isothermal_b_full 
 #import input_bueler_isothermal_c 
 #import input_bueler_isothermal_c_full 
@@ -133,12 +133,12 @@ def read_args():
 
   show_help = False
   help = ('''
-  Usage: ./grid_refine_exp.py test_name flow_name nxy outdir
+  Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
 
     test_name = String. The name of the test case.
     flow_name = String. The name of the ice flow method to use. 
+    out_dir = String. Path to save outputs.
     nxy = String. A comma-separated list of grid dim in pts (e.g. '32,64').
-    outdir = String. Path to save outputs.
   ''')
 
   # check if user wants help
@@ -185,9 +185,9 @@ if __name__ == '__main__':
     create_input_file = test_bueler_isothermal_a_full.create
     title_str = 'Bueler et al 2005, Test A, Full Ice Cap'
 
-  #elif name == 'bueler_isothermal_b':
-  #  make_input = input_bueler_isothermal_b.main
-  #  title = 'Bueler et al 2005, Test B'
+  elif test_name == 'bueler_isothermal_b':
+    create_input_file = test_bueler_isothermal_b.create
+    title_str = 'Bueler et al 2005, Test B'
  
   #elif name == 'bueler_isothermal_b_full':
   #  make_input = input_bueler_isothermal_b_full.main
