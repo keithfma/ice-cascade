@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Grid refinement experiment comparing the ice model numerical results against
-# known exact solutions. The program provides utilities to setup, run, and
-# analyze one of the included test cases. 
+# known exact solutions. Sets up, runs, and analyzes one of the included test
+# cases. 
 #
 # Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
 #
@@ -41,7 +41,7 @@
 #   isothermal ice sheets. Journal of Glaciology, 51(173), 291-306.
 #   doi:10.3189/172756505781829449
 #
-# Keith Ma, May 2015
+# Keith Ma, June 2015
 
 import sys
 import os
@@ -103,9 +103,9 @@ def plot_data(x, y):
 
 
 def plot_map(z, d):
-  '''Plot the array 'z' as an image. Coordinates are assumed to have thier
-  origin in the lower left corner, and are set using the grid spacing 'd'. All
-  units are assumed to be meters.'''
+  '''Plot the array of error magnitude 'z' in meters as an image. Coordinates
+  are assumed to have thier origin in the lower left corner, and are set using
+  the grid spacing 'd' in km. All units are assumed to be meters.'''
 
   (nx, ny) = z.shape
   extr = np.amax(abs(z))
@@ -174,88 +174,93 @@ def read_args():
 if __name__ == '__main__':
 
   (test_name, flow_name, out_dir, nxy) = read_args()
+  num_runs = len(nxy)
 
   # select test
   if test_name == 'bueler_isothermal_a':
     create_input_file = test_bueler_isothermal_a.create
     title_str = 'Bueler et al 2005, Test A'
 
-#  elif name == 'bueler_isothermal_a_full':
-#    make_input = input_bueler_isothermal_a.main
-#    title = 'Bueler et al 2005, Test A, Full Ice Cap'
-#
-#  #elif name == 'bueler_isothermal_b':
-#  #  make_input = input_bueler_isothermal_b.main
-#  #  title = 'Bueler et al 2005, Test B'
-# 
-#  #elif name == 'bueler_isothermal_b_full':
-#  #  make_input = input_bueler_isothermal_b_full.main
-#  #  title = 'Bueler et al 2005, Test B, Full Ice Cap'
-#
-#  #elif name == 'bueler_isothermal_c':
-#  #  make_input = input_bueler_isothermal_c.main
-#  #  title = 'Bueler et al 2005, Test C'
-# 
-#  #elif name == 'bueler_isothermal_c_full':
-#  #  make_input = input_bueler_isothermal_c_full.main
-#  #  title = 'Bueler et al 2005, Test C, Full Ice Cap'
-#
-#  #elif name == 'bueler_isothermal_d':
-#  #  make_input = input_bueler_isothermal_d.main
-#  #  title = 'Bueler et al 2005, Test D'
-# 
-#  #elif name == 'bueler_isothermal_d_full':
-#  #  make_input = input_bueler_isothermal_d_full.main
-#  #  title = 'Bueler et al 2005, Test D, Full Ice Cap'
-#
-#  #elif name == 'bueler_isothermal_e':
-#  #  make_input = input_bueler_isothermal_e.main
-#  #  title = 'Bueler et al 2005, Test E'
-#
+  elif test_name == 'bueler_isothermal_a_full':
+    create_input_file = test_bueler_isothermal_a_full.create
+    title_str = 'Bueler et al 2005, Test A, Full Ice Cap'
+
+  #elif name == 'bueler_isothermal_b':
+  #  make_input = input_bueler_isothermal_b.main
+  #  title = 'Bueler et al 2005, Test B'
+ 
+  #elif name == 'bueler_isothermal_b_full':
+  #  make_input = input_bueler_isothermal_b_full.main
+  #  title = 'Bueler et al 2005, Test B, Full Ice Cap'
+
+  #elif name == 'bueler_isothermal_c':
+  #  make_input = input_bueler_isothermal_c.main
+  #  title = 'Bueler et al 2005, Test C'
+ 
+  #elif name == 'bueler_isothermal_c_full':
+  #  make_input = input_bueler_isothermal_c_full.main
+  #  title = 'Bueler et al 2005, Test C, Full Ice Cap'
+
+  #elif name == 'bueler_isothermal_d':
+  #  make_input = input_bueler_isothermal_d.main
+  #  title = 'Bueler et al 2005, Test D'
+ 
+  #elif name == 'bueler_isothermal_d_full':
+  #  make_input = input_bueler_isothermal_d_full.main
+  #  title = 'Bueler et al 2005, Test D, Full Ice Cap'
+
+  #elif name == 'bueler_isothermal_e':
+  #  make_input = input_bueler_isothermal_e.main
+  #  title = 'Bueler et al 2005, Test E'
+
   else:
     print('\nERROR: Invalid test name.')
     sys.exit()
+
+  # declare empty lists to be appended
+  input_paths = []
+  output_paths = []
+  errmap_paths = [] 
+  err_max = []
+  err_mean = []
+  err_dome = []
+  dx = []
+
+  # generate file names
+  digits = 1
+  while (max(nxy) >= 10**digits):
+    digits = digits+1
+
+  for i in range(len(nxy)):
+    input_paths.append( os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_in.nc'))
+    output_paths.append(os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_out.nc'))
+    errmap_paths.append(os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_fig_errmap.pdf'))
+
+  errplt_mean_path = os.path.join(out_dir, test_name+'_fig_errplt_mean.pdf')
+  errplt_max_path  = os.path.join(out_dir, test_name+'_fig_errplt_max.pdf')
+  errplt_dome_path = os.path.join(out_dir, test_name+'_fig_errplt_dome.pdf')
+  report_path      = os.path.join(out_dir, test_name+'_report.tex')
 
   # create output folder, if needed
   if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-  # figure out max number of digits in nxy list
-  digits = 1
-  while (max(nxy) >= 10**digits):
-    digits = digits+1
-
-  # init empty lists for results
-  err_max = [] # max of abs(error)
-  err_mean = [] # mean of abs(error)
-  err_dome = [] # error at ice cap center
-
-  # create input files, run models, compute errors, plot maps, gather stats
-  for n in nxy:
-
-    # generate names
-    input_file  = test_name+'_'+str(n).zfill(digits)+'_in.nc'
-    output_file = test_name+'_'+str(n).zfill(digits)+'_out.nc'
-    errmap_file = test_name+'_'+str(n).zfill(digits)+'_fig_errmap.pdf'
-    
-    # names -> paths
-    input_path = os.path.join(out_dir, input_file)
-    output_path = os.path.join(out_dir, output_file)
-    errmap_path = os.path.join(out_dir, errmap_file)
+  # loop over grid resolutions
+  for i in range(len(nxy)):
 
     # run model
-    create_input_file(n, flow_name, input_path)
-    subprocess.call(['ice-cascade', input_path, output_path]) 
+    create_input_file(nxy[i], flow_name, input_paths[i])
+    subprocess.call(['ice-cascade', input_paths[i], output_paths[i]]) 
   
     # read output ice thickness at the final timestep
-    file = nc.Dataset(output_path, mode = 'r')
+    file = nc.Dataset(output_paths[i], mode = 'r')
     nt = file.variables['t'].size
-    dx = file.attributes['dx__m']
+    dx.append(file.dx__m)
     h = file.variables['ice_h'][nt-1,:,:]
     h_soln = file.variables['ice_h_soln'][nt-1,:,:]
     file.close()
   
-    # compute error, including map and scalar statistics
+    # compute error map and scalar statistics
     mask = np.logical_or(np.greater(h, 0.), np.greater(h_soln, 0.)) 
     err = h_soln-h
     abserr = abs(err)
@@ -264,23 +269,11 @@ if __name__ == '__main__':
     idome, jdome = np.unravel_index(h_soln.argmax(), h_soln.shape)
     err_dome.append(abserr[idome,jdome])
 
-    # plot difference map
-    plot_map(err, dx/1000.)
-    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx))
-    plt.savefig(errmap_path)
+    # plot error map
+    plot_map(err, dx[i]/1000.)
+    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(nxy[i], dx[i]))
+    plt.savefig(errmap_paths[i])
     plt.close()
-
-  # generate names
-  errplt_mean_file = test_name+'_fig_errplt_mean.pdf'
-  errplt_max_file  = test_name+'_fig_errplt_max.pdf'
-  errplt_dome_file = test_name+'_fig_errplt_dome.pdf'
-  report_file = test_name+'_report.tex'
-  
-  # names -> paths
-  errplt_mean_path = os.path.join(out_dir, errplt_mean_file)
-  errplt_max_path  = os.path.join(out_dir, errplt_max_file)
-  errplt_dome_path = os.path.join(out_dir, errplt_dome_file)
-  report_path = os.path.join(out_dir, report_file)
 
   # plot mean absolute error
   plot_data(nxy, err_mean)
@@ -292,78 +285,78 @@ if __name__ == '__main__':
   # plot max absolute error
   plot_data(nxy, err_max)
   plt.title('Max Absolute Error')
-  plt.ylabel('max absolute error')
+  plt.ylabel('Max Absolute Error')
   plt.savefig(errplt_max_path)
   plt.close()
 
   # plot dome absolute error
   plot_data(nxy, err_dome)
   plt.title('Dome Absolute Error')
-  plt.ylabel('dome absolute error')
+  plt.ylabel('Dome Absolute Error')
   plt.savefig(errplt_dome_path)
   plt.close()
   
   # create latex report including figures and tabulared scalars
-#  with open(report_name, 'w') as f:
-#    
-#    f.write('\\documentclass[11pt]{article}\n')
-#    f.write('\\usepackage[margin=1.0in]{geometry}\n')
-#    f.write('\\usepackage{graphicx}\n')
-#    f.write('\\usepackage{placeins}\n')
-#    f.write('\\title{Grid Refinement Experiment: '+title+'}\n')
-#    
-#    f.write('\\begin{document}\n')
-#    f.write('\\maketitle\n')
-#  
-#    f.write('\\section{Error Statistics}\n')
-#  
-#    f.write('\\begin{table}[h]\n')
-#    f.write('\\begin{tabular}{rrrrr}\n')
-#    f.write('$N$ & $\Delta$ & max$|err|$ & mean$|err|$ & $|err|$ dome \\\\\n')
-#    f.write('\\hline\n')
-#    for i in range(len(nxy)):
-#      f.write('{0:.0f} & {1:.0f} & {2:.0f} & {3:.0f} & {4:.0f} \\\\\n'.format(
-#        nxy[i], dx[i], err_abs_max[i], err_abs_mean[i], err_abs_dome[i]))
-#    f.write('\\hline\n')
-#    f.write('\\end{tabular}\n')
-#    f.write('\\end{table}\n')
-#  
-#    f.write('\\FloatBarrier\n')
-#    f.write('\\section{Error Maps}\n')
-#  
-#    for n in nxy:
-#      fig_err_map_name = os.path.join(dir, name+'_err_'+str(n).zfill(pad)+'.pdf')
-#      f.write('\\begin{figure}[h]\n')
-#      f.write('\\centering\n')
-#      f.write('\\centerline{\includegraphics{'+fig_err_map_name+'}}\n')
-#      f.write('\\end{figure}\n')
-#  
-#    f.write('\\FloatBarrier\n')
-#    f.write('\\section{Convergence Rate Estimates}\n')
-#   
-#    f.write('\\begin{figure}[h]\n')
-#    f.write('\\centering\n')
-#    f.write('\\centerline{\includegraphics{'+fig_err_abs_max_name+'}}\n')
-#    f.write('\\end{figure}\n')
-#    
-#    f.write('\\begin{figure}[h]\n')
-#    f.write('\\centering\n')
-#    f.write('\\centerline{\includegraphics{'+fig_err_abs_mean_name+'}}\n')
-#    f.write('\\end{figure}\n')
-#  
-#    f.write('\\begin{figure}[h]\n')
-#    f.write('\\centering\n')
-#    f.write('\\centerline{\includegraphics{'+fig_err_abs_dome_name+'}}\n')
-#    f.write('\\end{figure}\n')
-#    
-#    f.write('\end{document}\n')
-#  
-#  # compile report
-#  subprocess.call(['pdflatex', report_name])
-#  subprocess.call(['pdflatex', report_name])
-#  
-#  # clean up working files
-#  os.rename(name+'_report.pdf', os.path.join(dir, name+'_report.pdf'))
-#  os.remove(name+'_report.aux')
-#  os.remove(name+'_report.log')
-#
+  with open(report_path, 'w') as f:
+    
+    f.write('\\documentclass[11pt]{article}\n')
+    f.write('\\usepackage[margin=1.0in]{geometry}\n')
+    f.write('\\usepackage{graphicx}\n')
+    f.write('\\usepackage{placeins}\n')
+    f.write('\\title{Grid Refinement Experiment: '+title_str+'}\n')
+    
+    f.write('\\begin{document}\n')
+    f.write('\\maketitle\n')
+  
+    f.write('\\section{Error Statistics}\n')
+  
+    f.write('\\begin{table}[h]\n')
+    f.write('\\begin{tabular}{rrrrr}\n')
+    f.write('$N$ & $\Delta$ & max$|err|$ & mean$|err|$ & $|err|$ dome \\\\\n')
+    f.write('\\hline\n')
+    for i in range(len(nxy)):
+      f.write('{0:.0f} & {1:.0f} & {2:.0f} & {3:.0f} & {4:.0f} \\\\\n'.format(
+        nxy[i], dx[i], err_max[i], err_mean[i], err_dome[i]))
+    f.write('\\hline\n')
+    f.write('\\end{tabular}\n')
+    f.write('\\end{table}\n')
+  
+    f.write('\\FloatBarrier\n')
+    f.write('\\section{Error Maps}\n')
+  
+    for i in range(len(nxy)):
+      f.write('\\begin{figure}[h]\n')
+      f.write('\\centering\n')
+      f.write('\\centerline{\includegraphics{'+errmap_paths[i]+'}}\n')
+      f.write('\\end{figure}\n')
+  
+    f.write('\\FloatBarrier\n')
+    f.write('\\section{Convergence Rate Estimates}\n')
+   
+    f.write('\\begin{figure}[h]\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+errplt_max_path+'}}\n')
+    f.write('\\end{figure}\n')
+    
+    f.write('\\begin{figure}[h]\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+errplt_mean_path+'}}\n')
+    f.write('\\end{figure}\n')
+  
+    f.write('\\begin{figure}[h]\n')
+    f.write('\\centering\n')
+    f.write('\\centerline{\includegraphics{'+errplt_dome_path+'}}\n')
+    f.write('\\end{figure}\n')
+    
+    f.write('\end{document}\n')
+  
+  # compile report
+  subprocess.call(['pdflatex', report_path])
+  subprocess.call(['pdflatex', report_path])
+
+  # cleanup after pdflatex
+  report_stub = os.path.splitext(os.path.basename(report_path))[0]
+  os.rename(os.path.join('.'    , report_stub+'.pdf'), 
+            os.path.join(out_dir, report_stub+'.pdf'))
+  os.remove(os.path.join('.', report_stub+'.aux'))
+  os.remove(os.path.join('.', report_stub+'.log'))
