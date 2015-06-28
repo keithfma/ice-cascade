@@ -226,14 +226,9 @@ if __name__ == '__main__':
     digits = digits+1
 
   # init empty lists for results
-  h = [] # final numerical ice thickness
-  h_soln = [] # final exact ice thickness
-  err = [] # error (exact = numerical)
-  err_abs = [] # abs(error)
-  err_abs_max = [] # max of abs(error)
-  err_abs_mean = [] # mean of abs(error)
-  err_abs_dome = [] # error at ice cap center
-  dx = [] # grid spacing
+  err_max = [] # max of abs(error)
+  err_mean = [] # mean of abs(error)
+  err_dome = [] # error at ice cap center
 
   # create input files, run models, compute errors, plot maps, gather stats
   for n in nxy:
@@ -255,23 +250,23 @@ if __name__ == '__main__':
     # read output ice thickness at the final timestep
     file = nc.Dataset(output_path, mode = 'r')
     nt = file.variables['t'].size
-    dx.append(file.dx__m)
-    h.append(file.variables['ice_h'][nt-1,:,:])
-    h_soln.append(file.variables['ice_h_soln'][nt-1,:,:])
+    dx = file.attributes['dx__m']
+    h = file.variables['ice_h'][nt-1,:,:]
+    h_soln = file.variables['ice_h_soln'][nt-1,:,:]
     file.close()
   
     # compute error, including map and scalar statistics
-    mask = np.logical_or(np.greater(h[-1], 0.), np.greater(h_soln[-1], 0.)) 
-    err.append(h_soln[-1]-h[-1])
-    err_abs.append(abs(err[-1]))
-    err_abs_max.append(err_abs[-1].max())
-    err_abs_mean.append(np.mean(err_abs[-1][mask]))
-    idome, jdome = np.unravel_index(h_soln[-1].argmax(), h_soln[-1].shape)
-    err_abs_dome.append(err_abs[-1][idome,jdome])
+    mask = np.logical_or(np.greater(h, 0.), np.greater(h_soln, 0.)) 
+    err = h_soln-h
+    abserr = abs(err)
+    err_max.append(abserr.max())
+    err_mean.append(np.mean(abserr[mask]))
+    idome, jdome = np.unravel_index(h_soln.argmax(), h_soln.shape)
+    err_dome.append(abserr[idome,jdome])
 
     # plot difference map
-    plot_map(err[-1], dx[-1]/1000.)
-    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx[-1]))
+    plot_map(err, dx/1000.)
+    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx))
     plt.savefig(errmap_path)
     plt.close()
 
@@ -288,21 +283,21 @@ if __name__ == '__main__':
   report_path = os.path.join(out_dir, report_file)
 
   # plot mean absolute error
-  plot_data(nxy, err_abs_mean)
+  plot_data(nxy, err_mean)
   plt.title('Mean Absolute Error')
   plt.ylabel('Mean absolute error')
   plt.savefig(errplt_mean_path)
   plt.close()
 
   # plot max absolute error
-  plot_data(nxy, err_abs_max)
+  plot_data(nxy, err_max)
   plt.title('Max Absolute Error')
   plt.ylabel('max absolute error')
   plt.savefig(errplt_max_path)
   plt.close()
 
   # plot dome absolute error
-  plot_data(nxy, err_abs_dome)
+  plot_data(nxy, err_dome)
   plt.title('Dome Absolute Error')
   plt.ylabel('dome absolute error')
   plt.savefig(errplt_dome_path)
