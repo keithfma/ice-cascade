@@ -232,14 +232,16 @@ if __name__ == '__main__':
     digits = digits+1
 
   for i in range(len(nxy)):
-    input_paths.append( os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_in.nc'))
-    output_paths.append(os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_out.nc'))
-    errmap_paths.append(os.path.join(out_dir, test_name+'_'+str(nxy[i]).zfill(digits)+'_fig_errmap.pdf'))
+    test_flow_n = test_name+'_'+flow_name+'_n'+str(nxy[i]).zfill(digits)
+    input_paths.append( os.path.join(out_dir, test_flow_n+'_in.nc'))
+    output_paths.append(os.path.join(out_dir, test_flow_n+'_out.nc'))
+    errmap_paths.append(os.path.join(out_dir, test_flow_n+'_fig_errmap.pdf'))
 
-  errplt_mean_path = os.path.join(out_dir, test_name+'_fig_errplt_mean.pdf')
-  errplt_max_path  = os.path.join(out_dir, test_name+'_fig_errplt_max.pdf')
-  errplt_dome_path = os.path.join(out_dir, test_name+'_fig_errplt_dome.pdf')
-  report_path      = os.path.join(out_dir, test_name+'_report.tex')
+  test_flow = test_name+'_'+flow_name
+  errplt_mean_path = os.path.join(out_dir, test_flow+'_fig_errplt_mean.pdf')
+  errplt_max_path  = os.path.join(out_dir, test_flow+'_fig_errplt_max.pdf')
+  errplt_dome_path = os.path.join(out_dir, test_flow+'_fig_errplt_dome.pdf')
+  report_path      = os.path.join(out_dir, test_flow+'_report.tex')
 
   # create output folder, if needed
   if not os.path.exists(out_dir):
