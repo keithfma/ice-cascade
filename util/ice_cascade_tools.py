@@ -166,7 +166,7 @@ def new_input(filename, nx, ny):
 def test_read_args():
   '''read input parameters for the test_* utility scripts, which are used to
   create ICE-CASCADE input files for various test cases. All of these share the
-  same input arguments and usage. The variable 'argv' expected input arguments are:
+  same input arguments and usage. The expected input arguments are:
 
   nxy = Integer, num grid points in x- and y-dir
   flow_method = String, name of ice flow method 
