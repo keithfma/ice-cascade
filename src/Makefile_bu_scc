@@ -16,6 +16,7 @@ NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
 
 FORT = pgfortran
 FFLAGS = -c -tp=px-64 -g -O0 -Mbounds -Ktrap=fp -traceback 
+#FFLAGS = -c -tp=px-64 -g -O0 -Mbounds -traceback 
 LDFLAGS = -Wl,-rpath,$(NETCDF_LIB),-rpath,$(NETCDFF_LIB),--enable-new-dtags
 DEFS =
 INCL = -I. -I$(NETCDF_INC) -I$(NETCDFF_INC) 
