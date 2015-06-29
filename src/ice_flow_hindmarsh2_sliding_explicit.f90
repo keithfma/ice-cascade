@@ -165,8 +165,12 @@ contains
       end do
     end do
 
-    ! stable adaptive timestep
-    dt = p%dx*p%dy/(8.0_rp*Dmax) 
+    ! compute time step, dealing with ice-free case  
+    if (Dmax .eq. 0.0_rp) then
+      dt = s%step 
+    else  
+      dt = p%dx*p%dy/(8.0_rp*Dmax) 
+    end if
 
   end function flow_hindmarsh2_sliding_explicit
 
