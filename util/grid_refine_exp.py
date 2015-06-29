@@ -54,7 +54,7 @@ import test_bueler_isothermal_a
 import test_bueler_isothermal_a_full 
 import test_bueler_isothermal_b 
 import test_bueler_isothermal_b_full 
-#import input_bueler_isothermal_c 
+import test_bueler_isothermal_c 
 #import input_bueler_isothermal_c_full 
 #import input_bueler_isothermal_d 
 #import input_bueler_isothermal_d_full 
@@ -192,9 +192,9 @@ if __name__ == '__main__':
     create_input_file = test_bueler_isothermal_b_full.create
     title_str = 'Bueler et al 2005, Test B, Full Ice Cap'
 
-  #elif name == 'bueler_isothermal_c':
-  #  make_input = input_bueler_isothermal_c.main
-  #  title = 'Bueler et al 2005, Test C'
+  elif test_name == 'bueler_isothermal_c':
+    create_input_file = test_bueler_isothermal_c.create
+    title_str = 'Bueler et al 2005, Test C'
  
   #elif name == 'bueler_isothermal_c_full':
   #  make_input = input_bueler_isothermal_c_full.main

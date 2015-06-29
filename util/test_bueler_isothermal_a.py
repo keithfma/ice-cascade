@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 # Generate ICE-CASCADE input file for Test A in (1). Required input arguments
-# are the number of grid points in both dimensions, the name of the ice flow
-# method (see the parameter supported_flow_methods for possible values) and the
-# name of the generated input file. 
+#   are the number of grid points in both dimensions, the name of the ice flow
+#   method (see the parameter supported_flow_methods for possible values) and
+#   the name of the generated input file. 
 #
 # Usage:
 #   ./test_bueler_isothermal_a nxy flow_method filename 
@@ -31,7 +31,6 @@ import sys
 import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
-
 
 # define parameters 
 M0 = 0.3 # surface ice flux, [m_ice/a] 
