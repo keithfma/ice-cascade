@@ -57,7 +57,7 @@ import test_bueler_isothermal_b_full
 import test_bueler_isothermal_c 
 import test_bueler_isothermal_c_full 
 import test_bueler_isothermal_d 
-#import input_bueler_isothermal_d_full 
+import test_bueler_isothermal_d_full 
 #import input_bueler_isothermal_e 
 
 def fit_power_law(x, y):
@@ -204,9 +204,9 @@ if __name__ == '__main__':
     create_input_file = test_bueler_isothermal_d.create
     title_str = 'Bueler et al 2005, Test D'
  
-  #elif name == 'bueler_isothermal_d_full':
-  #  make_input = input_bueler_isothermal_d_full.main
-  #  title = 'Bueler et al 2005, Test D, Full Ice Cap'
+  elif test_name == 'bueler_isothermal_d_full':
+    create_input_file = test_bueler_isothermal_d_full.create
+    title_str = 'Bueler et al 2005, Test D, Full Ice Cap'
 
   #elif name == 'bueler_isothermal_e':
   #  make_input = input_bueler_isothermal_e.main
