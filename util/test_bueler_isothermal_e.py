@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 #
-# Generate ICE-CASCADE input file for test E in [1]. Grid spacing is an
-# (optional) command line argument to facilitate grid refinement experiments. To
-# simplify calculation of 'dome' errors, the number of gridpoints must be odd so
-# that the origin lies at a grid point.
+# Generate ICE-CASCADE input file for test E in [1]. Required input arguments
+#   are the number of grid points in both dimensions, the name of the ice flow
+#   method (see the parameter supported_flow_methods for possible values) and
+#   the name of the generated input file. 
 #
 # Usage:
-#   ./make_input_bueler_isothermal_e filename nxy
+#   ./test_bueler_isothermal_e nxy flow_method filename 
 #
 # Arguments:
-#   filename = name of generated input file (optional)
-#   nxy = num grid points in x- and y-dir (optional)
+#   nxy = num grid points in x- and y-dir
+#   flow_method = name of ice flow method 
+#   filename = name of generated input file
 #
 # Dependencies:
 #   ice_cascade_tools
@@ -19,7 +20,7 @@
 #
 # References:
 #
-#   [1] Bueler, E., Lingle, C. S., Kallen-Brown, J. A., Covey, D. N., & Bowman,
+#   (1) Bueler, E., Lingle, C. S., Kallen-Brown, J. A., Covey, D. N., & Bowman,
 #   L.  N. (2005). Exact solutions and verification of numerical models for
 #   isothermal ice sheets. Journal of Glaciology, 51(173), 291-306.
 #   doi:10.3189/172756505781829449
@@ -31,7 +32,7 @@ import numpy as np
 import netCDF4 as nc
 import ice_cascade_tools as ict
 
-# parameters for Bueler test E
+# define parameters
 M0 = 0.3 # [m/a]
 L = 750000. # [m]
 mumax = 2.5e-11*31556926. # [m/Pa/a]
@@ -42,8 +43,6 @@ th2 = 40.*np.pi/180. # [radians]
 g = 9.81 # acceleration of gravity, [m/s2]
 rhoi = 910. # ice density, [kg/m3]
 A = 1.0e-16 # ice deformation coeff, [Pa-3 a-1]
-
-# general parameters
 lxy = 1.2*L # domain dimensions (final radius + 20%)
 ti = 0. # [a]
 tf = 25000. # [a]
@@ -52,9 +51,18 @@ tw = tf # output steps
 descr = ('Benchmark case with exact solution (Bueler et al 2005, test E).'
   'Isothermal, steady-state ice cap with sliding in a ice-stream-like sector '
   'only.')
+supported_flow_methods = [
+    'hindmarsh2_sliding_explicit']
 
-# main function
-def main(filename, nxy):
+
+def create(nxy, flow, name):
+  '''Create input NETCDF file called "name" for the bueler_isothermal_a test
+  case with "nxy" points in each dimension, using the ice flow method "flow"''' 
+
+  # check for sane arguments
+  if flow not in supported_flow_methods:
+    print('ERROR: flow method not supported (' + flow + ')')
+    sys.exit()
 
   # coordinate grids
   (xy, dxy) = np.linspace(0.0, lxy, num = nxy, retstep = True, dtype = np.float64)
@@ -78,9 +86,9 @@ def main(filename, nxy):
   ice_h_soln[mask] = (4.0*M0/gamma)**(1.0/8.0)*(L**(4.0/3.0)-rr[mask]**(4.0/3.0))**(3.0/8.0)
 
   # create and open new input file
-  file = ict.new_input(filename, nxy, nxy)
+  file = ict.new_input(name, nxy, nxy)
   
-  # define parameters and variables 
+  # write data common to all ice flow methods
   file.descr = descr
   file.nx__1 = nxy
   file.ny__1 = nxy
@@ -96,8 +104,6 @@ def main(filename, nxy):
   file.time_write__a = tw 
   file.climate_name = 'bueler_isothermal_e'
   file.climate_param__var = [M0, L, A, mumax, r1, r2, th1, th2]
-  file.ice_name = 'hindmarsh2_sliding_explicit'
-  file.ice_param__var = []
   file.ice_bc_name__nesw = 'no_ice,no_ice,no_flux,no_flux'
   file.ice_soln_name = 'bueler_isothermal_e'
   file.ice_soln_param__var = [M0, L, A]
@@ -113,6 +119,11 @@ def main(filename, nxy):
   file.variables['ice_a_defm'][:,:] = A
   file.variables['ice_a_slid'][:,:] = mumu
 
+  # write data specific to each flow method
+  if flow == 'hindmarsh2_sliding_explicit':
+    file.ice_name = 'hindmarsh2_sliding_explicit'
+    file.ice_param__var = []
+
   # finalize
   file.close()
 
@@ -124,22 +135,7 @@ def main(filename, nxy):
   # plt.colorbar()
   # plt.show()
   
-# run as script
 if __name__ == '__main__':
 
-  # defaults
-  nxy = 51 
-  filename = 'bueler_isothermal_e_in_'+str(nxy)+'.nc' 
-  
-  # parse input arguments
-  if len(sys.argv) == 2:
-    filename = sys.argv[1]
-  if len(sys.argv) == 3:
-    filename = sys.argv[1]
-    nxy = int(sys.argv[2])
-  if len(sys.argv) > 3:
-    print('Too many input arguments. Exiting.')
-    sys.exit(-1)
-
-  # make it
-  main(filename, nxy)
+  (n, flow, name) = ict.test_read_args()
+  create(n, flow, name)

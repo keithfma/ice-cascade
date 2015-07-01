@@ -58,7 +58,7 @@ import test_bueler_isothermal_c
 import test_bueler_isothermal_c_full 
 import test_bueler_isothermal_d 
 import test_bueler_isothermal_d_full 
-#import input_bueler_isothermal_e 
+import test_bueler_isothermal_e 
 
 def fit_power_law(x, y):
   '''Find the best-fit power law function of the form y = c*x**p for the data
@@ -208,9 +208,9 @@ if __name__ == '__main__':
     create_input_file = test_bueler_isothermal_d_full.create
     title_str = 'Bueler et al 2005, Test D, Full Ice Cap'
 
-  #elif name == 'bueler_isothermal_e':
-  #  make_input = input_bueler_isothermal_e.main
-  #  title = 'Bueler et al 2005, Test E'
+  elif test_name == 'bueler_isothermal_e':
+    create_input_file = test_bueler_isothermal_e.create
+    title_str = 'Bueler et al 2005, Test E'
 
   else:
     print('\nERROR: Invalid test name.')
