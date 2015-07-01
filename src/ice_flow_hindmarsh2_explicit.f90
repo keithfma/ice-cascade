@@ -136,17 +136,22 @@ contains
       end do
     end do
 
-      ! thickness rate of change
-      c1 = -1.0_rp/p%dx
-      c2 = -1.0_rp/p%dy
-      do j = 2, p%ny-1
-        do i = 2, p%nx-1
-          s%ice_h_dot(i,j) = c1*(qx(i,j-1)-qx(i-1,j-1))+ &
-                             c2*(qy(i-1,j)-qy(i-1,j-1))
-        end do
+    ! thickness rate of change
+    c1 = -1.0_rp/p%dx
+    c2 = -1.0_rp/p%dy
+    do j = 2, p%ny-1
+      do i = 2, p%nx-1
+        s%ice_h_dot(i,j) = c1*(qx(i,j-1)-qx(i-1,j-1))+ &
+                           c2*(qy(i-1,j)-qy(i-1,j-1))
       end do
-
-    dt = p%dx*p%dy/(8.0_rp*Dmax) ! stable
+    end do
+  
+    ! compute time step, dealing with ice-free case  
+    if (Dmax .eq. 0.0_rp) then
+      dt = s%step 
+    else  
+      dt = p%dx*p%dy/(8.0_rp*Dmax) 
+    end if
 
   end function flow_hindmarsh2_explicit
 

@@ -188,12 +188,18 @@ contains
 
     hhs = h0*(2.0_rp/3.0_rp)**(-3.0_rp/8.0_rp)*xx**(3.0_rp/8.0_rp)
 
-    hhs_p = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
-            xx**(-5.0_rp/8.0_rp)*xx_p
+    hhs_p = 0.0_rp
+    where (xx .gt. 0.0_rp)
+      hhs_p = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
+              xx**(-5.0_rp/8.0_rp)*xx_p
+    end where
 
-    hhs_pp = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
-             ((-5.0_rp/8.0_rp)*xx**(-13.0_rp/8.0_rp)*xx_p**2 + &
-             xx**(-5.0_rp/8.0_rp)*xx_pp)
+    hhs_pp = 0.0_rp
+    where (xx .gt. 0.0_rp)
+      hhs_pp = (3.0_rp*h0)/(8.0_rp*(2.0_rp/3.0_rp)**(3.0_rp/8.0_rp)) * &
+               ((-5.0_rp/8.0_rp)*xx**(-13.0_rp/8.0_rp)*xx_p**2 + &
+               xx**(-5.0_rp/8.0_rp)*xx_pp)
+    end where
 
   end subroutine init_bueler_isothermal_d
 

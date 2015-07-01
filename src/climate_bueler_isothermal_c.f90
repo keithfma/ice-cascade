@@ -124,22 +124,15 @@ contains
 
     real(rp) :: hd, rm
 
-    ! exact ice thickness solution
-    hd = h0*(s%now/t0)**(-alpha)
-    rm = r0*(s%now/t0)**beta
-    
-    where (r .le. rm)
-      h = hd*(1.0_rp-(r/rm)**(4.0_rp/3.0_rp))**(3.0_rp/7.0_rp)
-    elsewhere
-      h = 0.0_rp
-    end where
-
-    ! surface ice flux, proportional to exact ice thickness
-    if (s%now .gt. 0.0_rp) then
-      s%ice_q_surf = (5.0_rp/s%now)*h
-    else
-      s%ice_q_surf = 0.0_rp
-    end if
+      hd = h0*(s%now/t0)**(-alpha)
+      rm = r0*(s%now/t0)**beta
+      where (r .lt. rm)
+        h = hd*(1.0_rp-(r/rm)**(4.0_rp/3.0_rp))**(3.0_rp/7.0_rp)
+        s%ice_q_surf = (5.0_rp/s%now)*h
+      elsewhere
+        h = 0.0_rp
+        s%ice_q_surf = 0.0_rp
+      end where
 
   end subroutine update_bueler_isothermal_c
 

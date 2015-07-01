@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 #
 # Grid refinement experiment comparing the ice model numerical results against
-# known exact solutions. The program provides utilities to setup, run, and
-# analyze one of the included test cases. 
+# known exact solutions. Sets up, runs, and analyzes one of the included test
+# cases. 
 #
-# Usage: ./grid_refine_exp.py name nxy dir
+# Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
 #
 # Command line arguments:
 #
-#   name = String, required. The name of the test case. Must be one of the
-#     following options:
+#   test_name = String. The name of the test case. Must be one of the following
+#     options:
 #
 #       bueler_isothermal_a
+#       bueler_isothermal_a_full
 #       bueler_isothermal_b
 #       bueler_isothermal_b_full
 #       bueler_isothermal_c
@@ -20,11 +21,19 @@
 #       bueler_isothermal_d_full
 #       bueler_isothermal_e
 #
-#   nxy = String, optional, default is '32,64'. A list of the grid sizes to
-#     use, as comma separated values in single quotes, e.g. '16,32,64'
+#   flow_name = String. The name of the ice flow method to be used for
+#     the test. Note that there is no gaurentee that the test_*.create function
+#     has been written to properly select the correct method. Must be one of the
+#     following methods:
+#     
+#       hindmarsh2_explicit
+#       hindmarsh2_sliding_explicit
 #
-#   dir = String, optional, default is 'out'. Path where the experiment
-#     output should be saved.
+#   out_dir = String. Path where the experiment output should be saved.
+#
+#   nxy = String. A list of the grid sizes to use, as comma separated values in
+#     single quotes, e.g. '16,32,64'
+#
 #
 # References:
 #   [1] Bueler, E., Lingle, C. S., Kallen-Brown, J. A., Covey, D. N., & Bowman,
@@ -32,7 +41,7 @@
 #   isothermal ice sheets. Journal of Glaciology, 51(173), 291-306.
 #   doi:10.3189/172756505781829449
 #
-# Keith Ma, May 2015
+# Keith Ma, June 2015
 
 import sys
 import os
@@ -41,17 +50,19 @@ import numpy as np
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 
-import input_bueler_isothermal_a 
-import input_bueler_isothermal_b 
-import input_bueler_isothermal_b_full 
-import input_bueler_isothermal_c 
-import input_bueler_isothermal_c_full 
-import input_bueler_isothermal_d 
-import input_bueler_isothermal_d_full 
-import input_bueler_isothermal_e 
+import test_bueler_isothermal_a 
+import test_bueler_isothermal_a_full 
+import test_bueler_isothermal_b 
+import test_bueler_isothermal_b_full 
+import test_bueler_isothermal_c 
+import test_bueler_isothermal_c_full 
+import test_bueler_isothermal_d 
+import test_bueler_isothermal_d_full 
+import test_bueler_isothermal_e 
 
-# fit power law
 def fit_power_law(x, y):
+  '''Find the best-fit power law function of the form y = c*x**p for the data
+  points in 'x' and 'y'. Return the best-fit parameters 'c' and 'p'.'''
   
   x = np.matrix(x, dtype = np.float64)
   x = np.reshape(x, (x.size, 1))
@@ -70,8 +81,9 @@ def fit_power_law(x, y):
   return (c, p)
 
 
-# plot data with power law fit
 def plot_data(x, y):
+  '''Plot the data in 'x' and 'y' with a best-fit power law function of the form
+  y = c*x**p.'''
   
   (c, p) = fit_power_law(x, y)
   xf = np.linspace(min(x), max(x), 100)
@@ -90,8 +102,10 @@ def plot_data(x, y):
   return 
 
 
-# plot error maps
 def plot_map(z, d):
+  '''Plot the array of error magnitude 'z' in meters as an image. Coordinates
+  are assumed to have thier origin in the lower left corner, and are set using
+  the grid spacing 'd' in km. All units are assumed to be meters.'''
 
   (nx, ny) = z.shape
   extr = np.amax(abs(z))
@@ -106,158 +120,191 @@ def plot_map(z, d):
   
   return
 
+def read_args():
+  '''Reads input parameters for the grid refinement experimant. Expected input
+  arguments are:
+
+    test_name = String. The name of the test case.
+    flow_name = String. The name of the ice flow method to use. 
+    nxy = String. A comma-separated list of grid dim in pts (e.g. '32,64').
+    outdir = String, optional, default is 'out'. Path to save output.
+  
+  Returns the tuple (test_name, flow_name, nxy, outdir)''' 
+
+  show_help = False
+  help = ('''
+  Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
+
+    test_name = String. The name of the test case.
+    flow_name = String. The name of the ice flow method to use. 
+    out_dir = String. Path to save outputs.
+    nxy = String. A comma-separated list of grid dim in pts (e.g. '32,64').
+  ''')
+
+  # check if user wants help
+  if len(sys.argv) == 2 and sys.argv[1] == '--help':
+    show_help = True
+
+  # check if user needs help
+  elif len(sys.argv) != 5:
+    print('\nERROR: Incorrect number of input arguments.')
+    show_help = True
+
+  # parse input arguments
+  else:
+    try:
+      test_name = sys.argv[1]
+      flow_name = sys.argv[2]
+      outdir = sys.argv[3]
+      nxy = map(int, sys.argv[4].split(','))
+    except:
+      print('\nERROR: Failed to read input arguments.')
+      show_help = True
+
+  # show help and exit, if needed   
+  if show_help:
+    print(help)
+    sys.exit()
+
+  return (test_name, flow_name, outdir, nxy)
+
 
 # setup and run experiment
 if __name__ == '__main__':
 
-  # defaults
-  name = ''
-  nxy = [30, 60] 
-  dir = 'out'
-  
-  # parse command line arguments
-  narg = len(sys.argv)-1
-
-  if narg < 1:
-    print('Missing required input argument "name"')
-    sys.exit(-1)
-  name = sys.argv[1]
-  
-  if narg >= 2:
-    nxy = [int(x) for x in sys.argv[2].split(',')]
-
-  if narg >= 3:
-    dir = sys.argv[3]
-
-  if narg >= 4:
-    print('Too many input arguments.')
-    sys.exit(-1)
+  (test_name, flow_name, out_dir, nxy) = read_args()
+  num_runs = len(nxy)
 
   # select test
-  if name == 'bueler_isothermal_a':
-    make_input = input_bueler_isothermal_a.main
-    title = 'Bueler et al 2005, Test A'
+  if test_name == 'bueler_isothermal_a':
+    create_input_file = test_bueler_isothermal_a.create
+    title_str = 'Bueler et al 2005, Test A'
 
-  elif name == 'bueler_isothermal_b':
-    make_input = input_bueler_isothermal_b.main
-    title = 'Bueler et al 2005, Test B'
+  elif test_name == 'bueler_isothermal_a_full':
+    create_input_file = test_bueler_isothermal_a_full.create
+    title_str = 'Bueler et al 2005, Test A, Full Ice Cap'
+
+  elif test_name == 'bueler_isothermal_b':
+    create_input_file = test_bueler_isothermal_b.create
+    title_str = 'Bueler et al 2005, Test B'
  
-  elif name == 'bueler_isothermal_b_full':
-    make_input = input_bueler_isothermal_b_full.main
-    title = 'Bueler et al 2005, Test B, Full Ice Cap'
+  elif test_name == 'bueler_isothermal_b_full':
+    create_input_file = test_bueler_isothermal_b_full.create
+    title_str = 'Bueler et al 2005, Test B, Full Ice Cap'
 
-  elif name == 'bueler_isothermal_c':
-    make_input = input_bueler_isothermal_c.main
-    title = 'Bueler et al 2005, Test C'
+  elif test_name == 'bueler_isothermal_c':
+    create_input_file = test_bueler_isothermal_c.create
+    title_str = 'Bueler et al 2005, Test C'
  
-  elif name == 'bueler_isothermal_c_full':
-    make_input = input_bueler_isothermal_c_full.main
-    title = 'Bueler et al 2005, Test C, Full Ice Cap'
+  elif test_name == 'bueler_isothermal_c_full':
+    create_input_file = test_bueler_isothermal_c_full.create
+    title_str = 'Bueler et al 2005, Test C, Full Ice Cap'
 
-  elif name == 'bueler_isothermal_d':
-    make_input = input_bueler_isothermal_d.main
-    title = 'Bueler et al 2005, Test D'
+  elif test_name == 'bueler_isothermal_d':
+    create_input_file = test_bueler_isothermal_d.create
+    title_str = 'Bueler et al 2005, Test D'
  
-  elif name == 'bueler_isothermal_d_full':
-    make_input = input_bueler_isothermal_d_full.main
-    title = 'Bueler et al 2005, Test D, Full Ice Cap'
+  elif test_name == 'bueler_isothermal_d_full':
+    create_input_file = test_bueler_isothermal_d_full.create
+    title_str = 'Bueler et al 2005, Test D, Full Ice Cap'
 
-  elif name == 'bueler_isothermal_e':
-    make_input = input_bueler_isothermal_e.main
-    title = 'Bueler et al 2005, Test E'
+  elif test_name == 'bueler_isothermal_e':
+    create_input_file = test_bueler_isothermal_e.create
+    title_str = 'Bueler et al 2005, Test E'
 
   else:
-    print('Invalid test name.')
-    sys.exit(-1)
+    print('\nERROR: Invalid test name.')
+    sys.exit()
+
+  # declare empty lists to be appended
+  input_paths = []
+  output_paths = []
+  errmap_paths = [] 
+  err_max = []
+  err_mean = []
+  err_dome = []
+  dx = []
+
+  # generate file names
+  digits = 1
+  while (max(nxy) >= 10**digits):
+    digits = digits+1
+
+  for i in range(len(nxy)):
+    test_flow_n = test_name+'_'+flow_name+'_n'+str(nxy[i]).zfill(digits)
+    input_paths.append( os.path.join(out_dir, test_flow_n+'_in.nc'))
+    output_paths.append(os.path.join(out_dir, test_flow_n+'_out.nc'))
+    errmap_paths.append(os.path.join(out_dir, test_flow_n+'_fig_errmap.pdf'))
+
+  test_flow = test_name+'_'+flow_name
+  errplt_mean_path = os.path.join(out_dir, test_flow+'_fig_errplt_mean.pdf')
+  errplt_max_path  = os.path.join(out_dir, test_flow+'_fig_errplt_max.pdf')
+  errplt_dome_path = os.path.join(out_dir, test_flow+'_fig_errplt_dome.pdf')
+  report_path      = os.path.join(out_dir, test_flow+'_report.tex')
 
   # create output folder, if needed
-  if not os.path.exists(dir):
-    os.makedirs(dir)
+  if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
 
-  # figure out number of leading zeros
-  pad = 1
-  while (max(nxy) > 10**pad):
-    pad = pad+1
-
-  # init empty lists for results
-  h = [] # final numerical ice thickness
-  h_soln = [] # final exact ice thickness
-  err = [] # error (exact = numerical)
-  err_abs = [] # abs(error)
-  err_abs_max = [] # max of abs(error)
-  err_abs_mean = [] # mean of abs(error)
-  err_abs_dome = [] # error at ice cap center
-  dx = [] # grid spacing
-
-  for n in nxy:
-
-    # generate names
-    input_name = os.path.join(dir, name+'_in_'+str(n).zfill(pad)+'.nc')
-    output_name = os.path.join(dir, name+'_out_'+str(n).zfill(pad)+'.nc')
-    fig_err_map_name = os.path.join(dir, name+'_err_'+str(n).zfill(pad)+'.pdf')
-
-    # create input files using external routines
-    make_input(input_name, n)
+  # loop over grid resolutions
+  for i in range(len(nxy)):
 
     # run model
-    subprocess.call(['ice-cascade', input_name, output_name]) 
+    create_input_file(nxy[i], flow_name, input_paths[i])
+    subprocess.call(['ice-cascade', input_paths[i], output_paths[i]]) 
   
     # read output ice thickness at the final timestep
-    file = nc.Dataset(output_name, mode = 'r')
+    file = nc.Dataset(output_paths[i], mode = 'r')
     nt = file.variables['t'].size
     dx.append(file.dx__m)
-    h.append(file.variables['ice_h'][nt-1,:,:])
-    h_soln.append(file.variables['ice_h_soln'][nt-1,:,:])
+    h = file.variables['ice_h'][nt-1,:,:]
+    h_soln = file.variables['ice_h_soln'][nt-1,:,:]
     file.close()
   
-    # compute error, including map and scalar statistics
-    mask = np.logical_or(np.greater(h[-1], 0.), np.greater(h_soln[-1], 0.)) 
-    err.append(h_soln[-1]-h[-1])
-    err_abs.append(abs(err[-1]))
-    err_abs_max.append(err_abs[-1].max())
-    err_abs_mean.append(np.mean(err_abs[-1][mask]))
-    idome, jdome = np.unravel_index(h_soln[-1].argmax(), h_soln[-1].shape)
-    err_abs_dome.append(err_abs[-1][idome,jdome])
+    # compute error map and scalar statistics
+    mask = np.logical_or(np.greater(h, 0.), np.greater(h_soln, 0.)) 
+    err = h_soln-h
+    abserr = abs(err)
+    err_max.append(abserr.max())
+    err_mean.append(np.mean(abserr[mask]))
+    idome, jdome = np.unravel_index(h_soln.argmax(), h_soln.shape)
+    err_dome.append(abserr[idome,jdome])
 
-    # plot difference map
-    plot_map(err[-1], dx[-1]/1000.)
-    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(n, dx[-1]))
-    plt.savefig(fig_err_map_name)
+    # plot error map
+    plot_map(err, dx[i]/1000.)
+    plt.title('N = {0:.0f}, Delta = {1:.0f} m'.format(nxy[i], dx[i]))
+    plt.savefig(errmap_paths[i])
     plt.close()
 
   # plot mean absolute error
-  fig_err_abs_mean_name = os.path.join(dir, name+'_err_abs_mean.pdf')
-  plot_data(nxy, err_abs_mean)
+  plot_data(nxy, err_mean)
   plt.title('Mean Absolute Error')
   plt.ylabel('Mean absolute error')
-  plt.savefig(fig_err_abs_mean_name)
+  plt.savefig(errplt_mean_path)
   plt.close()
 
   # plot max absolute error
-  fig_err_abs_max_name = os.path.join(dir, name+'_err_abs_max.pdf')
-  plot_data(nxy, err_abs_max)
+  plot_data(nxy, err_max)
   plt.title('Max Absolute Error')
-  plt.ylabel('max absolute error')
-  plt.savefig(fig_err_abs_max_name)
+  plt.ylabel('Max Absolute Error')
+  plt.savefig(errplt_max_path)
   plt.close()
 
   # plot dome absolute error
-  fig_err_abs_dome_name = os.path.join(dir, name+'_err_abs_dome.pdf')
-  plot_data(nxy, err_abs_dome)
+  plot_data(nxy, err_dome)
   plt.title('Dome Absolute Error')
-  plt.ylabel('dome absolute error')
-  plt.savefig(fig_err_abs_dome_name)
+  plt.ylabel('Dome Absolute Error')
+  plt.savefig(errplt_dome_path)
   plt.close()
   
   # create latex report including figures and tabulared scalars
-  report_name = os.path.join(dir, name+'_report.tex')
-  with open(report_name, 'w') as f:
+  with open(report_path, 'w') as f:
     
     f.write('\\documentclass[11pt]{article}\n')
     f.write('\\usepackage[margin=1.0in]{geometry}\n')
     f.write('\\usepackage{graphicx}\n')
     f.write('\\usepackage{placeins}\n')
-    f.write('\\title{Grid Refinement Experiment: '+title+'}\n')
+    f.write('\\title{Grid Refinement Experiment: '+title_str+'}\n')
     
     f.write('\\begin{document}\n')
     f.write('\\maketitle\n')
@@ -270,7 +317,7 @@ if __name__ == '__main__':
     f.write('\\hline\n')
     for i in range(len(nxy)):
       f.write('{0:.0f} & {1:.0f} & {2:.0f} & {3:.0f} & {4:.0f} \\\\\n'.format(
-        nxy[i], dx[i], err_abs_max[i], err_abs_mean[i], err_abs_dome[i]))
+        nxy[i], dx[i], err_max[i], err_mean[i], err_dome[i]))
     f.write('\\hline\n')
     f.write('\\end{tabular}\n')
     f.write('\\end{table}\n')
@@ -278,11 +325,10 @@ if __name__ == '__main__':
     f.write('\\FloatBarrier\n')
     f.write('\\section{Error Maps}\n')
   
-    for n in nxy:
-      fig_err_map_name = os.path.join(dir, name+'_err_'+str(n).zfill(pad)+'.pdf')
+    for i in range(len(nxy)):
       f.write('\\begin{figure}[h]\n')
       f.write('\\centering\n')
-      f.write('\\centerline{\includegraphics{'+fig_err_map_name+'}}\n')
+      f.write('\\centerline{\includegraphics{'+errmap_paths[i]+'}}\n')
       f.write('\\end{figure}\n')
   
     f.write('\\FloatBarrier\n')
@@ -290,27 +336,28 @@ if __name__ == '__main__':
    
     f.write('\\begin{figure}[h]\n')
     f.write('\\centering\n')
-    f.write('\\centerline{\includegraphics{'+fig_err_abs_max_name+'}}\n')
+    f.write('\\centerline{\includegraphics{'+errplt_max_path+'}}\n')
     f.write('\\end{figure}\n')
     
     f.write('\\begin{figure}[h]\n')
     f.write('\\centering\n')
-    f.write('\\centerline{\includegraphics{'+fig_err_abs_mean_name+'}}\n')
+    f.write('\\centerline{\includegraphics{'+errplt_mean_path+'}}\n')
     f.write('\\end{figure}\n')
   
     f.write('\\begin{figure}[h]\n')
     f.write('\\centering\n')
-    f.write('\\centerline{\includegraphics{'+fig_err_abs_dome_name+'}}\n')
+    f.write('\\centerline{\includegraphics{'+errplt_dome_path+'}}\n')
     f.write('\\end{figure}\n')
     
     f.write('\end{document}\n')
   
   # compile report
-  subprocess.call(['pdflatex', report_name])
-  subprocess.call(['pdflatex', report_name])
-  
-  # clean up working files
-  os.rename(name+'_report.pdf', os.path.join(dir, name+'_report.pdf'))
-  os.remove(name+'_report.aux')
-  os.remove(name+'_report.log')
+  subprocess.call(['pdflatex', report_path])
+  subprocess.call(['pdflatex', report_path])
 
+  # cleanup after pdflatex
+  report_stub = os.path.splitext(os.path.basename(report_path))[0]
+  os.rename(os.path.join('.'    , report_stub+'.pdf'), 
+            os.path.join(out_dir, report_stub+'.pdf'))
+  os.remove(os.path.join('.', report_stub+'.aux'))
+  os.remove(os.path.join('.', report_stub+'.log'))

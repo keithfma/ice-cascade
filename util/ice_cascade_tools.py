@@ -4,6 +4,7 @@
 #
 # Keith Ma, April 2015
 
+import sys
 import numpy as np
 import netCDF4 as nc
 
@@ -160,3 +161,52 @@ def new_input(filename, nx, ny):
 
   # return open Dataset object
   return file
+
+
+def test_read_args():
+  '''read input parameters for the test_* utility scripts, which are used to
+  create ICE-CASCADE input files for various test cases. All of these share the
+  same input arguments and usage. The expected input arguments are:
+
+  nxy = Integer, num grid points in x- and y-dir
+  flow_method = String, name of ice flow method 
+  filename = String, name of generated input file
+  
+  Returns the tuple (nxy, flow_method, filename)''' 
+
+  show_help = False
+  help = ('''
+Usage: ./test_*.py nxy flow_method filename 
+
+  nxy = num grid points in x- and y-dir
+  flow_method = name of ice flow method 
+  filename = name of generated input file
+''')
+
+  # check if user wants help
+  if len(sys.argv) == 2 and sys.argv[1] == '--help':
+    show_help = True
+
+  # check if user needs help
+  elif len(sys.argv) != 4:
+    print('\nERROR: Incorrect number of input arguments.')
+    show_help = True
+
+  # parse input arguments
+  else:
+    try:
+      nxy = int(sys.argv[1])
+      flow_method = sys.argv[2]
+      filename = sys.argv[3]
+    except:
+      print('\nERROR: Failed to read input arguments.')
+      show_help = True
+
+  # show help and exit, if needed   
+  if show_help:
+    print(help)
+    sys.exit()
+
+  return (nxy, flow_method, filename)
+
+
