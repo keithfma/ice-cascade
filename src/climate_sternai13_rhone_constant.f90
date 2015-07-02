@@ -3,10 +3,11 @@
 !
 ! Description: Climate as specified for glacier models of the Rhone valley in
 !   [1]. Sets surface temperature and surface ice flux only. Temperature is
-!   defined by sea-level temperature and a linear lapse rate, and surface ice
-!   flux is linearly proportional to temperature then capped at specified
-!   minimum and maximum values. In this "constant" variant, sea-level
-!   temperature is constant in time. 
+!   defined by sea-level temperature and a linear lapse rate (Ts =
+!   T0-lambda*(h+z)), and surface ice flux is linearly proportional to
+!   temperature (M = -gamma*Ts) then capped at specified minimum and maximum
+!   values. In this "constant" variant, sea-level temperature is constant in
+!   time. 
 !
 ! Parameters:
 !   (1) T0 = sea-level temperature [C]
@@ -87,7 +88,14 @@ contains
     type(state_type), intent(inout) :: s
   !
   ! ABOUT: Get climate at current time
+  ! 
+  ! NOTE: Currently updates the surface elevation in s%surf. This may be
+  !   redundant when the dust settles on the rest of the model.
   ! ---------------------------------------------------------------------------
+
+    s%surf = s%topo+s%ice_h
+    s%temp_surf = T0-lam*s%surf
+    s%ice_q_surf = max(qmin, min(qmax, -gam*s%temp_surf))
 
   end subroutine update_sternai13_rhone_constant
 
