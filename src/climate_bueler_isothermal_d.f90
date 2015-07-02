@@ -23,8 +23,6 @@
 ! 
 ! Public: init_bueler_isothermal_d, update_bueler_isothermal_d
 !
-! Private: 
-!
 ! =============================================================================
 
 module climate_bueler_isothermal_d
