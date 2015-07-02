@@ -72,7 +72,7 @@ contains
     integer :: i, j
     real(rp) :: C 
 
-    ! expect exactly 4 parameters
+    ! expect exactly 6 parameters
     if (size(p%climate_param) .ne. 6) then
       print *, 'Invalid climate parameters: bueler_isothermal_d requires &
                &exactly 6 parameters.'
@@ -89,28 +89,28 @@ contains
 
     ! h0 must be positive
     if (h0 .le. 0.0_rp) then
-      print *, 'Invalid ice solution parameter: bueler_isothermal_d requires &
+      print *, 'Invalid climate parameter: bueler_isothermal_d requires &
                &a positive h0'
       stop
     end if
 
     ! L must be positive
     if (L .le. 0.0_rp) then
-      print *, 'Invalid ice solution parameter: bueler_isothermal_d requires &
+      print *, 'Invalid climate parameter: bueler_isothermal_d requires &
                &a positive L'
       stop
     end if
 
     ! tp must be positive
     if (tp .le. 0.0_rp) then
-      print *, 'Invalid ice solution parameter: bueler_isothermal_d requires &
+      print *, 'Invalid climate parameter: bueler_isothermal_d requires &
                &a positive tp'
       stop
     end if
 
     ! A must be positive
     if (A .le. 0.0_rp) then
-      print *, 'Invalid ice parameter: hindmarsh2_explicit method requires &
+      print *, 'Invalid climate parameter: bueler_isothermal_d requires &
                &a positive A'
       stop 
     end if

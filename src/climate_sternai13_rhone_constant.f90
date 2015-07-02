@@ -55,6 +55,28 @@ contains
   ! ABOUT: check parameters and initialize variables, once only
   ! ---------------------------------------------------------------------------
 
+    ! expect exactly 5 parameters
+    if (size(p%climate_param) .ne. 5) then
+      print *, 'Invalid climate parameters: sternai13_rhone_constant requires &
+               &exactly 5 parameters.'
+      stop
+    end if
+
+    ! rename parameters
+    T0 = p%climate_param(1)
+    lam = p%climate_param(2)
+    gam = p%climate_param(3)
+    qmin = p%climate_param(4)
+    qmax = p%climate_param(5)
+
+    ! qmin must be less then qmax
+    if (qmin .ge. qmax) then
+      print *, 'Invalid climate parameters: sternai13_rhone_constant requires &
+                &qmin be less than qmax'
+      stop
+    end if
+
+
   end subroutine init_sternai13_rhone_constant
 
 
