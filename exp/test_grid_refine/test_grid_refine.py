@@ -4,7 +4,7 @@
 # known exact solutions. Sets up, runs, and analyzes one of the included test
 # cases. 
 #
-# Usage: ./grid_refine_exp.py test_name flow_name out_dir nxy
+# Usage: ./test_grid_refine.py test_name flow_name out_dir nxy
 #
 # Command line arguments:
 #
