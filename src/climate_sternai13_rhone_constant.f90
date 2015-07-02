@@ -33,7 +33,7 @@ use state, only: state_type
 
 implicit none
 private
-!public :: init_sternai13_rhone_constant, update_sternai13_rhone_constant
+public :: init_sternai13_rhone_constant, update_sternai13_rhone_constant
 
   ! ---------------------------------------------------------------------------
   real(rp) :: T0 ! sea-level temperature [C]
@@ -43,5 +43,31 @@ private
   !
   ! ABOUT: Local parameters, set in init_sternai13_rhone_constant
   ! ---------------------------------------------------------------------------
+
+contains
+
+  ! ---------------------------------------------------------------------------  
+  subroutine init_sternai13_rhone_constant(p, s)
+  !
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and initialize variables, once only
+  ! ---------------------------------------------------------------------------
+
+  end subroutine init_sternai13_rhone_constant
+
+
+  ! ---------------------------------------------------------------------------
+  subroutine update_sternai13_rhone_constant(p, s)
+
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: Get climate at current time
+  ! ---------------------------------------------------------------------------
+
+  end subroutine update_sternai13_rhone_constant
+
 
 end module climate_sternai13_rhone_constant
