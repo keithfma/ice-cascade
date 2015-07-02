@@ -1,0 +1,21 @@
+Experiment: Glacier Response Time for the Rhone Valley
+
+Description: Explore the relaxation to steady-state of a model glacial system in the Rhone
+  valley in response to a step change in climate. The goal is to solve for a
+  characteristic time and ultimately to be able to assess the applicability of a
+  quasi-steady-state assumption in future modelling work.
+
+Workflow:
+
+  1) Prepare ICE-CASCADE input file for the initial steady-state model
+    a. Download source data (run srtm/download_raw.sh)
+    b. Extract model domain topography at the desired resolution (edit and run
+      topo_from_srtm.py)
+
+  2) Integrate the initial steady state model
+
+  3) Prepare step-change test model input files
+
+  4) Integrate step-change test models
+
+  5) Aggregate and analyze results

@@ -7,4 +7,7 @@ src/*.mod
 *.bak
 *.pyc
 *.nc
-test
+exp/response_time_rhone/srtm/srtm_38_03.tif
+exp/response_time_rhone/srtm/srtm_38_03.tfw
+exp/response_time_rhone/srtm/srtm_38_03.hdr
+exp/response_time_rhone/srtm/readme.txt

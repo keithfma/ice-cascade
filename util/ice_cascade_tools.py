@@ -208,5 +208,3 @@ Usage: ./test_*.py nxy flow_method filename
     sys.exit()
 
   return (nxy, flow_method, filename)
-
-
