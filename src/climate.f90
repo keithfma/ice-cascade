@@ -15,15 +15,13 @@ module climate
 use kinds, only: rp
 use param, only: param_type
 use state, only: state_type
-use climate_constant_ice, only: init_constant_ice
-use climate_bueler_isothermal_a, only: &
-  init_bueler_isothermal_a, update_bueler_isothermal_a
-use climate_bueler_isothermal_c, only: &
-  init_bueler_isothermal_c, update_bueler_isothermal_c
-use climate_bueler_isothermal_d, only: &
-  init_bueler_isothermal_d, update_bueler_isothermal_d
-use climate_bueler_isothermal_e, only: &
-  init_bueler_isothermal_e, update_bueler_isothermal_e
+use climate_constant_ice
+use climate_bueler_isothermal_a
+use climate_bueler_isothermal_c
+use climate_bueler_isothermal_d
+use climate_bueler_isothermal_e
+use climate_sternai13_rhone_constant
+
 
 implicit none
 private
@@ -92,6 +90,11 @@ contains
       on_climate = .true.
       call  init_bueler_isothermal_e(p, s)
       update_climate => update_bueler_isothermal_e
+
+    case('sternai13_rhone_constant')
+      on_climate = .true.
+      call  init_sternai13_rhone_constant(p, s)
+      update_climate => update_sternai13_rhone_constant
     
     case default
       print *, 'Invalid name for climate method: ' // trim(p%climate_name)

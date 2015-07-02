@@ -11,6 +11,7 @@
 if [ "$1" == "keithma_bu_scc" ]
 then
   module purge
+  module load pgi
   module load anaconda/2.2.0
   source activate py27
   export PYTHONPATH=$(pwd):$(pwd)/../test:$PYTHONPATH
