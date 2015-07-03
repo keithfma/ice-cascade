@@ -154,6 +154,11 @@ contains
 
     integer :: ncid, varid
 
+    ! DEBUG
+    integer :: dbg_ndims, dbg_err, dbg_dimids(2), dbg_i, dbg_len
+    character(len = 10) :: dbg_name
+    ! END DEBUG
+
     ! Open file
     call req(nf90_open(p%input_file, nf90_nowrite, ncid))
 
@@ -169,6 +174,24 @@ contains
     s%y(p%ny) = s%y(p%ny-1)+p%dy
     
     call req(nf90_inq_varid(ncid, 'topo', varid))
+
+    ! DEBUG
+    dbg_err = nf90_inquire_variable(ncid, varid, &
+                                   &ndims = dbg_ndims, &
+                                   &dimids = dbg_dimids )
+    print *, dbg_ndims
+    print *, dbg_dimids
+    do dbg_i = 1,2
+      dbg_err = nf90_inquire_dimension(ncid, dbg_dimids(dbg_i), &
+                                      &name = dbg_name, &
+                                      &len = dbg_len)
+                                      
+      print *, trim(dbg_name), dbg_len
+    end do
+
+    ! END DEBUG
+
+
     call req(nf90_get_var(ncid, varid, s%topo(2:p%nx-1,2:p%ny-1)))
     
     call req(nf90_inq_varid(ncid, 'topo_dot_ice', varid))
