@@ -1,0 +1,51 @@
+# Customized for Keith Ma's home system (Ubuntu 14.04 laptop)
+
+NETCDF_INC = /project/earth/packages/netcdf-4.3.0/include
+NETCDF_LIB = /project/earth/packages/netcdf-4.3.0/lib
+NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
+NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
+
+FORT = gfortran
+FFLAGS = -c -g -O0  
+LDFLAGS = 
+DEFS =
+INCL = -I. -I/usr/include 
+LIBS = -lnetcdf -lnetcdff
+
+SRC = \
+kinds.f90 \
+param.f90 \
+state.f90 \
+io.f90 \
+ice_bc_no_ice.f90 \
+ice_bc_no_flux.f90 \
+ice_bc_mirror.f90 \
+ice_soln_bueler_isothermal_a.f90 \
+ice_soln_bueler_isothermal_b.f90 \
+ice_soln_bueler_isothermal_c.f90 \
+ice_soln_bueler_isothermal_d.f90 \
+ice_soln_bueler_isothermal_e.f90 \
+ice_flow_hindmarsh2_explicit.f90 \
+ice_flow_hindmarsh2_sliding_explicit.f90 \
+ice.f90 \
+climate_bueler_isothermal_a.f90 \
+climate_bueler_isothermal_c.f90 \
+climate_bueler_isothermal_d.f90 \
+climate_bueler_isothermal_e.f90 \
+climate_constant_ice.f90 \
+climate_sternai13_rhone_constant.f90 \
+climate.f90 \
+main.f90
+
+OBJ = $(patsubst %.f90, %.o, $(SRC))
+
+main: $(OBJ) 
+	$(FORT) $(OBJ) $(LIBS) $(LDFLAGS) -o ../ice-cascade
+
+$(OBJ): %.o: %.f90 	
+	$(FORT) $(FFLAGS) $(DEFS) $(INCL) $< -o $@ 
+
+.PHONY: clean	
+
+clean:
+	rm -f *.o *.mod ice/*.o ice/*.mod climate/*.o climate/*.mod ../ice-cascade 

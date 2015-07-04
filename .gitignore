@@ -1,4 +1,5 @@
 ice-cascade
+src/Makefile
 *~
 src/*.o
 src/*.mod
