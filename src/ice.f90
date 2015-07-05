@@ -262,14 +262,10 @@ contains
       
     ! update ancillary variables (velocity, etc.)
     ! NOTE: this will require a separate procedure for each flow method.
-
-    !! DEBUG: display numerical and exact ice volume 
-    !print *, 'Time [a]: ', t
-    !print *, 'Step [a]: ', s%step
-    !print *, 'Numerical Volume [km3]: ', &
-    !  volume(s%ice_h, p%dx, p%dy)/(1000._rp**3)
-    !print *, 'Exact Volume [km3]    : ', &
-    !  volume(s%ice_h_soln, p%dx, p%dy)/(1000._rp**3)
+    if (p%write_ice_area_vol .eq. 1) then
+      s%ice_vol = volume(s%ice_h, p%dx, p%dy)
+      s%ice_area = real(count(s%ice_h .gt. 0.0_rp), rp)*p%dx*p%dy
+    end if
 
   end subroutine update_ice
 

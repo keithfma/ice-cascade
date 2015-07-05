@@ -53,6 +53,7 @@ def new_input(filename, nx, ny):
   file.write_ice_uv_slid = 0
   file.write_ice_a_defm = 0
   file.write_ice_a_slid = 0
+  file.write_ice_area_vol = 0
 
   # create dimensions
   file.createDimension('x', size = nx)

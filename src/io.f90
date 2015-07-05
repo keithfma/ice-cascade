@@ -133,6 +133,7 @@ contains
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_h_soln', p%write_ice_h_soln));
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_a_defm', p%write_ice_a_defm));
     call req(nf90_get_att(ncid, nf90_global, 'write_ice_a_slid', p%write_ice_a_slid));
+    call req(nf90_get_att(ncid, nf90_global, 'write_ice_area_vol', p%write_ice_area_vol));
 
     ! Close file
     call req(nf90_close(ncid))
@@ -287,6 +288,7 @@ contains
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_h_soln', p%write_ice_h_soln))
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_a_defm', p%write_ice_a_defm))
     call req(nf90_put_att(ncid, nf90_global, 'write_ice_a_slid', p%write_ice_a_slid))
+    call req(nf90_put_att(ncid, nf90_global, 'write_ice_area_vol', p%write_ice_area_vol))
 
     ! define dimensions
     call req(nf90_def_dim(ncid, 'x', p%nx-2, xid)) 
@@ -408,6 +410,16 @@ contains
      	call req(nf90_def_var(ncid, 'ice_a_slid', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_coefficient'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm_Pa_a'))
+    end if
+
+    if (p%write_ice_area_vol .eq. 1) then
+     	call req(nf90_def_var(ncid, 'ice_area', rp_nc, [tid], vid))
+     	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_surface_area'))
+     	call req(nf90_put_att(ncid, vid, 'units', 'm2'))
+
+     	call req(nf90_def_var(ncid, 'ice_vol', rp_nc, [tid], vid))
+     	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_volume'))
+     	call req(nf90_put_att(ncid, vid, 'units', 'm3'))
     end if
 
     ! populate coordinate variables
@@ -533,6 +545,14 @@ contains
       call req(nf90_inq_varid(ncid, 'ice_a_slid', vid))
       call req(nf90_put_var(ncid, vid, s%ice_a_slid(2:p%nx-1,2:p%ny-1), [1, 1, n]))
     end if
+
+    if (p%write_ice_area_vol .eq. 1) then 
+      call req(nf90_inq_varid(ncid, 'ice_area', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_area, [n]))
+
+      call req(nf90_inq_varid(ncid, 'ice_vol', vid))
+      call req(nf90_put_var(ncid, vid, s%ice_vol, [n]))
+    end if 
 
     ! close file
     call req(nf90_close(ncid))
