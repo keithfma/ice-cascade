@@ -56,6 +56,7 @@ public :: param_type, init_param
     integer :: write_ice_h_soln
     integer :: write_ice_a_defm
     integer :: write_ice_a_slid
+    integer :: write_ice_area_vol
   end type param_type
   !
   ! ABOUT: shared parameters
