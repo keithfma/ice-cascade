@@ -375,21 +375,21 @@ contains
     end if
 
     if (p%write_ice_uv_defm .eq. 1) then
-     	call req(nf90_def_var(ncid, 'ice_ud', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_def_var(ncid, 'ice_u_defm', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_velocity_x'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm_a'))
 
-     	call req(nf90_def_var(ncid, 'ice_vd', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_def_var(ncid, 'ice_v_defm', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_deformation_velocity_y'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm_a'))
     end if
 
     if (p%write_ice_uv_slid .eq. 1) then
-     	call req(nf90_def_var(ncid, 'ice_us', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_def_var(ncid, 'ice_u_slid', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_velocity_x'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm_a'))
 
-     	call req(nf90_def_var(ncid, 'ice_vs', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
+     	call req(nf90_def_var(ncid, 'ice_v_slid', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_velocity_y'))
      	call req(nf90_put_att(ncid, vid, 'units', 'm_a'))
     end if
