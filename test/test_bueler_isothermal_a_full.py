@@ -113,6 +113,7 @@ def create(nxy, flow, name):
   if flow == 'hindmarsh2_explicit':
     file.ice_name = 'hindmarsh2_explicit'
     file.ice_param__var = [A]
+    file.write_ice_uv_defm = 1
 
   elif flow == 'hindmarsh2_sliding_explicit':
     file.ice_name = 'hindmarsh2_sliding_explicit'

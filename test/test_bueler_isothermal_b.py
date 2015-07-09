@@ -107,11 +107,12 @@ def create(nxy, flow, name):
 
   # write data specific to each flow method
   if flow == 'hindmarsh2_explicit':
-    file.ice_name = 'hindmarsh2_explicit'
+    file.ice_name = flow
     file.ice_param__var = [A]
+    file.write_ice_uv_defm = 1
 
   elif flow == 'hindmarsh2_sliding_explicit':
-    file.ice_name = 'hindmarsh2_sliding_explicit'
+    file.ice_name = flow
     file.ice_param__var = []
     file.variables['ice_a_defm'][:,:] = A
     file.variables['ice_a_slid'][:,:] = 0.
