@@ -11,14 +11,12 @@ implicit none
 
 type(param_type) :: p
 type(state_type) :: s
-real(rp) :: step_lim
+logical :: write_now
 integer :: n
+real(rp) :: step_lim
 
 ! NOTE: should the init routines run the update functions to set the starting
 ! values for non-specified vars?
-
-! NOTE: will have to adjust init_state and the io routines to create arrays with
-! ghost points
 
 ! read input data and init data objects
 call read_param(p)
@@ -44,15 +42,18 @@ do while (s%now .lt. p%time_finish)
   ! Increment time
   s%now = s%now+s%step
 
+  ! Check if this step will be written to output
+  write_now = abs(s%now-p%time_write(n)) .le. epsilon(0.0_rp)
+
   ! Update model state 
   if (on_climate) call update_climate(p, s)
-  if (on_ice) call update_ice(p, s)
+  if (on_ice) call update_ice(p, s, write_now)
 
   ! Apply erosion/deposition/isostasy
 
   ! Write step 
-  if (abs(s%now-p%time_write(n)) .le. epsilon(0.0_rp)) then
-    s%step = p%time_step ! reset step
+  if (write_now) then
+    s%step = p%time_step ! reset truncated step to original value
     if (on_ice_soln) call solve_ice(p, s)
     call write_status(p, s)
     call write_step(p, s)

@@ -29,23 +29,16 @@ module ice
 use kinds, only: rp
 use param, only: param_type
 use state, only: state_type
-use ice_bc_no_ice, only: nbc_no_ice, ebc_no_ice, sbc_no_ice, wbc_no_ice 
-use ice_bc_no_flux, only: nbc_no_flux, ebc_no_flux, sbc_no_flux, wbc_no_flux 
-use ice_bc_mirror, only: nbc_mirror, ebc_mirror, sbc_mirror, wbc_mirror 
-use ice_flow_hindmarsh2_explicit, only: &
-  init_hindmarsh2_explicit, flow_hindmarsh2_explicit
-use ice_flow_hindmarsh2_sliding_explicit, only: &
-  init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
-use ice_soln_bueler_isothermal_a, only: &
-  init_bueler_isothermal_a, solve_bueler_isothermal_a
-use ice_soln_bueler_isothermal_b, only: &
-  init_bueler_isothermal_b, solve_bueler_isothermal_b
-use ice_soln_bueler_isothermal_c, only: &
-  init_bueler_isothermal_c, solve_bueler_isothermal_c
-use ice_soln_bueler_isothermal_d, only: &
-  init_bueler_isothermal_d, solve_bueler_isothermal_d
-use ice_soln_bueler_isothermal_e, only: &
-  init_bueler_isothermal_e, solve_bueler_isothermal_e
+use ice_bc_no_ice ! nbc_, ebc_, sbc_, wbc_ 
+use ice_bc_no_flux ! nbc_, ebc_, sbc_, wbc_ 
+use ice_bc_mirror ! nbc_, ebc_, sbc_, wbc_ 
+use ice_flow_hindmarsh2_explicit ! init_, flow_, velo_
+use ice_flow_hindmarsh2_sliding_explicit !init_, flow_
+use ice_soln_bueler_isothermal_a ! init_, solve_
+use ice_soln_bueler_isothermal_b ! init_, solve_ 
+use ice_soln_bueler_isothermal_c ! init_, solve_
+use ice_soln_bueler_isothermal_d ! init_, solve_
+use ice_soln_bueler_isothermal_e ! init_, solve_
 
 implicit none
 private
@@ -85,6 +78,20 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
 
   ! ---------------------------------------------------------------------------
   abstract interface 
+    subroutine velo_tmpl(p, s) 
+      import :: param_type, state_type ! use special types
+      type(param_type), intent(in) :: p ! parameters
+      type(state_type), intent(inout) :: s ! state vars
+    end subroutine velo_tmpl 
+  end interface
+  !
+  ! ABOUT: Template, common form for computing velocities using the numerical
+  !   ice flow algorithm. Updates ice deformation and sliding velocity grids  
+  ! ---------------------------------------------------------------------------
+
+
+  ! ---------------------------------------------------------------------------
+  abstract interface 
     subroutine solve_tmpl(p, s)
       import :: param_type, state_type     ! use special types
       type(param_type), intent(in)    :: p ! parameters
@@ -104,6 +111,7 @@ public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
   procedure(bc_tmpl), pointer :: ebc ! apply east BC, sets (end,:)
   procedure(bc_tmpl), pointer :: wbc ! apply west BC, sets (1,:)
   procedure(flow_tmpl), pointer :: flow ! ice model method
+  procedure(velo_tmpl), pointer :: velo ! ice velocity method
   procedure(solve_tmpl), pointer :: solve_ice ! exact solution  
   !
   ! ABOUT: Shared procedures and variables, set in init_ice 
@@ -173,6 +181,7 @@ contains
         on_ice = .true.
         call init_hindmarsh2_explicit(p, s)
         flow => flow_hindmarsh2_explicit 
+        velo => velo_hindmarsh2_explicit
 
       case ('hindmarsh2_sliding_explicit')
         on_ice = .true.
@@ -227,14 +236,16 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  subroutine update_ice(p, s)
+  subroutine update_ice(p, s, write_now)
   !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+    logical, intent(in) :: write_now ! .true. if this step will be written to output 
   !
   ! ABOUT: run ice model for one timestep
   ! ---------------------------------------------------------------------------
 
+    logical :: write_velo
     integer :: i, j ! debug
     real(rp) :: t, dt
 
@@ -260,11 +271,15 @@ contains
 
     end do
       
-    ! update ancillary variables (velocity, etc.)
-    ! NOTE: this will require a separate procedure for each flow method.
+    ! update ancillary variables, if requested (velocity, etc.)
     if (p%write_ice_area_vol .eq. 1) then
       s%ice_vol = volume(s%ice_h, p%dx, p%dy)
       s%ice_area = real(count(s%ice_h .gt. 0.0_rp), rp)*p%dx*p%dy
+    end if
+
+    write_velo = ((p%write_ice_uv_defm .eq. 1) .or. (p%write_ice_uv_slid .eq. 1))
+    if (write_velo .and. write_now) then
+      call velo(p, s) 
     end if
 
   end subroutine update_ice
