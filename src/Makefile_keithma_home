@@ -6,7 +6,7 @@ NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
 NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
 
 FORT = gfortran
-FFLAGS = -c -g -O0 -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow  
+FFLAGS = -c -g -O0 -fbacktrace -ffpe-trap=invalid,zero,overflow
 LDFLAGS = 
 DEFS =
 INCL = -I. -I/usr/include 
