@@ -95,6 +95,13 @@ contains
       stop
     end if
 
+    ! must write ice solution to output file (otherwise no reason to compute)
+    if (p%write_ice_h_soln .ne. 1) then
+      print *, 'Invalid parameters: an ice solution method is selected, but &
+               &no ouput is requested for ice_h_soln.'
+      stop
+    end if
+
     ! allocate grids
     allocate(rr(p%nx, p%ny), ss(p%nx, p%ny), hs(p%nx, p%ny), pp(p%nx, p%ny))
 
