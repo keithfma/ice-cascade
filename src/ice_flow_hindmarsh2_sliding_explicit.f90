@@ -37,7 +37,8 @@
 !   Environment (pp.  222–249). Springer Berlin Heidelberg.
 !   doi:10.1007/978-3-662-04439-1_13
 !
-! Public: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
+! Public: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit.
+!         velo_hindmarsh2_sliding_explicit
 ! 
 ! =============================================================================
 
@@ -49,12 +50,14 @@ use state, only: state_type
 
 implicit none
 private
-public :: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit
+public :: init_hindmarsh2_sliding_explicit, flow_hindmarsh2_sliding_explicit, &
+         &velo_hindmarsh2_sliding_explicit
 
 
   ! ---------------------------------------------------------------------------
-  real(rp), allocatable :: qx(:,:) ! ice flux, grid at s-dir midpoints
-  real(rp), allocatable :: qy(:,:) ! ice flux, grid at y-dir midpoints
+  real(rp), allocatable :: qx(:,:), qy(:,:)  ! ice flux, grid at midpts
+  real(rp), allocatable :: ud(:,:), vd(:,:) ! ice deformation velocity at midpts
+  real(rp), allocatable :: us(:,:), vs(:,:) ! ice sliding velocity at midpts
   real(rp) :: div_dx ! constant factor in computations
   real(rp) :: div_dy ! " " 
   real(rp) :: div_4dx ! " " 
@@ -99,6 +102,10 @@ contains
     ! allocate local parameters 
     allocate(qx(p%nx-1, p%ny-2)); qx = 0.0_rp
     allocate(qy(p%nx-2, p%ny-1)); qy = 0.0_rp
+    allocate(ud(p%nx-1, p%ny-2)); ud = 0.0_rp
+    allocate(vd(p%nx-2, p%ny-1)); vd = 0.0_rp
+    allocate(us(p%nx-1, p%ny-2)); us = 0.0_rp
+    allocate(vs(p%nx-2, p%ny-1)); vs = 0.0_rp
 
     ! initialize local constants
     div_dx = 1.0_rp/p%dx 
@@ -173,6 +180,20 @@ contains
     end if
 
   end function flow_hindmarsh2_sliding_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  subroutine velo_hindmarsh2_sliding_explicit(p, s)
+  ! 
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: compute ice velocity, first on the staggered grid used above, then
+  !   interpolated to the grid points. Only the vertically
+  ! ---------------------------------------------------------------------------
+
+
+  end subroutine velo_hindmarsh2_sliding_explicit
 
 
 end module ice_flow_hindmarsh2_sliding_explicit
