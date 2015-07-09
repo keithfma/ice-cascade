@@ -236,14 +236,16 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  subroutine update_ice(p, s)
+  subroutine update_ice(p, s, write_now)
   !
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
+    logical, intent(in) :: write_now ! .true. if this step will be written to output 
   !
   ! ABOUT: run ice model for one timestep
   ! ---------------------------------------------------------------------------
 
+    logical :: write_velo
     integer :: i, j ! debug
     real(rp) :: t, dt
 
@@ -269,13 +271,14 @@ contains
 
     end do
       
-    ! update ancillary variables (velocity, etc.)
+    ! update ancillary variables, if requested (velocity, etc.)
     if (p%write_ice_area_vol .eq. 1) then
       s%ice_vol = volume(s%ice_h, p%dx, p%dy)
       s%ice_area = real(count(s%ice_h .gt. 0.0_rp), rp)*p%dx*p%dy
     end if
 
-    if ((p%write_ice_uv_defm .eq. 1) .or. (p%write_ice_uv_slid .eq. 1)) then
+    write_velo = ((p%write_ice_uv_defm .eq. 1) .or. (p%write_ice_uv_slid .eq. 1))
+    if (write_velo .and. write_now) then
       call velo(p, s) 
     end if
 
