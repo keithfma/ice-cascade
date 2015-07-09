@@ -42,7 +42,7 @@ use ice_soln_bueler_isothermal_e ! init_, solve_
 
 implicit none
 private
-public :: on_ice, on_ice_soln, init_ice, solve_ice, update_ice
+public :: on_ice, init_ice, update_ice
 
 
   ! ---------------------------------------------------------------------------
@@ -271,15 +271,22 @@ contains
 
     end do
       
-    ! update ancillary variables, if requested (velocity, etc.)
-    if (p%write_ice_area_vol .eq. 1) then
-      s%ice_vol = volume(s%ice_h, p%dx, p%dy)
-      s%ice_area = real(count(s%ice_h .gt. 0.0_rp), rp)*p%dx*p%dy
-    end if
+    ! update other variables for the output file 
+    if (write_now) then
+  
+      ! ice area and volume
+      if (p%write_ice_area_vol .eq. 1) then
+        s%ice_vol = volume(s%ice_h, p%dx, p%dy)
+        s%ice_area = real(count(s%ice_h .gt. 0.0_rp), rp)*p%dx*p%dy
+      end if
 
-    write_velo = ((p%write_ice_uv_defm .eq. 1) .or. (p%write_ice_uv_slid .eq. 1))
-    if (write_velo .and. write_now) then
-      call velo(p, s) 
+      ! ice velocities
+      if ((p%write_ice_uv_defm .eq. 1) &
+          .or. (p%write_ice_uv_slid .eq. 1)) call velo(p, s) 
+
+      ! exact solution
+      if (on_ice_soln) call solve_ice(p, s)
+
     end if
 
   end subroutine update_ice

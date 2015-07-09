@@ -95,6 +95,13 @@ contains
       stop
     end if
 
+    ! Must write ice solution to output file (otherwise no reason to compute)
+    if (p%write_ice_h_soln .ne. 1) then
+      print *, 'Invalid parameters: an ice solution method is selected, but &
+               &no ouput is requested for ice_h_soln.'
+      stop
+    end if
+
     ! compute distance from x = 0, y = 0
     allocate(r(p%nx, p%ny))
     do j = 1, p%ny

@@ -96,7 +96,6 @@ def create(nxy, flow, name):
   file.write_ice_q_surf = 1
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 
-  file.write_ice_h_dot = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
   file.variables['topo'][:,:] = 0.
@@ -107,6 +106,7 @@ def create(nxy, flow, name):
   if flow == 'hindmarsh2_explicit':
     file.ice_name = 'hindmarsh2_explicit'
     file.ice_param__var = [A]
+    file.write_ice_uv_defm = 1
 
   elif flow == 'hindmarsh2_sliding_explicit':
     file.ice_name = 'hindmarsh2_sliding_explicit'
