@@ -409,7 +409,7 @@ contains
     if (p%write_ice_a_slid .eq. 1) then
      	call req(nf90_def_var(ncid, 'ice_a_slid', rp_nc, [xid, yid, tid], vid, .false., chunk, deflate, shuf))
      	call req(nf90_put_att(ncid, vid, 'long_name', 'ice_sliding_coefficient'))
-     	call req(nf90_put_att(ncid, vid, 'units', 'm_Pa_a'))
+     	call req(nf90_put_att(ncid, vid, 'units', 'NA'))
     end if
 
     if (p%write_ice_area_vol .eq. 1) then
@@ -694,7 +694,7 @@ contains
         maxval_intr(s%ice_a_defm), meanval_intr(s%ice_a_defm), minval_intr(s%ice_a_defm)
 
     if (p%write_ice_a_slid .eq. 1) &
-      print "('ICE_A_SLID (max, mean, min) [1/Pa/a] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
+      print "('ICE_A_SLID (max, mean, min) [NA] : ', EN12.3, ', ', EN12.3, ', ', EN12.3)", &
         maxval_intr(s%ice_a_slid), meanval_intr(s%ice_a_slid), minval_intr(s%ice_a_slid)
 
     print *, ''
