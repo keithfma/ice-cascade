@@ -50,7 +50,7 @@ descr = ('Benchmark case with exact solution (Bueler et al 2005, test B). '
   'Isothermal, non-sliding, transient ice cap with zero surface ice flux.')
 supported_flow_methods = [
     'hindmarsh2_explicit',
-    'hindmarsh2_sliding_explicit']
+    'hindmarsh2_sliding1_explicit']
 
 
 def create(nxy, flow, name):
@@ -111,7 +111,7 @@ def create(nxy, flow, name):
     file.ice_param__var = [A]
     file.write_ice_uv_defm = 1
 
-  elif flow == 'hindmarsh2_sliding_explicit':
+  elif flow == 'hindmarsh2_sliding1_explicit':
     file.ice_name = flow
     file.ice_param__var = []
     file.variables['ice_a_defm'][:,:] = A
