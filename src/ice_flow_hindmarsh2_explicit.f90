@@ -199,11 +199,9 @@ contains
       end do
     end do
 
-    ! interpolate to interior gridpoints, edges don't matter
+    ! interpolate to interior gridpoints, edges don't matter, no sliding
     s%ice_u_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(u(1:p%nx-2, :)+u(2:p%nx-1, :))
     s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(v(:, 1:p%ny-2)+v(:, 2:p%ny-1))
-
-    ! no sliding in this method
     s%ice_u_slid = 0.0_rp
     s%ice_v_slid = 0.0_rp
 

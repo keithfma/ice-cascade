@@ -187,6 +187,7 @@ contains
         on_ice = .true.
         call init_hindmarsh2_sliding1_explicit(p, s)
         flow => flow_hindmarsh2_sliding1_explicit 
+        velo => velo_hindmarsh2_sliding1_explicit
 
       case default
         print *, "Invalid name for glacier flow method: " // trim(p%ice_name)

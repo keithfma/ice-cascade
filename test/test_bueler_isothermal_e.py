@@ -111,6 +111,8 @@ def create(nxy, flow, name):
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 
   file.write_ice_a_slid = 1
+  file.write_ice_uv_defm = 1
+  file.write_ice_uv_slid = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
   file.variables['topo'][:,:] = 0.
