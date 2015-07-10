@@ -207,8 +207,8 @@ contains
         dsurf_dy_mid = (s%surf(i  ,j+1)-s%surf(i  ,j-1)+ &
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
-        ud(i,j-1) = -c_defm*a_defm_mid*h_mid**4*surf_grad2
-        us(i,j-1) = -c_slid*a_slid_mid*h_mid 
+        ud(i,j-1) = -c_defm*a_defm_mid*h_mid**4*surf_grad2*dsurf_dx_mid
+        us(i,j-1) = -c_slid*a_slid_mid*h_mid*dsurf_dx_mid*dsurf_dx_mid
       end do
     end do
 
@@ -222,8 +222,8 @@ contains
         dsurf_dx_mid = (s%surf(i+1,j  )-s%surf(i-1,j  )+ &
                         s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
-        vd(i-1,j) = -c_slid*a_slid_mid*h_mid
-        vs(i-1,j) = -c_defm*a_defm_mid*h_mid**4*surf_grad2
+        vd(i-1,j) = -c_defm*a_defm_mid*h_mid**4*surf_grad2*dsurf_dy_mid
+        vs(i-1,j) = -c_slid*a_slid_mid*h_mid*dsurf_dy_mid
       end do
     end do
 

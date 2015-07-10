@@ -116,6 +116,8 @@ def create(nxy, flow, name):
     file.ice_param__var = []
     file.variables['ice_a_defm'][:,:] = A
     file.variables['ice_a_slid'][:,:] = 0.
+    file.write_ice_uv_defm = 1
+    file.write_ice_uv_slid = 1
   
   # finalize
   file.close()
