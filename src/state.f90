@@ -41,7 +41,7 @@ public :: state_type, init_state
     real(rp), allocatable :: ice_u_slid(:,:) ! ice sliding velocity, x-dir, [m/a]
     real(rp), allocatable :: ice_v_slid(:,:) ! ice sliding velocity, y-dir, [m/a]
     real(rp), allocatable :: ice_a_defm(:,:) ! ice deformation coeff, [Pa^-3 a^-1]
-    real(rp), allocatable :: ice_a_slid(:,:) ! ice sliding coeff, [m/a/Pa]
+    real(rp), allocatable :: ice_a_slid(:,:) ! ice sliding coeff, [NA]
     real(rp) :: ice_area ! ice area, [m^2]
     real(rp) :: ice_vol ! ice volume, [m^3]
   end type state_type

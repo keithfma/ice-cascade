@@ -52,7 +52,7 @@ descr = ('Benchmark case with exact solution (Bueler et al 2005, test E).'
   'Isothermal, steady-state ice cap with sliding in a ice-stream-like sector '
   'only.')
 supported_flow_methods = [
-    'hindmarsh2_sliding_explicit']
+    'hindmarsh2_sliding1_explicit']
 
 
 def create(nxy, flow, name):
@@ -111,6 +111,8 @@ def create(nxy, flow, name):
   file.write_ice_h = 1
   file.write_ice_h_soln = 1 
   file.write_ice_a_slid = 1
+  file.write_ice_uv_defm = 1
+  file.write_ice_uv_slid = 1
   file.variables['x'][:] = xy
   file.variables['y'][:] = xy
   file.variables['topo'][:,:] = 0.
@@ -120,8 +122,8 @@ def create(nxy, flow, name):
   file.variables['ice_a_slid'][:,:] = mumu
 
   # write data specific to each flow method
-  if flow == 'hindmarsh2_sliding_explicit':
-    file.ice_name = 'hindmarsh2_sliding_explicit'
+  if flow == 'hindmarsh2_sliding1_explicit':
+    file.ice_name = 'hindmarsh2_sliding1_explicit'
     file.ice_param__var = []
 
   # finalize

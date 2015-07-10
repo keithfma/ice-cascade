@@ -33,7 +33,7 @@ use ice_bc_no_ice ! nbc_, ebc_, sbc_, wbc_
 use ice_bc_no_flux ! nbc_, ebc_, sbc_, wbc_ 
 use ice_bc_mirror ! nbc_, ebc_, sbc_, wbc_ 
 use ice_flow_hindmarsh2_explicit ! init_, flow_, velo_
-use ice_flow_hindmarsh2_sliding_explicit !init_, flow_
+use ice_flow_hindmarsh2_sliding1_explicit !init_, flow_, velo_
 use ice_soln_bueler_isothermal_a ! init_, solve_
 use ice_soln_bueler_isothermal_b ! init_, solve_ 
 use ice_soln_bueler_isothermal_c ! init_, solve_
@@ -183,10 +183,11 @@ contains
         flow => flow_hindmarsh2_explicit 
         velo => velo_hindmarsh2_explicit
 
-      case ('hindmarsh2_sliding_explicit')
+      case ('hindmarsh2_sliding1_explicit')
         on_ice = .true.
-        call init_hindmarsh2_sliding_explicit(p, s)
-        flow => flow_hindmarsh2_sliding_explicit 
+        call init_hindmarsh2_sliding1_explicit(p, s)
+        flow => flow_hindmarsh2_sliding1_explicit 
+        velo => velo_hindmarsh2_sliding1_explicit
 
       case default
         print *, "Invalid name for glacier flow method: " // trim(p%ice_name)

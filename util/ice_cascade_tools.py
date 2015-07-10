@@ -138,7 +138,7 @@ def new_input(filename, nx, ny):
   var = file.createVariable('ice_a_slid', np.float64, dimensions = ('y', 'x'))
   var[:,:] = np.nan
   var.long_name = 'ice_sliding_coefficient'
-  var.units = 'm_Pa_a'
+  var.units = 'NA'
   
   var = file.createVariable('ice_u_defm', np.float64, dimensions = ('y', 'x'))
   var[:,:] = np.nan
