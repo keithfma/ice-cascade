@@ -36,7 +36,7 @@ ice_soln_bueler_isothermal_c.f90 \
 ice_soln_bueler_isothermal_d.f90 \
 ice_soln_bueler_isothermal_e.f90 \
 ice_flow_hindmarsh2_explicit.f90 \
-ice_flow_hindmarsh2_sliding1_explicit.f90 \
+ice_flow_hindmarsh2_taub1_explicit.f90 \
 ice.f90 \
 climate_bueler_isothermal_a.f90 \
 climate_bueler_isothermal_c.f90 \
