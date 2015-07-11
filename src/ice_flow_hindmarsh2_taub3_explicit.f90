@@ -42,7 +42,7 @@
 ! 
 ! =============================================================================
 
-module ice_flow_hindmarsh3_taub3_explicit
+module ice_flow_hindmarsh2_taub3_explicit
 
 use kinds, only: rp
 use param, only: param_type
@@ -127,6 +127,60 @@ contains
   ! ABOUT: compute ice thickness rate-of-change, return stable timestep
   ! ---------------------------------------------------------------------------
     
+    integer :: i, j 
+    real(rp) :: a_defm_mid, a_slid_mid, D, Dmax, dsurf_dx_mid, dsurf_dy_mid, &
+               &dt, h_mid, surf_grad2
+
+    Dmax = 0.0_rp
+
+    ! x-direction diffusitivy and ice-flux at midpoints
+    do j = 2, p%ny-1
+      do i = 1, p%nx-1
+        h_mid = 0.5_rp*(s%ice_h(i,j)+s%ice_h(i+1,j))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i+1,j))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i+1,j))
+        dsurf_dx_mid = (s%surf(i+1,j)-s%surf(i,j))*div_dx 
+        dsurf_dy_mid = (s%surf(i  ,j+1)-s%surf(i  ,j-1)+ &
+                        s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
+        surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
+        D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + &
+           &c_slid*a_slid_mid*h_mid**3*surf_grad2 
+        qx(i,j-1) = -D*dsurf_dx_mid
+        Dmax = max(Dmax, D)
+      end do
+    end do
+
+    ! y-direction diffusitivy and ice-flux at midpoints
+    do j = 1, p%ny-1 
+      do i = 2, p%nx-1
+        h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i,j+1))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i,j+1))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i,j+1))
+        dsurf_dy_mid = (s%surf(i,j+1)-s%surf(i,j))*div_dy
+        dsurf_dx_mid = (s%surf(i+1,j  )-s%surf(i-1,j  )+ &
+                        s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
+        surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
+        D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + & 
+           &c_slid*a_slid_mid*h_mid**3*surf_grad2 
+        qy(i-1,j) = -D*dsurf_dy_mid
+        Dmax = max(Dmax, D)
+      end do
+    end do
+
+    ! thickness rate of change
+    do j = 2, p%ny-1
+      do i = 2, p%nx-1
+        s%ice_h_dot(i,j) = -(qx(i  ,j-1)-qx(i-1,j-1))*div_dx &
+                           -(qy(i-1,j  )-qy(i-1,j-1))*div_dy
+      end do
+    end do
+
+    ! compute time step, dealing with ice-free case  
+    if (Dmax .eq. 0.0_rp) then
+      dt = s%step 
+    else  
+      dt = p%dx*p%dy/(8.0_rp*Dmax) 
+    end if
 
   end function flow_hindmarsh2_taub3_explicit
 
