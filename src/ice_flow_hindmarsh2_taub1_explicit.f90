@@ -1,10 +1,10 @@
 ! =============================================================================
-! Ice flow procedures for hindmarsh2_sliding1_explicit method
+! Ice flow procedures for hindmarsh2_taub1_explicit method
 !
 ! Description: isothermal shallow ice flow flow using Hindmarsh "method 2"
 !   stencil, basal sliding using a linear sliding relation (sliding_velocity =
 !   sliding_coefficient * basal_shear_stress ** 1), and explicit adaptive
-!   timestep. Enabled if ice_name is hindmarsh2_sliding1_explicit.
+!   timestep. Enabled if ice_name is hindmarsh2_taub1_explicit.
 ! 
 ! Spatial discretization: Hindmarsh "method 2" stencil (see [1] and references
 !   therein), also commonly refered to as the Mahaffy method (see [2]). Ice flux
@@ -37,12 +37,12 @@
 !   Environment (pp.  222–249). Springer Berlin Heidelberg.
 !   doi:10.1007/978-3-662-04439-1_13
 !
-! Public: init_hindmarsh2_sliding1_explicit, flow_hindmarsh2_sliding1_explicit.
-!         velo_hindmarsh2_sliding1_explicit
+! Public: init_hindmarsh2_taub1_explicit, flow_hindmarsh2_taub1_explicit.
+!         velo_hindmarsh2_taub1_explicit
 ! 
 ! =============================================================================
 
-module ice_flow_hindmarsh2_sliding1_explicit
+module ice_flow_hindmarsh2_taub1_explicit
 
 use kinds, only: rp
 use param, only: param_type
@@ -50,8 +50,8 @@ use state, only: state_type
 
 implicit none
 private
-public :: init_hindmarsh2_sliding1_explicit, flow_hindmarsh2_sliding1_explicit, &
-         &velo_hindmarsh2_sliding1_explicit
+public :: init_hindmarsh2_taub1_explicit, flow_hindmarsh2_taub1_explicit, &
+         &velo_hindmarsh2_taub1_explicit
 
 
   ! ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public :: init_hindmarsh2_sliding1_explicit, flow_hindmarsh2_sliding1_explicit, 
   real(rp) :: c_defm ! " " 
   real(rp) :: c_slid ! " " 
   !
-  ! ABOUT: reusable variables, set in init_hindmarsh2_sliding1_explicit
+  ! ABOUT: reusable variables, set in init_hindmarsh2_taub1_explicit
   ! ---------------------------------------------------------------------------
 
 
@@ -73,7 +73,7 @@ contains
 
 
   ! ---------------------------------------------------------------------------
-  subroutine init_hindmarsh2_sliding1_explicit(p, s)
+  subroutine init_hindmarsh2_taub1_explicit(p, s)
   !
     type(param_type), intent(in) :: p
     type(state_type), intent(in) :: s
@@ -83,7 +83,7 @@ contains
 
     ! expect exactly 0 parameters
     if (size(p%ice_param) .ne. 0) then
-      print *, 'Invalid ice parameters: hindmarsh2_sliding1_explicit requires exactly &
+      print *, 'Invalid ice parameters: hindmarsh2_taub1_explicit requires exactly &
                &0 parameters.'
       stop
     end if
@@ -115,11 +115,11 @@ contains
     c_defm = 2.0_rp/5.0_rp*(p%rhoi*p%grav)**3
     c_slid = p%rhoi*p%grav
 
-  end subroutine init_hindmarsh2_sliding1_explicit
+  end subroutine init_hindmarsh2_taub1_explicit
 
 
   ! ---------------------------------------------------------------------------
-  function flow_hindmarsh2_sliding1_explicit(p, s) result(dt)
+  function flow_hindmarsh2_taub1_explicit(p, s) result(dt)
   ! 
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
@@ -180,11 +180,11 @@ contains
       dt = p%dx*p%dy/(8.0_rp*Dmax) 
     end if
 
-  end function flow_hindmarsh2_sliding1_explicit
+  end function flow_hindmarsh2_taub1_explicit
 
 
   ! ---------------------------------------------------------------------------
-  subroutine velo_hindmarsh2_sliding1_explicit(p, s)
+  subroutine velo_hindmarsh2_taub1_explicit(p, s)
   ! 
     type(param_type), intent(in) :: p
     type(state_type), intent(inout) :: s
@@ -208,7 +208,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         ud(i,j-1) = -c_defm*a_defm_mid*h_mid**4*surf_grad2*dsurf_dx_mid
-        us(i,j-1) = -c_slid*a_slid_mid*h_mid*dsurf_dx_mid*dsurf_dx_mid
+        us(i,j-1) = -c_slid*a_slid_mid*h_mid*dsurf_dx_mid
       end do
     end do
 
@@ -229,13 +229,13 @@ contains
 
     ! interpolate to interior gridpoints, edges don't matter
     s%ice_u_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(ud(1:p%nx-2, :)+ud(2:p%nx-1, :))
-    s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vd(:, 1:p%ny-2)+vd(:, 2:p%ny-1))
     s%ice_u_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(us(1:p%nx-2, :)+us(2:p%nx-1, :))
+    s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vd(:, 1:p%ny-2)+vd(:, 2:p%ny-1))
     s%ice_v_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vs(:, 1:p%ny-2)+vs(:, 2:p%ny-1))
 
-  end subroutine velo_hindmarsh2_sliding1_explicit
+  end subroutine velo_hindmarsh2_taub1_explicit
 
 
-end module ice_flow_hindmarsh2_sliding1_explicit
+end module ice_flow_hindmarsh2_taub1_explicit
 
 
