@@ -80,7 +80,40 @@ contains
   !
   ! ABOUT: check parameters and intializae variables, only once
   ! ---------------------------------------------------------------------------
+  
+    ! expect exactly 0 parameters
+    if (size(p%ice_param) .ne. 0) then
+      print *, 'Invalid ice parameters: hindmarsh2_taub3_explicit requires exactly &
+               &0 parameters.'
+      stop
+    end if
 
+    ! error if ice deformation/sliding coefficient is anywhere negative
+    if (any(s%ice_a_defm .lt. 0.0_rp)) then
+      print *, 'ERROR: Ice deformation coefficient must be non-negative'
+      stop
+    end if
+
+    if (any(s%ice_a_slid .lt. 0.0_rp)) then
+      print *, 'ERROR: Ice sliding coefficient must be non-negative'
+      stop
+    end if
+
+    ! allocate local parameters 
+    allocate(qx(p%nx-1, p%ny-2)); qx = 0.0_rp
+    allocate(ud(p%nx-1, p%ny-2)); ud = 0.0_rp
+    allocate(us(p%nx-1, p%ny-2)); us = 0.0_rp
+    allocate(qy(p%nx-2, p%ny-1)); qy = 0.0_rp
+    allocate(vd(p%nx-2, p%ny-1)); vd = 0.0_rp
+    allocate(vs(p%nx-2, p%ny-1)); vs = 0.0_rp
+
+    ! initialize local constants
+    div_dx = 1.0_rp/p%dx 
+    div_dy = 1.0_rp/p%dy
+    div_4dy = 1.0_rp/(4.0_rp*p%dy)
+    div_4dx = 1.0_rp/(4.0_rp*p%dx)
+    c_defm = 2.0_rp/5.0_rp*(p%rhoi*p%grav)**3
+    c_slid = (p%rhoi*p%grav)**3
 
   end subroutine init_hindmarsh2_taub3_explicit
 
