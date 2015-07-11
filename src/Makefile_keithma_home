@@ -1,10 +1,5 @@
 # Customized for Keith Ma's home system (Ubuntu 14.04 laptop)
 
-NETCDF_INC = /project/earth/packages/netcdf-4.3.0/include
-NETCDF_LIB = /project/earth/packages/netcdf-4.3.0/lib
-NETCDFF_INC = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/include
-NETCDFF_LIB = /share/pkg/netcdf-fortran/4.4.2/pgi_13.5/install/lib
-
 FORT = gfortran
 FFLAGS = -c -g -O0 -fbacktrace -ffpe-trap=invalid,zero,overflow
 LDFLAGS = 
