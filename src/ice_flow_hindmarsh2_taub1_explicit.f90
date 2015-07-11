@@ -208,7 +208,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         ud(i,j-1) = -c_defm*a_defm_mid*h_mid**4*surf_grad2*dsurf_dx_mid
-        us(i,j-1) = -c_slid*a_slid_mid*h_mid*dsurf_dx_mid*dsurf_dx_mid
+        us(i,j-1) = -c_slid*a_slid_mid*h_mid*dsurf_dx_mid
       end do
     end do
 
@@ -229,8 +229,8 @@ contains
 
     ! interpolate to interior gridpoints, edges don't matter
     s%ice_u_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(ud(1:p%nx-2, :)+ud(2:p%nx-1, :))
-    s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vd(:, 1:p%ny-2)+vd(:, 2:p%ny-1))
     s%ice_u_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(us(1:p%nx-2, :)+us(2:p%nx-1, :))
+    s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vd(:, 1:p%ny-2)+vd(:, 2:p%ny-1))
     s%ice_v_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vs(:, 1:p%ny-2)+vs(:, 2:p%ny-1))
 
   end subroutine velo_hindmarsh2_taub1_explicit

@@ -123,7 +123,7 @@ def create(nxy, flow, name):
 
   # write data specific to each flow method
   if flow == 'hindmarsh2_taub1_explicit':
-    file.ice_name = 'hindmarsh2_taub1_explicit'
+    file.ice_name = flow
     file.ice_param__var = []
 
   # finalize
