@@ -144,7 +144,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + &
-           &c_slid*a_slid_mid*h_mid**3*surf_grad2 
+           &c_slid*a_slid_mid*h_mid**4*surf_grad2 
         qx(i,j-1) = -D*dsurf_dx_mid
         Dmax = max(Dmax, D)
       end do
@@ -161,7 +161,7 @@ contains
                         s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
         surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
         D = c_defm*a_defm_mid*h_mid**5*surf_grad2 + & 
-           &c_slid*a_slid_mid*h_mid**3*surf_grad2 
+           &c_slid*a_slid_mid*h_mid**4*surf_grad2 
         qy(i-1,j) = -D*dsurf_dy_mid
         Dmax = max(Dmax, D)
       end do
@@ -195,6 +195,45 @@ contains
   !   interpolated to the grid points. Only the vertically
   ! ---------------------------------------------------------------------------
     
+    integer :: i, j 
+    real(rp) :: dsurf_dx_mid, dsurf_dy_mid, a_defm_mid, a_slid_mid, h_mid, &
+               &surf_grad2
+    
+    ! x-dir velocities at midpoints
+    do j = 2, p%ny-1
+      do i = 1, p%nx-1
+        h_mid = 0.5_rp*(s%ice_h(i,j)+s%ice_h(i+1,j))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i+1,j))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i+1,j))
+        dsurf_dx_mid = (s%surf(i+1,j)-s%surf(i,j))*div_dx 
+        dsurf_dy_mid = (s%surf(i  ,j+1)-s%surf(i  ,j-1)+ &
+                        s%surf(i+1,j+1)-s%surf(i+1,j-1))*div_4dy
+        surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
+        ud(i,j-1) = -c_defm*a_defm_mid*h_mid**4*surf_grad2*dsurf_dx_mid
+        us(i,j-1) = -c_slid*a_slid_mid*h_mid**3*surf_grad2*dsurf_dx_mid 
+      end do
+    end do
+
+    ! y-dir velocities at midpoints
+    do j = 1, p%ny-1 
+      do i = 2, p%nx-1
+        h_mid= 0.5_rp*(s%ice_h(i,j)+s%ice_h(i,j+1))
+        a_defm_mid = 0.5_rp*(s%ice_a_defm(i,j)+s%ice_a_defm(i,j+1))
+        a_slid_mid = 0.5_rp*(s%ice_a_slid(i,j)+s%ice_a_slid(i,j+1))
+        dsurf_dy_mid = (s%surf(i,j+1)-s%surf(i,j))*div_dy
+        dsurf_dx_mid = (s%surf(i+1,j  )-s%surf(i-1,j  )+ &
+                        s%surf(i+1,j+1)-s%surf(i-1,j+1))*div_4dx
+        surf_grad2 = dsurf_dx_mid**2+dsurf_dy_mid**2
+        vd(i-1,j) = -c_defm*a_defm_mid*h_mid**5*surf_grad2*dsurf_dy_mid
+        vs(i-1,j) = -c_slid*a_slid_mid*h_mid**3*surf_grad2*dsurf_dy_mid
+      end do
+    end do
+
+    ! interpolate to interior gridpoints, edges don't matter
+    s%ice_u_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(ud(1:p%nx-2, :)+ud(2:p%nx-1, :))
+    s%ice_u_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(us(1:p%nx-2, :)+us(2:p%nx-1, :))
+    s%ice_v_defm(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vd(:, 1:p%ny-2)+vd(:, 2:p%ny-1))
+    s%ice_v_slid(2:p%nx-1, 2:p%ny-1) = 0.5_rp*(vs(:, 1:p%ny-2)+vs(:, 2:p%ny-1))
 
   end subroutine velo_hindmarsh2_taub3_explicit
 
