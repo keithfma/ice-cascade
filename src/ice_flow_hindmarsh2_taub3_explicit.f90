@@ -41,3 +41,77 @@
 !         velo_hindmarsh2_taub3_explicit
 ! 
 ! =============================================================================
+
+module ice_flow_hindmarsh3_taub3_explicit
+
+use kinds, only: rp
+use param, only: param_type
+use state, only: state_type
+
+implicit none
+private
+public :: init_hindmarsh2_taub3_explicit, flow_hindmarsh2_taub3_explicit, &
+         &velo_hindmarsh2_taub3_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  real(rp), allocatable :: qx(:,:), qy(:,:)  ! ice flux, grid at midpts
+  real(rp), allocatable :: ud(:,:), vd(:,:) ! ice deformation velocity at midpts
+  real(rp), allocatable :: us(:,:), vs(:,:) ! ice sliding velocity at midpts
+  real(rp) :: div_dx ! constant factor in computations
+  real(rp) :: div_dy ! " " 
+  real(rp) :: div_4dx ! " " 
+  real(rp) :: div_4dy ! " " 
+  real(rp) :: c_defm ! " " 
+  real(rp) :: c_slid ! " " 
+  !
+  ! ABOUT: reusable variables, set in init_hindmarsh2_taub3_explicit
+  ! ---------------------------------------------------------------------------
+
+
+contains
+
+
+  ! ---------------------------------------------------------------------------
+  subroutine init_hindmarsh2_taub3_explicit(p, s)
+  !
+    type(param_type), intent(in) :: p
+    type(state_type), intent(in) :: s
+  !
+  ! ABOUT: check parameters and intializae variables, only once
+  ! ---------------------------------------------------------------------------
+
+
+  end subroutine init_hindmarsh2_taub3_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  function flow_hindmarsh2_taub3_explicit(p, s) result(dt)
+  ! 
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: compute ice thickness rate-of-change, return stable timestep
+  ! ---------------------------------------------------------------------------
+    
+
+  end function flow_hindmarsh2_taub3_explicit
+
+
+  ! ---------------------------------------------------------------------------
+  subroutine velo_hindmarsh2_taub3_explicit(p, s)
+  ! 
+    type(param_type), intent(in) :: p
+    type(state_type), intent(inout) :: s
+  !
+  ! ABOUT: compute ice velocity, first on the staggered grid used above, then
+  !   interpolated to the grid points. Only the vertically
+  ! ---------------------------------------------------------------------------
+    
+
+  end subroutine velo_hindmarsh2_taub3_explicit
+
+
+end module ice_flow_hindmarsh2_taub3_explicit
+
+
